@@ -1,0 +1,12 @@
+exportPattern("^[[:alpha:]]+")
+exportMethods(
+    "[",
+    "show" 
+)
+exportClasses(
+    "methylSigData",
+     "methylSigDiff" 
+)
+
+importFrom("parallel", mclapply)
+importFrom("boot", corr)
