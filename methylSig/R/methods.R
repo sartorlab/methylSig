@@ -1,24 +1,33 @@
-
-#####################################################
-##
-##  Dec. 23th 2013
-##
-#####################################################
-
-###################################################################
-##################                 ################################
-################## methylSig Class ################################
-##################                 ################################
-###################################################################
-
-setClass("methylSigDiff", representation(data.ids="numeric", data.chr="factor", data.start="numeric", 
+#' This class is for generating 'methylSigDiff' object.
+#'
+#' Objects can be created by calls of the form \code{new("methylSigDiff", ...)}.
+#'
+#' @slot data.ids A numeric vector
+#' @slot data.chr A factor vector
+#' @slot data.strand A factor vector
+#' @slot data.start A numeric vector
+#' @slot data.end A numeric vector
+#' @slot results A matrix
+#' @slot treatment A numeric vector
+#' @slot sample.ids A character vector
+#' @slot sample.filenames A character vector
+#' @slot destranded A logical value
+#' @slot resolution A character value
+#' @slot options A character vector
+#' @slot data.options A character vector
+#'
+#' @keywords classes internal
+#' @aliases methylSigDiff-class [ methylSigDiff ANY ANY-method
+#'
+#' @export
+setClass("methylSigDiff", representation(data.ids="numeric", data.chr="factor", data.start="numeric",
                                          data.end="numeric", data.strand="factor", results="matrix",
                                          sample.ids = "character", treatment="numeric", sample.filenames = "character",
                                          destranded="logical", resolution="character",
                                          options="character", data.options="character"))
 
-methylSig.newDiff <- function(data.ids, data.chr, data.start,data.end, data.strand, results, sample.ids="", sample.filenames="", treatment, destranded=TRUE, 
-                              resolution="", options="", data.options="") {
+methylSig.newDiff <- function(data.ids, data.chr, data.start,data.end, data.strand, results, sample.ids="",
+                                sample.filenames="", treatment, destranded=TRUE, resolution="", options="", data.options="") {
     ret = new("methylSigDiff")
     ret@data.ids=data.ids
     ret@data.chr = data.chr
@@ -67,13 +76,21 @@ methlSig.subDiffElement<-function(meth,i,j) {
         meth@data.strand[i]
     } else {
         meth@results[i,j]
-    } 
+    }
 }
 
 #### sub-setting ####
 ### meth[1:10,1:9] : obtain first 10 lines from first 9 samples
 ###
 
+#' Subset methylSigDiff object
+#'
+#' @param i Start position
+#' @param j End position
+#'
+#' @rdname methylSigDiff-class
+#'
+#' @keywords methods internal
 setMethod("[", signature(x = "methylSigDiff", i = "ANY", j = "character"),
     function(x, i, j) {
         if(missing(i)) i=1:NROW(x@data.chr)
@@ -81,15 +98,32 @@ setMethod("[", signature(x = "methylSigDiff", i = "ANY", j = "character"),
     }
 )
 
+#' Subset methylSigDiff object
+#'
+#' @param i Start position
+#' @param j End position
+#'
+#' @rdname methylSigDiff-class
+#'
+#' @keywords methods internal
 setMethod("[", signature(x = "methylSigDiff", i = "ANY", j = "missing"),
     function(x, i) {
        if(missing(i)) {
-           x 
+           x
        } else methylSig.subDiff(x,i)
     }
 )
 
-
+#' This method is for printing a methylSigDiff object.
+#'
+#' @param object A methylSigDiff object.
+#'
+#' @rdname methylSigDiff-class
+#'
+#' @examples
+#' show("myDiff")
+#'
+#' @keywords methods internal
 setMethod("show", "methylSigDiff",
   function(object) {
 #    pvalue=0,qvalue=0,meth.diff=0,logLikRatio=NA, phi=0, df=0, muT=0, muC=0)
@@ -97,7 +131,7 @@ setMethod("show", "methylSigDiff",
     cat("methylSigDiff object with", format(NROW(object@data.ids), big.mark=",",small.interval=3), "rows\n")
     cat("--------------------------\n")
     printRange = 1:min(10,NROW(object@data.ids))
-    printData = data.frame(chr=object@data.chr[printRange], start=object@data.start[printRange], 
+    printData = data.frame(chr=object@data.chr[printRange], start=object@data.start[printRange],
                            end=object@data.end[printRange], strand=object@data.strand[printRange],
                            object@results[printRange,,drop=FALSE])
     print(printData)
@@ -107,17 +141,46 @@ setMethod("show", "methylSigDiff",
     cat("destranded:",object@destranded,"\n", sep=" ")
     cat("resolution:", object@resolution,"\n", sep=" ")
     cat("options:", object@options,"\n", sep=" ")
-}
+  }
 )
 
-setClass("methylSigData", representation(data.ids="numeric", data.chr="factor", data.start="numeric", 
+#' This class is for generating 'methylSigData' object.
+#'
+#' Objects can be created by calls of the form \code{new("methylSigData", ...)}.
+#'
+#' @slot data.ids A numeric vector
+#' @slot data.chr A factor vector
+#' @slot data.strand A factor vector
+#' @slot data.start A numeric vector
+#' @slot data.end A numeric vector
+#' @slot data.coverage A matrix
+#' @slot data.numCs A matrix
+#' @slot data.numTs A matrix
+#' @slot treatment A numeric vector
+#' @slot sample.ids A character vector
+#' @slot sample.filenames A character vector
+#' @slot destranded A logical value
+#' @slot resolution A character value
+#' @slot options A character vector
+#'
+#' @examples
+#' showClass("methylSigData")
+#'
+#' @aliases methylSigData-class [ methylSigData ANY ANY-method
+#' @rdname methylSigData-class
+#'
+#' @keywords classes internal
+#'
+#' @export
+setClass("methylSigData", representation(data.ids="numeric", data.chr="factor", data.start="numeric",
                                          data.end="numeric", data.strand="factor", data.coverage="matrix",
-                                         data.numCs = "matrix", data.numTs = "matrix", 
+                                         data.numCs = "matrix", data.numTs = "matrix",
                                          sample.ids = "character", sample.filenames = "character", treatment="numeric",
-                                         destranded="logical", resolution="character",options="character"))
+                                         destranded="logical", resolution="character",
+                                         options="character"))
 
 methylSig.newData <- function(data.ids, data.chr, data.start,data.end, data.strand, data.coverage, data.numCs,
-                              data.numTs, sample.ids="", sample.filenames="", treatment, destranded=TRUE, 
+                              data.numTs, sample.ids="", sample.filenames="", treatment, destranded=TRUE,
                               resolution="", options="") {
     ret = new("methylSigData")
     ret@data.ids=data.ids
@@ -126,7 +189,7 @@ methylSig.newData <- function(data.ids, data.chr, data.start,data.end, data.stra
     ret@data.start=data.start
     ret@data.end=data.end
     ret@data.coverage=data.coverage
-    ret@data.numCs = data.numCs 
+    ret@data.numCs = data.numCs
     ret@data.numTs = data.numTs
     ret@treatment = treatment
     ret@sample.ids=sample.ids
@@ -200,6 +263,14 @@ methlSig.subDataElement<-function(meth,i,j) {
     }
 }
 
+#' Subset methylSigData object based on a range
+#'
+#' @param i Start position
+#' @param j End position
+#'
+#' @rdname methylSigData-class
+#'
+#' @keywords methods internal
 setMethod("[", signature(x = "methylSigData", i = "ANY", j = "ANY", drop="ANY"),
     function(x, i, j, drop) {
         if(missing(i) && missing(j)) {
@@ -209,12 +280,22 @@ setMethod("[", signature(x = "methylSigData", i = "ANY", j = "ANY", drop="ANY"),
             if(!missing(j) && is.character(j)) {
                 methlSig.subDataElement(x,i,j)
             } else {
-                methylSig.subData(x,i,j,drop) 
+                methylSig.subData(x,i,j,drop)
             }
         }
     }
 )
 
+#' This method is for printing a methylSigData object.
+#'
+#' @param object A methylSigData object.
+#'
+#' @examples
+#' show("methylSigData")
+#'
+#' @rdname methylSigData-class
+#'
+#' @keywords methods internal
 setMethod("show", "methylSigData",
   function(object) {
     cat("methylSigData object with", format(NROW(object@data.start), big.mark=",",small.interval=3), "rows\n")
@@ -228,10 +309,10 @@ setMethod("show", "methylSigData",
 
     colnames(printCCT) = paste(c("coverage", "numCs", "numTs"), rep(1:nCol,each=3), sep="")
 
-    printData = data.frame(chr=object@data.chr[printRange], start=object@data.start[printRange], 
+    printData = data.frame(chr=object@data.chr[printRange], start=object@data.start[printRange],
                            end=object@data.end[printRange], strand=object@data.strand[printRange],
                            printCCT)
-    
+
     print(printData)
     cat("--------------------------\n")
     cat("sample.ids:",object@sample.ids,"\n", sep=" ")
@@ -239,6 +320,5 @@ setMethod("show", "methylSigData",
     cat("destranded:",object@destranded,"\n", sep=" ")
     cat("resolution:", object@resolution,"\n", sep=" ")
     cat("options:", object@options,"\n", sep=" ")
-}
+  }
 )
-
