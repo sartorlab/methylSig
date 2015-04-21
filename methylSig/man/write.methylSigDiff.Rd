@@ -7,18 +7,18 @@
 write.methylSigDiff(object, ...)
 }
 \arguments{
-\item{...}{Arguments inherited from \code{\link[utils]{write.table}}}
+\item{object}{a \code{link{methylSigDiff}} object.}
 
-\item{Object}{a `methylSigDiff' object.}
+\item{...}{Arguments inherited from \code{\link[utils]{write.table}}}
 }
 \value{
 None
 }
 \description{
-This funciton write methylSigDiff as a text file. All options for write.table are avaiable for this function.
+This funciton writes \code{\link{methylSigDiff}} as a text file. All options for write.table are avaiable for this function.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 write.methylSigDiff(myDiffSigboth, file="myResult.txt", row.names=FALSE, quote=FALSE, sep="\\t")
 }
 

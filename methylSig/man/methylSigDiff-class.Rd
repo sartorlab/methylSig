@@ -2,8 +2,6 @@
 % Please edit documentation in R/methods.R
 \docType{class}
 \name{methylSigDiff-class}
-\alias{ANY}
-\alias{ANY-method}
 \alias{[}
 \alias{[,methylSigDiff,ANY,character-method}
 \alias{[,methylSigDiff,ANY,missing-method}
@@ -62,8 +60,6 @@ This method is for printing a methylSigDiff object.
 \item{\code{destranded}}{A logical value}
 
 \item{\code{resolution}}{A character value}
-
-\item{\code{filterSNPs}}{A logical value}
 
 \item{\code{options}}{A character vector}
 

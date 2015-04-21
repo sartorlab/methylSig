@@ -30,7 +30,7 @@ This function tests for enriched transcription binding sites among differentiall
 Likelihood ratio test is used based on the binomial distribution.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 
 tfbsInfo = getTFBSInfo(system.file("annotation", "tfbsUniform.txt",
                         package = "methylSig"))

@@ -42,7 +42,7 @@ The function calculates differential methylation statistics between two groups o
 The function calculates differential methylation statistics between two groups of samples. The function uses Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. Users who wish to tile their data and test for differentially methylated regions (DMRs) instead DMCs should first use the \code{\link{methylSigTile}} function before using this function.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 
 myDiffSig = methylSigCalc (meth)
 

@@ -17,7 +17,7 @@
 #' @slot data.options A character vector
 #'
 #' @keywords classes internal
-#' @aliases methylSigDiff-class [ methylSigDiff ANY ANY-method
+#' @aliases methylSigDiff-class [ methylSigDiff
 #'
 #' @export
 setClass("methylSigDiff", representation(data.ids="numeric", data.chr="factor", data.start="numeric",
@@ -166,7 +166,7 @@ setMethod("show", "methylSigDiff",
 #' @examples
 #' showClass("methylSigData")
 #'
-#' @aliases methylSigData-class [ methylSigData ANY ANY-method
+#' @aliases methylSigData-class [ methylSigData
 #' @rdname methylSigData-class
 #'
 #' @keywords classes internal

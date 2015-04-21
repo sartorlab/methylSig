@@ -4,8 +4,7 @@
 \alias{getRefgeneInfo}
 \title{Read RefGene model information.}
 \usage{
-refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
-                            package = "methylSig"))
+getRefgeneInfo(infile)
 }
 \arguments{
 \item{infile}{A path to file that contains refGene information.}
@@ -18,6 +17,10 @@ This function reads RefGene model information for future annotation.
 }
 \details{
 This function reads RefGene informaiton for future annotation. Same genome assembly of data should be used in annotation. This function does not check genome assembly type nor version.
+}
+\examples{
+refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
+                            package = "methylSig"))
 }
 \seealso{
 \code{\link{refGeneAnnotation}} and \code{\link{refGeneAnnotationPlot}}

@@ -21,7 +21,7 @@ This function annotates the CpG sites to promoter, coding DNA sequence (CDS), ex
 This function generates an object to annotate refGene information. The same genome assembly should be used for `myDiff' and `refGeneInfo'. The promoter region is defined as 1,000bp upstream from a transcription starting site (TSS) to the TSS.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
                                package = "methylSig"))
 

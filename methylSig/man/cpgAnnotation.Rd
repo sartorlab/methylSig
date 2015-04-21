@@ -21,7 +21,7 @@ This function annotates the CpG sites or regions to CpG island, CpG shore, CpG s
 This function generates an object to annotate CpG island information. The same genome assembly should be used for `myDiff' and `cpgInfo'. CpG shores are defined as the region outside CpG islands but within 2,000 bp of any CpG island. CpG shelves are defined as the region within 2,000 bp away from a CpG shore. When regions overlap, the priority is CpG island, then CpG shore. Regions >4,000 bp from a CpG island are deemed interCGI.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 
 cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
                                  package = "methylSig"))

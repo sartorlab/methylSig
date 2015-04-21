@@ -22,7 +22,7 @@ This function generates a pie chart that shows the proportions of CpG sites anno
 CpG shore is defined as the region outside of a CpG island but within 2,000 bp of any CpG island. CpG shelf is defined as the region 2,000-4,000bp away from a CPG island. When overlaped, the priority is CpG island, then CpG shore.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 
 cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
                        package = "methylSig"))

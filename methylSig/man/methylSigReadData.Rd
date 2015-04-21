@@ -39,10 +39,10 @@ methylSigReadData(fileList, sample.ids, assembly = NA, pipeline = NA,
 \item{quiet}{A logical value. If quiet=TRUE, then this function does not show progress information. Default is FALSE.}
 }
 \value{
-A \code{\link{methylSigData}} object.
+A \code{\link{methylSigData-class}} object.
 }
 \description{
-This function reads methylation score files (having columns chrBase, chr, base, strand, coverage, freqC, freqT) to make a \code{\link{methySigData}} object that can be used in differential methylation analysis.
+This function reads methylation score files (having columns chrBase, chr, base, strand, coverage, freqC, freqT) to make a \code{\link{methylSigData-class}} object that can be used in differential methylation analysis.
 }
 \examples{
 fileList = c( system.file("extdata", "AML_1.txt", package = "methylSig"),

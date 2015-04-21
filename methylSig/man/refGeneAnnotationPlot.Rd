@@ -21,7 +21,7 @@ This function generates a refGene annotation bar chart.
 Promoter is defined as the region 1,000bp upstream from a transcription start site (TSS) to the TSS. When regions overlap, the priority to assign regions for the CpG sites is defined by `priority' argument.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 
 refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
                  package = "methylSig"))

@@ -42,7 +42,7 @@ Generates data visualization plot of methylation data for a specified genomic in
 This function offers a unique two-tiered visualization of the methylation data depending on the zoom level. For narrow regions (<1mbp) where at most 500 CpG sites have data reads, users can visualize sample-specific coverage levels and percent methylation at each site, together with group averages, significance levels and a number of genomic annotations.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 
 cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
                  package = "methylSig"))

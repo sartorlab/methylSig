@@ -1,14 +1,14 @@
 #' Write a methylSigDiff object as a text file
 #'
-#' This funciton write methylSigDiff as a text file. All options for write.table are avaiable for this function.
+#' This funciton writes \code{\link{methylSigDiff}} as a text file. All options for write.table are avaiable for this function.
 #'
-#' @param Object a `methylSigDiff' object.
+#' @param object a \code{link{methylSigDiff}} object.
 #' @param ... Arguments inherited from \code{\link[utils]{write.table}}
 #'
 #' @return None
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #' write.methylSigDiff(myDiffSigboth, file="myResult.txt", row.names=FALSE, quote=FALSE, sep="\t")
 #'
 #' @export
@@ -37,7 +37,7 @@ write.methylSigDiff <- function(object, ...) {
 #' @seealso \code{\link{methylSigCalc}}
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #' myDiff = binomialDiffCalc(meth)
 #'
 #' @keywords differentialMethylation
@@ -92,7 +92,7 @@ binomialDiffCalc <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.
 #' @return A \code{\link{methylSigData-class}} object.
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #' methTile = methylSigTile(meth)
 #' @export
 methylSigTile <- function(meth,win.size=25) {
@@ -354,7 +354,7 @@ methylSig_dataProcess <- function(loc,obj){
 #' @seealso \code{\link{methylSigPlot}}, \code{\link{methylSigReadData}}
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #'
 #' myDiffSig = methylSigCalc (meth)
 #'
@@ -525,7 +525,7 @@ methylSigCalc = function(meth, groups=c("Treatment"=1,"Control"=0), dispersion="
 #' @param sigQ Maximum significant q-value to be drawn as red line. Default is 0.05.
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #'
 #' cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
 #'                  package = "methylSig"))
@@ -791,7 +791,7 @@ methylSigPlot <-function(meth, chr, loc.range, groups=c("Treatment"=1,"Control"=
 #'
 #' @seealso \code{\link{refGeneAnnotation}} and \code{\link{refGeneAnnotationPlot}}
 #'
-#' @usage
+#' @examples
 #' refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
 #'                             package = "methylSig"))
 #'
@@ -932,7 +932,7 @@ is.TFBSByChrom <- function(tfbsInfo, startEnd, listToCount) {
 #' @seealso \code{\link{cpgAnnotation}} and \code{\link{getCpGInfo}}
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #'
 #' cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
 #'                        package = "methylSig"))
@@ -984,7 +984,7 @@ cpgAnnotationPlot <- function(listFrom, main="Plot", color, noShelf = FALSE) {
 #' @seealso \code{\link{cpgAnnotationPlot}} and \code{\link{getCpGInfo}}
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #'
 #' cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
 #'                                  package = "methylSig"))
@@ -1033,7 +1033,7 @@ cpgAnnotationByChrom <- function(cpgInfo, startEnd, listToAnnotat) {
 #' @seealso \code{\link{refGeneAnnotation}} and \code{\link{getRefgeneInfo}}
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #'
 #' refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
 #'                  package = "methylSig"))
@@ -1121,7 +1121,7 @@ PROMOTER   = 6
 #' @seealso \code{\link{refGeneAnnotationPlot}} and \code{\link{getRefgeneInfo}}
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #' refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
 #'                                package = "methylSig"))
 #'
@@ -1241,7 +1241,7 @@ refGeneAnnotationByChrom <- function(refGeneInfo, startEnd, listToAnnotat) {
 #' @seealso \code{\link{getTFBSInfo}}
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #'
 #' tfbsInfo = getTFBSInfo(system.file("annotation", "tfbsUniform.txt",
 #'                         package = "methylSig"))
@@ -1351,7 +1351,7 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
 
     if(filterSNPs) {
         message('Filtering based on C > T SNPs')
-        data('CT_SNP_index')
+        data('CT_index_hg19')
         cov_gr = GRanges(seqnames=cov$chrom, ranges=IRanges(start=cov$start, end=cov$start + 1))
 
         overlaps = findOverlaps(cov_gr, CT_index)
@@ -1406,7 +1406,6 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
 #' @param sample.ids Vector of sample ids.
 #' @param assembly Character string indicating the genome assembly, such as "hg18", "hg19", "mm9", or "mm10".
 #' @param pipeline Character string indicating the pipepline name that generated the data, for example, "bismark".
-#' @param header A logical value indicating whether the score files have header or not.  Default is TRUE.
 #' @param context Methylation context string such "CpG","CpH",or "CHH".
 #' @param resolution A string indicating whether the input data are  base-pair or regional resolution. Either "base" or "region" is allowed. Default is "base".
 #' @param treatment A numeric vector contatining numbers to distinguish the group classification.
@@ -1543,7 +1542,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
 
     if(filterSNPs) {
         message('Filtering based on C > T SNPs')
-        data('CT_SNP_index')
+        data('CT_index_hg19')
         chr_gr = GRanges(seqnames=chr$chrom, ranges=IRanges(start=chr$start, end=chr$start + 1))
 
         overlaps = findOverlaps(chr_gr, CT_index)
@@ -1573,7 +1572,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
 
 #' Read methylation score files to make a 'methylSigData' object.
 #'
-#' This function reads methylation score files (having columns chrBase, chr, base, strand, coverage, freqC, freqT) to make a \code{\link{methySigData}} object that can be used in differential methylation analysis.
+#' This function reads methylation score files (having columns chrBase, chr, base, strand, coverage, freqC, freqT) to make a \code{\link{methylSigData-class}} object that can be used in differential methylation analysis.
 #'
 #' @param fileList Vector of files to be read. The methylKit package can be used to generate the appropriate tables from sorted SAM output from Bismark.
 #' @param sample.ids Vector of sample ids.
@@ -1590,7 +1589,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
 #' @param num.cores Number of cores to be used in reading files. Default is 1.
 #' @param quiet A logical value. If quiet=TRUE, then this function does not show progress information. Default is FALSE.
 #'
-#' @return A \code{\link{methylSigData}} object.
+#' @return A \code{\link{methylSigData-class}} object.
 #'
 #' @seealso \code{\link{methylSigCalc}}
 #'
@@ -1733,7 +1732,7 @@ methylSigDf <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.group
 #' @return Auto correlation value or vector for the lags entered.
 #'
 #' @examples
-#' data(methylSig)
+#' data(sampleData)
 #'
 #' lags = c(2,5,10,50)
 #'

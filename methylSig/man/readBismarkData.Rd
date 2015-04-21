@@ -37,8 +37,6 @@ readBismarkData(bismarkCovFiles, cytosineCovFiles, sample.ids, assembly = NA,
 \item{num.cores}{Number of cores to be used in reading files. Default is 1.}
 
 \item{quiet}{A logical value. If quiet=TRUE, then this function does not show progress information. Default is FALSE.}
-
-\item{header}{A logical value indicating whether the score files have header or not.  Default is TRUE.}
 }
 \value{
 A 'methylSigData' object.

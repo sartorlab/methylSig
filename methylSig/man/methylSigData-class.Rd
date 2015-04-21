@@ -2,8 +2,6 @@
 % Please edit documentation in R/methods.R
 \docType{class}
 \name{methylSigData-class}
-\alias{ANY}
-\alias{ANY-method}
 \alias{[}
 \alias{[,methylSigData,ANY,ANY-method}
 \alias{methylSigData}

@@ -2,6 +2,7 @@
 % Please edit documentation in R/methylSig_data_doc.R
 \docType{data}
 \name{data_CT_index_hg19}
+\alias{CT_index}
 \alias{data_CT_index_hg19}
 \title{CpG Index for hg19}
 \format{A GenomicRanges object of length 1,321,463}

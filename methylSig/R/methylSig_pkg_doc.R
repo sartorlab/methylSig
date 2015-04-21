@@ -7,6 +7,8 @@
 #'
 #' @importFrom parallel mclapply
 #' @importFrom boot corr
+#' @import GenomicRanges
+#' @import methods
 #'
 #' @docType package
 #' @name methylSig-package

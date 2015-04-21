@@ -27,7 +27,7 @@ This funciton calculates the weighted auto correlation of methylation rates base
 The weight for the locus i and j is \code{coverage[i]*coverage[j]/(coverage[i]+coverage[j])}.
 }
 \examples{
-data(methylSig)
+data(sampleData)
 
 lags = c(2,5,10,50)
 

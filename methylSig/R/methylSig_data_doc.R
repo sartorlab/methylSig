@@ -10,6 +10,7 @@
 #' @docType data
 #' @keywords datasets
 #' @name data_CT_index_hg19
+#' @aliases CT_index
 #' @usage data(CT_index_hg19)
 #' @format A GenomicRanges object of length 1,321,463
 #' @source \url{ftp://ftp.1000genomes.ebi.ac.uk//vol1/ftp/release/20130502/ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.vcf.gz}
@@ -25,6 +26,29 @@ NULL
 #'
 #' @docType data
 #' @keywords datasets
-#' @name methylSig
-#' @usage data(methylSig)
+#' @name sampleData
+#' @usage data(sampleData)
+NULL
+
+#' Example methylSigData object
+#'
+#' \code{meth} is a \code{\link{methylSigData}} object containing 8 samples total.
+#' There are 4 AML (acute myeloid leukemia) samples and 4 NBM (normal bone marrow)
+#' samples. Data are in hg18 coordinates.
+#'
+#' @docType data
+#' @keywords datasets
+#' @name meth
+#' @usage data(sampleData)
+NULL
+
+#' Example methylSigDiff object
+#'
+#' \code{mySigDiffboth} is a \code{\link{methylSigDiff}} object storing the result
+#' of the site-wise differential methylation test using \code{\link{methylSigCalc}}.
+#'
+#' @docType data
+#' @keywords datasets
+#' @name myDiffSigboth
+#' @usage data(sampleData)
 NULL
