@@ -1319,20 +1319,18 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     # Read files and minimize memory footprint with colClasses
     message(sprintf('Reading %s',fileList[[fileIndex]][1]))
     cov = read.table(fileList[[fileIndex]][1], sep='\t', header=F,
-        col.names=c('chrom','start','end','perc_meth','numC','numT'),
+        col.names=c('chrom','start','end','perc_meth','numCs','numTs'),
         colClasses=c('character','numeric','NULL','NULL','numeric','numeric'),stringsAsFactors=F)
 
     message(sprintf('Reading %s',fileList[[fileIndex]][2]))
     cyt = read.table(fileList[[fileIndex]][2], sep='\t', header=F,
-        col.names=c('chrom','pos','strand','numC','numT','C_context','tri_context'),
+        col.names=c('chrom','pos','strand','numCs','numTs','C_context','tri_context'),
         colClasses=c('character','numeric','character','NULL','NULL','NULL','NULL'), stringsAsFactors=F)
 
-    message('Building chromBase columns')
     # Create the chromBase column which matching will be done on
     cov$chromBase = paste(cov$chrom, cov$start, sep='.')
     cyt$chromBase = paste(cyt$chrom, cyt$pos, sep='.')
 
-    message('Extracting strand from cytosine report')
     # Extract strand from the cytosine report
     # This is the only purpose of the cytosine report
     cov$strand = cyt[match(cov$chromBase,cyt$chromBase), 'strand']
@@ -1344,18 +1342,18 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     # This probably shouldn't happen, but it would mean the strand is NA.
     if(length(which(is.na(cov$strand))) > 0) {message('WARNING! Positions in coverage file not found in cytosine report.')}
 
-    message('Computing coverage and frequency of Cs and Ts')
-    cov$coverage = cov$numC + cov$numT
-    cov$freqC = round((cov$numC / cov$coverage)*100,2)
-    cov$freqT = round((cov$numT / cov$coverage)*100,2)
+    cov$coverage = cov$numCs + cov$numTs
 
-    message('Filtering based on minCount and maxCount')
-    # Set coverage of sites exceeding maxCount or not exceeding minCount to 0
-    invalidList = (cov$coverage > maxCount | cov$coverage < minCount)
-    cov$coverage[invalidList] = 0
+    # If the sum of frequencies of C's and T's is less than 95, discard sites
+    # by setting coverage to 0, and report for each pair of files the
+    # proportion of sites that are removed.
+    invalidList = which( ((cov$numCs + cov$numTs) / cov$coverage) < 0.95)
+    if(length(invalidList) > 0) {
+        cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
+        cov$coverage[invalidList] = 0
+    }
 
     if(filterSNPs) {
-        message('Filtering based on C > T SNPs')
         data('CT_index_hg19')
         cov_gr = GRanges(seqnames=cov$chrom, ranges=IRanges(start=cov$start, end=cov$start + 1))
 
@@ -1367,36 +1365,28 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
         cov$coverage[invalidList] = 0
     }
 
-    message('Filtering based on freqC + freqT < 95')
-    # If the sum of frequencies of C's and T's is less than 95, discard sites
-    # by setting coverage to 0, and report for each pair of files the
-    # proportion of sites that are removed.
-    invalidList = which(cov$freqC + cov$freqT < 95)
-    if(length(invalidList) > 0) {
-        cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
-        cov$coverage[invalidList] = 0
-    }
+    # Set coverage of sites exceeding maxCount or not exceeding minCount to 0
+    invalidList = (cov$coverage > maxCount | cov$coverage < minCount)
+    cov$coverage[invalidList] = 0
 
     # In case of destranded, shift reverse strand CpG sites to match forward strand
     if(destranded == TRUE) {
-        message('Destranding')
         invalidList = which(cov$strand == "-" | cov$strand == "R")
         cov$start[invalidList] = cov$start[invalidList] - 1
-        cov$end[invalidList] = cov$end[invalidList] - 1
+        # The end column is ignored
+        # cov$end[invalidList] = cov$end[invalidList] - 1
     }
 
-    message('Building final dataframe')
     # Pull out and rename relevant columns
-    final = cov[,c('chromBase','chrom','start','strand','coverage','freqC','freqT')]
+    final = cov[,c('chromBase','chrom','start','strand','coverage','numCs','numTs')]
+    # Matching column names from methylSigReadData
     colnames(final) = c('id','chr','start','strand','coverage','numCs','numTs')
 
-    message('Converting strand to factor')
     # Make strand column a factor.
     final$strand = as.factor(final$strand)
     ## When only F observed in strand column, as.factor convert F to FALSE
     levels(final$strand) = list("+"="F","-"="R","*"="*", "+"="FALSE")
 
-    message('Filtering final based on coverage > 0')
     final = final[final$coverage > 0,]
 
     return(final)
@@ -1532,12 +1522,14 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
     ####
     names(chr) <- c("id",  "chr", "start", "strand", "coverage", "numCs", "numTs")
 
+    # At this point, numCs and numTs are actually freqC and freqT from methylKit.
     invalidList = which(chr$numCs + chr$numTs < 95)
     if(length(invalidList) > 0) {
         cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
         chr$coverage[invalidList] = 0
     }
 
+    # Now numCs and numTs have frequencies replaced by counts
     chr$numCs<- round(chr$numCs * chr$coverage / 100)
     chr$numTs<- round(chr$numTs * chr$coverage / 100)
     size = NROW(chr$base)
@@ -1560,7 +1552,8 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
     if(destranded == TRUE) {
         invalidList = which(chr$strand == "-" | chr$strand == "R")
         chr$start[invalidList] = chr$start[invalidList] - 1
-        chr$end[invalidList] = chr$end[invalidList] - 1
+        # The files coming from methylKit don't have end columns
+        # chr$end[invalidList] = chr$end[invalidList] - 1
     }
 
     #chr$chr = as.factor(chr$chr)
