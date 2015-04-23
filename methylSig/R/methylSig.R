@@ -24,7 +24,7 @@ write.methylSigDiff <- function(object, ...) {
 #'
 #' This function calculates differential methylation statistics using a binomial-based approach. See `Warning' message below.
 #'
-#' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{\link[methylKit]{calculateDiffMeth}} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{\link[methylKit]{calculateDiffMeth} function.
+#' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{\link[methylKit]{calculateDiffMeth}} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{\link[methylKit]{calculateDiffMeth}} function.
 #'
 #' @param meth A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.
 #' @param groups A vector of two numbers specify two groups to compare. See \code{treatment} argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
@@ -1354,10 +1354,10 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     }
 
     if(filterSNPs) {
-        data('CT_index_hg19')
+        data('CT_SNPs_hg19')
         cov_gr = GRanges(seqnames=cov$chrom, ranges=IRanges(start=cov$start, end=cov$start + 1))
 
-        overlaps = findOverlaps(cov_gr, CT_index)
+        overlaps = findOverlaps(cov_gr, CT_SNPs_hg19)
         invalidList = overlaps@queryHits
 
         cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
@@ -1535,10 +1535,10 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
     size = NROW(chr$base)
 
     if(filterSNPs) {
-        data('CT_index_hg19')
+        data('CT_SNPs_hg19')
         chr_gr = GRanges(seqnames=chr$chrom, ranges=IRanges(start=chr$start, end=chr$start + 1))
 
-        overlaps = findOverlaps(chr_gr, CT_index)
+        overlaps = findOverlaps(chr_gr, CT_SNPs_hg19)
         invalidList = overlaps@queryHits
 
         cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")

@@ -9,9 +9,9 @@
 #'
 #' @docType data
 #' @keywords datasets
-#' @name data_CT_index_hg19
-#' @aliases CT_index
-#' @usage data(CT_index_hg19)
+#' @name data_CT_SNPs_hg19
+#' @aliases CT_SNPs_hg19
+#' @usage data(CT_SNPs_hg19)
 #' @format A GenomicRanges object of length 1,321,463
 #' @source \url{ftp://ftp.1000genomes.ebi.ac.uk//vol1/ftp/release/20130502/ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.vcf.gz}
 NULL

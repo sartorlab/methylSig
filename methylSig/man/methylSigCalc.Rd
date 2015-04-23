@@ -10,7 +10,7 @@ methylSigCalc(meth, groups = c(Treatment = 1, Control = 0),
   weightFunc = methylSig_weightFunc, T.approx = TRUE, num.cores = 1)
 }
 \arguments{
-\item{meth}{A `methylSigData' object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.}
+\item{meth}{A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.}
 
 \item{groups}{A vector of two numbers specify two groups to compare. See `treatment' argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.}
 
@@ -22,7 +22,7 @@ methylSigCalc(meth, groups = c(Treatment = 1, Control = 0),
 
 \item{local.meth}{A logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.}
 
-\item{winsize.meth}{A logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.}
+\item{winsize.meth}{a number to specify the window size in basepairs for local methylation level estimation. The group methylation level at the particular location LOC is calculated using information from LOC - winsize.meth to LOC + winsize.meth. This argument is only activated when local.meth=TRUE. Default is 200.}
 
 \item{min.per.group}{A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylated region.  If it is a single number, both groups will use it as the minimum requried number of samples. Default is c(3,3).}
 

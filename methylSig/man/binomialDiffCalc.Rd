@@ -15,13 +15,13 @@ binomialDiffCalc(meth, groups = c(Treatment = 1, Control = 0),
 \item{min.per.group}{A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylation region. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
 }
 \value{
-A `methylSigDiff' object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
+A \code{\link{methylSigDiff-class}} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
 }
 \description{
 This function calculates differential methylation statistics using a binomial-based approach. See `Warning' message below.
 }
 \details{
-This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{calculateDiffMeth} function.
+This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{\link[methylKit]{calculateDiffMeth}} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{\link[methylKit]{calculateDiffMeth}} function.
 }
 \section{Warning}{
  This function does not take into account the variability among samples in each group being compared.
