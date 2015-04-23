@@ -24,13 +24,13 @@ write.methylSigDiff <- function(object, ...) {
 #'
 #' This function calculates differential methylation statistics using a binomial-based approach. See `Warning' message below.
 #'
-#' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{calculateDiffMeth} function.
+#' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{\link[methylKit]{calculateDiffMeth}} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{\link[methylKit]{calculateDiffMeth} function.
 #'
 #' @param meth A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.
 #' @param groups A vector of two numbers specify two groups to compare. See \code{treatment} argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
 #' @param min.per.group A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylation region. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.
 #'
-#' @return A `methylSigDiff' object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
+#' @return A \code{\link{methylSigDiff-class}} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
 #'
 #' @section Warning: This function does not take into account the variability among samples in each group being compared.
 #'
@@ -167,6 +167,7 @@ methylSigTileTFBS <- function(meth, tfbsInfo) {
 #    Column: Locations    #
 ###########################
 
+# Called by methylSig_dataProcess
 methylSig_derivativePhi <- function(phi,lCreads,lTreads,mu,weight) {
     derivative <- 0
     if(NCOL(lCreads) == 1) {
@@ -197,6 +198,7 @@ methylSig_derivativePhi <- function(phi,lCreads,lTreads,mu,weight) {
     derivative
 }
 
+# Called by methylSig_dataProcess
 methylSig_derivativeMu <- function(mu, lCreads, lTreads, phi, weight) {
     derivative <- 0
     if(NCOL(lCreads) == 1) {
@@ -219,7 +221,7 @@ methylSig_derivativeMu <- function(mu, lCreads, lTreads, phi, weight) {
     derivative
 }
 
-
+# Called by methylSig_dataProcess
 methylSig_logLik  <- function(mu,phi,lCreads, lTreads, weight) {
     llik  <- 0
     if(NCOL(lCreads) == 1) {
@@ -241,8 +243,10 @@ methylSig_logLik  <- function(mu,phi,lCreads, lTreads, weight) {
 }
 
 ##### Weight function: tri-weight
+# Called in methylSigCalc
 methylSig_weightFunc <- function(u) (1-u^2)^3
 
+# Called by methylSigCalc
 methylSig_dataProcess <- function(loc,obj){
     minMu = 0
     maxMu = 1
@@ -337,13 +341,13 @@ methylSig_dataProcess <- function(loc,obj){
 #'
 #' The function calculates differential methylation statistics between two groups of samples. The function uses Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. Users who wish to tile their data and test for differentially methylated regions (DMRs) instead DMCs should first use the \code{\link{methylSigTile}} function before using this function.
 #'
-#' @param meth A `methylSigData' object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.
+#' @param meth A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.
 #' @param groups A vector of two numbers specify two groups to compare. See `treatment' argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
 #' @param dispersion A value indicating which group or groups are used to estimate the variance (dispersion). If groups are defined as c(Treatment=1,Control=0), dispersion can take values "Treatment", "Control", 1, 0 or "both". Default is "both".
 #' @param local.disp A logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.
 #' @param winsize.disp A number to specify the window size in basepairs for local dispersion estimation. The dispersion (variance) parameter of the groups at the particular location LOC is calculated using information from LOC - winsize.disp to LOC + winsize.disp. This argument is only activated when local.disp=TRUE. Default is 200.
 #' @param local.meth A logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.
-#' @param winsize.meth A logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.
+#' @param winsize.meth a number to specify the window size in basepairs for local methylation level estimation. The group methylation level at the particular location LOC is calculated using information from LOC - winsize.meth to LOC + winsize.meth. This argument is only activated when local.meth=TRUE. Default is 200.
 #' @param min.per.group A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylated region.  If it is a single number, both groups will use it as the minimum requried number of samples. Default is c(3,3).
 #' @param weightFunc A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as function(u) = (1-u^2)^3. Function value and range of parameter for weight function should be from 0 to 1.
 #' @param T.approx A logical value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (T.approx = FALSE) is recommended when the sample size is large.  Default is TRUE.
@@ -593,16 +597,16 @@ methylSigPlot <-function(meth, chr, loc.range, groups=c("Treatment"=1,"Control"=
         yHLoc = yLLoc+GAPS_DATA_ANNOT
     }
 
-###############
-###############
-###############
+    ###############
+    ###############
+    ###############
     CPG_ISLAND_COLOR="chartreuse4"
     CPG_SHORE_COLOR="green3"
     CPG_SHELVE_COLOR="gold2"
     CPG_SEA_COLOR="BLUE"
-###############
-###############
-###############
+    ###############
+    ###############
+    ###############
 
     if(!tooWide && !missing(cpgInfo)) {
         whichChr = which(cpgInfo[[1]]$chr == chr)
@@ -890,31 +894,31 @@ getCpGInfo <-function(infile) {
 
     CpGInfo[[1]] = data.frame(chr = unique(CpGInfo[[2]]$chr))
     CpGInfo[[1]]$start = match(CpGInfo[[1]]$chr, CpGInfo[[2]]$chr)
-####### CpG island exact ending site
+    ####### CpG island exact ending site
     CpGInfo[[1]]$end = c(CpGInfo[[1]]$start[-1]-1,NROW(CpGInfo[[2]]))-1
 
     CpGInfo
 }
 
+# Called by methylSig.tfbsEnrichTest
 getTFBSCountByChrom <- function(tfbsInfo, startEnd, listToCount) {
-###
     maxOverLaps = 200
     cpgId = findInterval(listToCount,tfbsInfo[[2]]$chromStart[startEnd])
     cpgIdAll = pmax(0,rep(cpgId,each=maxOverLaps)+rep(-(maxOverLaps-1):0,NROW(cpgId)))
     whichValid = which(rep(listToCount,each=maxOverLaps)<=c(0,tfbsInfo[[2]]$chromEnd[startEnd])[cpgIdAll+1])
 
-#### In case of that not all slots have data
+    #### In case of that not all slots have data
     table(c(1:NROW(levels(tfbsInfo[[2]]$name)),tfbsInfo[[2]]$name[startEnd][cpgIdAll[whichValid]]))-1
 }
 
+# Called by methylSig.tfbsEnrichTest
 is.TFBSByChrom <- function(tfbsInfo, startEnd, listToCount) {
-###
     maxOverLaps = 200
     cpgId = findInterval(listToCount,tfbsInfo[[2]]$chromStart[startEnd])
     cpgIdAll = pmax(0,rep(cpgId,each=maxOverLaps)+rep(-(maxOverLaps-1):0,NROW(cpgId)))
     whichValid = rep(listToCount,each=maxOverLaps)<=c(0,tfbsInfo[[2]]$chromEnd[startEnd])[cpgIdAll+1]
 
-#### In case of that not all slots have data
+    #### In case of that not all slots have data
     colSums(matrix(whichValid, nrow=maxOverLaps))>0
 }
 
@@ -1006,6 +1010,7 @@ cpgAnnotation <- function(cpgInfo, myDiff) {
     retList
 }
 
+# Called by cpgAnnotation
 cpgAnnotationByChrom <- function(cpgInfo, startEnd, listToAnnotat) {
     CpG_shelf = 4000
     CpG_shore = 2000
@@ -1048,14 +1053,14 @@ cpgAnnotationByChrom <- function(cpgInfo, startEnd, listToAnnotat) {
 #' @export
 refGeneAnnotationPlot <- function(listFrom, main="Plot", priority=c("cds", "promoter","noncoding", "5'utr", "3'utr")) {
     countInfo= rep(NA, NCOL(listFrom))
-#####
-INTERGENIC = 0
-INTRON     = 1
-UTR3       = 2
-UTR5       = 3
-NONCODING  = 4
-CDS        = 5
-PROMOTER   = 6
+
+    INTERGENIC = 0
+    INTRON     = 1
+    UTR3       = 2
+    UTR5       = 3
+    NONCODING  = 4
+    CDS        = 5
+    PROMOTER   = 6
 
     countInfo[colSums(listFrom)==0] = INTERGENIC
     countInfo[colSums(listFrom)> 0 & (listFrom["exon",]==FALSE)] = INTRON
@@ -1075,7 +1080,6 @@ PROMOTER   = 6
             stop("priority includes \"cds\", \"promoter\", \"noncoding\", \"utr5\" and \"utr3\" only")
         }
     }
-
 
     slices <- c(sum(countInfo==INTERGENIC,na.rm=TRUE),sum(countInfo==INTRON, na.rm=TRUE)) ### integenic and intron
     lbls <- c("Intergenic", "Intron")
@@ -1147,6 +1151,7 @@ refGeneAnnotation <- function(refGeneInfo, myDiff) {
     refInfoCountInfo
 }
 
+# Called by refGeneAnnotation
 refGeneAnnotationByChrom <- function(refGeneInfo, startEnd, listToAnnotat) {
     ### intergenic
     ret <- matrix(FALSE, nrow=6, ncol=NROW(listToAnnotat))
@@ -1306,10 +1311,10 @@ methylSig.tfbsEnrichTest <- function(myDiff, dmcList, tfbsInfo, plot=TRUE, max.p
     pvalue
 }
 
-# Added Apr. 1, 2015
 # Read pair of .cov files from bismark_methylation_extractor to build table methylSig expects
 # fileList is a list of files where each entry in the list consists of a vector pair of files
 # *bismark.cov is first and *cytosine.cov is second.
+# Called by readBismarkData
 readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, destranded, filterSNPs, quiet=FALSE) {
     # Read files and minimize memory footprint with colClasses
     message(sprintf('Reading %s',fileList[[fileIndex]][1]))
@@ -1518,10 +1523,7 @@ readBismarkData = function(bismarkCovFiles, cytosineCovFiles,
                       resolution=resolution, sample.filenames=fileList,options=options)
 }
 
-########################################
-###     Revised Apr. 18, 2015      #####
-########################################
-
+# Called by methylSigReadData
 methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, maxCount, destranded, filterSNPs, quiet=FALSE) {
     if(quiet==FALSE) cat("Reading file (", fileIndex, "/", NROW(fileList),") -- ", fileList[[fileIndex]], "\n", sep="")
     chr = read.table(fileList[[fileIndex]], header=header, stringsAsFactors=FALSE)
@@ -1541,7 +1543,6 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
     size = NROW(chr$base)
 
     if(filterSNPs) {
-        message('Filtering based on C > T SNPs')
         data('CT_index_hg19')
         chr_gr = GRanges(seqnames=chr$chrom, ranges=IRanges(start=chr$start, end=chr$start + 1))
 
@@ -1698,6 +1699,7 @@ methylSigReadData = function(fileList,
                       resolution=resolution, sample.filenames=fileList,options=options)
 }
 
+# Not called
 methylSigDf <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.group=c(3,3)) {
     treatment = slot(meth, "treatment")
 
