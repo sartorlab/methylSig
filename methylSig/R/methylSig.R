@@ -1319,17 +1319,17 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     # Read files and minimize memory footprint with colClasses
     message(sprintf('Reading %s',fileList[[fileIndex]][1]))
     cov = read.table(fileList[[fileIndex]][1], sep='\t', header=F,
-        col.names=c('chrom','start','end','perc_meth','numCs','numTs'),
+        col.names=c('chr','start','end','perc_meth','numCs','numTs'),
         colClasses=c('character','numeric','NULL','NULL','numeric','numeric'),stringsAsFactors=F)
 
     message(sprintf('Reading %s',fileList[[fileIndex]][2]))
     cyt = read.table(fileList[[fileIndex]][2], sep='\t', header=F,
-        col.names=c('chrom','pos','strand','numCs','numTs','C_context','tri_context'),
+        col.names=c('chr','pos','strand','numCs','numTs','C_context','tri_context'),
         colClasses=c('character','numeric','character','NULL','NULL','NULL','NULL'), stringsAsFactors=F)
 
     # Create the chromBase column which matching will be done on
-    cov$chromBase = paste(cov$chrom, cov$start, sep='.')
-    cyt$chromBase = paste(cyt$chrom, cyt$pos, sep='.')
+    cov$chromBase = paste(cov$chr, cov$start, sep='.')
+    cyt$chromBase = paste(cyt$chr, cyt$pos, sep='.')
 
     # Extract strand from the cytosine report
     # This is the only purpose of the cytosine report
@@ -1355,7 +1355,7 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
 
     if(filterSNPs) {
         data('CT_SNPs_hg19')
-        cov_gr = GRanges(seqnames=cov$chrom, ranges=IRanges(start=cov$start, end=cov$start + 1))
+        cov_gr = GRanges(seqnames=cov$chr, ranges=IRanges(start=cov$start, end=cov$start))
 
         overlaps = findOverlaps(cov_gr, CT_SNPs_hg19)
         invalidList = overlaps@queryHits
@@ -1366,7 +1366,8 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     }
 
     # Set coverage of sites exceeding maxCount or not exceeding minCount to 0
-    invalidList = (cov$coverage > maxCount | cov$coverage < minCount)
+    invalidList = which(cov$coverage > maxCount | cov$coverage < minCount)
+    cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
     cov$coverage[invalidList] = 0
 
     # In case of destranded, shift reverse strand CpG sites to match forward strand
@@ -1378,7 +1379,7 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     }
 
     # Pull out and rename relevant columns
-    final = cov[,c('chromBase','chrom','start','strand','coverage','numCs','numTs')]
+    final = cov[,c('chromBase','chr','start','strand','coverage','numCs','numTs')]
     # Matching column names from methylSigReadData
     colnames(final) = c('id','chr','start','strand','coverage','numCs','numTs')
 
@@ -1536,7 +1537,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
 
     if(filterSNPs) {
         data('CT_SNPs_hg19')
-        chr_gr = GRanges(seqnames=chr$chrom, ranges=IRanges(start=chr$start, end=chr$start + 1))
+        chr_gr = GRanges(seqnames=chr$chr, ranges=IRanges(start=chr$start, end=chr$start))
 
         overlaps = findOverlaps(chr_gr, CT_SNPs_hg19)
         invalidList = overlaps@queryHits
@@ -1546,7 +1547,8 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
         chr$coverage[invalidList] = 0
     }
 
-    invalidList = (chr$coverage > maxCount | chr$coverage < minCount)
+    invalidList = which(chr$coverage > maxCount | chr$coverage < minCount)
+    cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
     chr$coverage[invalidList] = 0
 
     if(destranded == TRUE) {
