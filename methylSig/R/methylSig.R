@@ -24,7 +24,7 @@ write.methylSigDiff <- function(object, ...) {
 #'
 #' This function calculates differential methylation statistics using a binomial-based approach. See `Warning' message below.
 #'
-#' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{\link[methylKit]{calculateDiffMeth}} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{\link[methylKit]{calculateDiffMeth}} function.
+#' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{methylKit::calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{methylKit::calculateDiffMeth} function.
 #'
 #' @param meth A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.
 #' @param groups A vector of two numbers specify two groups to compare. See \code{treatment} argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
@@ -1349,7 +1349,7 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     # proportion of sites that are removed.
     invalidList = which( ((cov$numCs + cov$numTs) / cov$coverage) < 0.95)
     if(length(invalidList) > 0) {
-        cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
+        cat("(", fileIndex,"/", NROW(fileList), ") ", "Frequency Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
         cov$coverage[invalidList] = 0
     }
 
@@ -1360,14 +1360,14 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
         overlaps = findOverlaps(cov_gr, CT_SNPs_hg19)
         invalidList = overlaps@queryHits
 
-        cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
+        cat("(", fileIndex,"/", NROW(fileList), ") ", "SNP Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
 
         cov$coverage[invalidList] = 0
     }
 
     # Set coverage of sites exceeding maxCount or not exceeding minCount to 0
     invalidList = which(cov$coverage > maxCount | cov$coverage < minCount)
-    cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
+    cat("(", fileIndex,"/", NROW(fileList), ") ", "Count Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
     cov$coverage[invalidList] = 0
 
     # In case of destranded, shift reverse strand CpG sites to match forward strand
@@ -1431,10 +1431,10 @@ readBismarkData = function(bismarkCovFiles, cytosineCovFiles,
     n.files = length(fileList)
 
     if(num.cores > 1) {
-        chrList <- mclapply(1:n.files, readBismarkOutputSingleFile, fileList, minCount=minCount, maxCount=maxCount, destranded, quiet, mc.cores=num.cores)
+        chrList <- mclapply(1:n.files, readBismarkOutputSingleFile, fileList, minCount=minCount, maxCount=maxCount, destranded, filterSNPs, quiet, mc.cores=num.cores)
     } else {
         chrList = list()
-        for(i in 1:n.files) chrList[[i]] =  readBismarkOutputSingleFile(i, fileList, minCount=minCount, maxCount=maxCount, destranded, quiet)
+        for(i in 1:n.files) chrList[[i]] =  readBismarkOutputSingleFile(i, fileList, minCount=minCount, maxCount=maxCount, destranded, filterSNPs, quiet)
     }
 
     MAXBASE = 0
@@ -1526,14 +1526,13 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
     # At this point, numCs and numTs are actually freqC and freqT from methylKit.
     invalidList = which(chr$numCs + chr$numTs < 95)
     if(length(invalidList) > 0) {
-        cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
+        cat("(", fileIndex,"/", NROW(fileList), ") ", "Frequency Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
         chr$coverage[invalidList] = 0
     }
 
     # Now numCs and numTs have frequencies replaced by counts
     chr$numCs<- round(chr$numCs * chr$coverage / 100)
     chr$numTs<- round(chr$numTs * chr$coverage / 100)
-    size = NROW(chr$base)
 
     if(filterSNPs) {
         data('CT_SNPs_hg19')
@@ -1542,13 +1541,13 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
         overlaps = findOverlaps(chr_gr, CT_SNPs_hg19)
         invalidList = overlaps@queryHits
 
-        cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
+        cat("(", fileIndex,"/", NROW(fileList), ") ", "SNP Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
 
         chr$coverage[invalidList] = 0
     }
 
     invalidList = which(chr$coverage > maxCount | chr$coverage < minCount)
-    cat("(", fileIndex,"/", NROW(fileList), ") ", "Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
+    cat("(", fileIndex,"/", NROW(fileList), ") ", "Count Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
     chr$coverage[invalidList] = 0
 
     if(destranded == TRUE) {
@@ -1614,10 +1613,10 @@ methylSigReadData = function(fileList,
     n.files = NROW(fileList)
 
     if(num.cores > 1) {
-        chrList <- mclapply(1:n.files, methylSigReadDataSingleFile, fileList, header = header, minCount=minCount, maxCount=maxCount, destranded, quiet, mc.cores=num.cores)
+        chrList <- mclapply(1:n.files, methylSigReadDataSingleFile, fileList, header = header, minCount=minCount, maxCount=maxCount, destranded, filterSNPs, quiet, mc.cores=num.cores)
     } else {
         chrList = list()
-        for(i in 1:n.files) chrList[[i]] =  methylSigReadDataSingleFile(i, fileList, header=header, minCount=minCount, maxCount=maxCount, destranded, quiet)
+        for(i in 1:n.files) chrList[[i]] =  methylSigReadDataSingleFile(i, fileList, header=header, minCount=minCount, maxCount=maxCount, destranded, filterSNPs, quiet)
     }
 
 

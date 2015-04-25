@@ -2,7 +2,6 @@
 % Please edit documentation in R/methods.R
 \docType{class}
 \name{methylSigDiff-class}
-\alias{[}
 \alias{[,methylSigDiff,ANY,character-method}
 \alias{[,methylSigDiff,ANY,missing-method}
 \alias{methylSigDiff}
