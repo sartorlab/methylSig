@@ -15,7 +15,7 @@
 #   NBM_1_CpG.txt
 #   NBM_2_CpG.txt
 #   NBM_3_CpG.txt
-    msrd_files = list.files(pattern='CpG.txt')
+    msrd_files = list.files(pattern='CpG.txt.gz')
 
 # Files used to test readBismarkData (only chr21)
 #   IDH2mut_1_chr21_errbs.fastq_bismark_sorted.bismark.cov
@@ -31,7 +31,7 @@
 #   NBM_2_chr21_errbs.fastq_bismark_sorted.CpG_report.txt
 #   NBM_3_chr21_errbs.fastq_bismark_sorted.bismark.cov
 #   NBM_3_chr21_errbs.fastq_bismark_sorted.CpG_report.txt
-    rbd_cov_files = list.files(pattern='bismark.cov')
+    rbd_cov_files = list.files(pattern='bismark.cov.gz')
     rbd_cyt_files = list.files(pattern='CpG_report.txt')
 
 # Testing methylSigReadData
@@ -112,7 +112,33 @@
     any(test_msrd@data.start %in% start(CT_SNPs_hg19_chr21)) == TRUE
     class(test_msrd)[1] == 'methylSigData'
 
-#   Test filterSNPs=T
+#   Test filterSNPs=T and destranded=F
+    test_msrd = methylSigReadData(
+        fileList = msrd_files,
+        sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
+        assembly = 'hg19',
+        pipeline = 'bismark and methylKit',
+        header = TRUE,
+        context = 'CpG',
+        resolution = "base",
+        treatment = c(1,1,1,0,0,0),
+        destranded = FALSE,
+        maxCount = 500,
+        minCount = 10,
+        filterSNPs = TRUE,
+        num.cores = 6,
+        quiet = FALSE)
+
+    # Expectations
+    min(test_msrd@data.coverage,na.rm=T) == 10
+    max(test_msrd@data.coverage,na.rm=T) < 500*2
+    any(test_msrd@data.start %in% start(CT_SNPs_hg19_chr21)) == FALSE
+    class(test_msrd)[1] == 'methylSigData'
+
+#   Test filterSNPs=T and destranded=T
+#       The any(test_msrd@data.start %in% start(CT_SNPs_hg19_chr21)) == FALSE
+#       test fails because destranding shifts C > T + 1 sites back to the C > T
+#       site.
     test_msrd = methylSigReadData(
         fileList = msrd_files,
         sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
@@ -224,7 +250,33 @@
     any(test_rbd@data.start %in% start(CT_SNPs_hg19_chr21)) == TRUE
     class(test_rbd)[1] == 'methylSigData'
 
-#   Test filterSNPs=T and filterSNPs=F
+#   Test filterSNPs=T and destranded=F
+    test_rbd = readBismarkData(
+        bismarkCovFiles = rbd_cov_files,
+        cytosineCovFiles = rbd_cyt_files,
+        sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
+        assembly = 'hg19',
+        pipeline = 'bismark',
+        context = 'CpG',
+        resolution = "base",
+        treatment = c(1,1,1,0,0,0),
+        destranded = FALSE,
+        maxCount = 500,
+        minCount = 10,
+        filterSNPs = TRUE,
+        num.cores = 6,
+        quiet = FALSE)
+
+    # Expectations
+    min(test_rbd@data.coverage,na.rm=T) == 10
+    max(test_rbd@data.coverage,na.rm=T) <= 500*2
+    any(test_rbd@data.start %in% start(CT_SNPs_hg19_chr21)) == FALSE
+    class(test_rbd)[1] == 'methylSigData'
+
+#   Test filterSNPs=T and destranded=T
+#       The any(test_rbd@data.start %in% start(CT_SNPs_hg19_chr21)) == FALSE
+#       test fails because destranding shifts C > T + 1 sites back to the C > T
+#       site.
     test_rbd = readBismarkData(
         bismarkCovFiles = rbd_cov_files,
         cytosineCovFiles = rbd_cyt_files,
@@ -246,6 +298,7 @@
     max(test_rbd@data.coverage,na.rm=T) <= 500*2
     any(test_rbd@data.start %in% start(CT_SNPs_hg19_chr21)) == FALSE
     class(test_rbd)[1] == 'methylSigData'
+
 
 #   Test for differences in choice of read function
     test_msrd = methylSigReadData(
