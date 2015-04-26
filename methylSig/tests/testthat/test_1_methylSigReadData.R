@@ -5,13 +5,13 @@ context('Test methylSigReadData')
     CT_SNPs_hg19_chr21 = CT_SNPs_hg19[seqnames(CT_SNPs_hg19) == 'chr21']
 
 # Files used to test methylSigReadData (only chr21)
-#   IDH2_1_CpG.txt
-#   IDH2_2_CpG.txt
-#   IDH2_3_CpG.txt
+#   IDH2_1_CpG.txt.gz
+#   IDH2_2_CpG.txt.gz
+#   IDH2_3_CpG.txt.gz
 #
-#   NBM_1_CpG.txt
-#   NBM_2_CpG.txt
-#   NBM_3_CpG.txt
+#   NBM_1_CpG.txt.gz
+#   NBM_2_CpG.txt.gz
+#   NBM_3_CpG.txt.gz
     msrd_files = c(
         system.file('extdata', 'IDH2_1_CpG.txt.gz', package='methylSig'),
         system.file('extdata', 'IDH2_2_CpG.txt.gz', package='methylSig'),
