@@ -1353,18 +1353,6 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
         cov$coverage[invalidList] = 0
     }
 
-    if(filterSNPs) {
-        data('CT_SNPs_hg19')
-        cov_gr = GRanges(seqnames=cov$chr, ranges=IRanges(start=cov$start, end=cov$start))
-
-        overlaps = findOverlaps(cov_gr, CT_SNPs_hg19)
-        invalidList = overlaps@queryHits
-
-        cat("(", fileIndex,"/", NROW(fileList), ") ", "SNP Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
-
-        cov$coverage[invalidList] = 0
-    }
-
     # Set coverage of sites exceeding maxCount or not exceeding minCount to 0
     invalidList = which(cov$coverage > maxCount | cov$coverage < minCount)
     cat("(", fileIndex,"/", NROW(fileList), ") ", "Count Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
@@ -1376,6 +1364,18 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
         cov$start[invalidList] = cov$start[invalidList] - 1
         # The end column is ignored
         # cov$end[invalidList] = cov$end[invalidList] - 1
+    }
+
+    if(filterSNPs) {
+        data('CT_SNPs_hg19')
+        cov_gr = GRanges(seqnames=cov$chr, ranges=IRanges(start=cov$start, end=cov$start))
+
+        overlaps = findOverlaps(cov_gr, CT_SNPs_hg19)
+        invalidList = overlaps@queryHits
+
+        cat("(", fileIndex,"/", NROW(fileList), ") ", "SNP Invalid List: ", NROW(invalidList), "/", NROW(cov), "=", signif(NROW(invalidList)/NROW(cov),3), "\n", sep="")
+
+        cov$coverage[invalidList] = 0
     }
 
     # Pull out and rename relevant columns
@@ -1534,6 +1534,17 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
     chr$numCs<- round(chr$numCs * chr$coverage / 100)
     chr$numTs<- round(chr$numTs * chr$coverage / 100)
 
+    invalidList = which(chr$coverage > maxCount | chr$coverage < minCount)
+    cat("(", fileIndex,"/", NROW(fileList), ") ", "Count Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
+    chr$coverage[invalidList] = 0
+
+    if(destranded == TRUE) {
+        invalidList = which(chr$strand == "-" | chr$strand == "R")
+        chr$start[invalidList] = chr$start[invalidList] - 1
+        # The files coming from methylKit don't have end columns
+        # chr$end[invalidList] = chr$end[invalidList] - 1
+    }
+
     if(filterSNPs) {
         data('CT_SNPs_hg19')
         chr_gr = GRanges(seqnames=chr$chr, ranges=IRanges(start=chr$start, end=chr$start))
@@ -1544,17 +1555,6 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
         cat("(", fileIndex,"/", NROW(fileList), ") ", "SNP Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
 
         chr$coverage[invalidList] = 0
-    }
-
-    invalidList = which(chr$coverage > maxCount | chr$coverage < minCount)
-    cat("(", fileIndex,"/", NROW(fileList), ") ", "Count Invalid List: ", NROW(invalidList), "/", NROW(chr), "=", signif(NROW(invalidList)/NROW(chr),3), "\n", sep="")
-    chr$coverage[invalidList] = 0
-
-    if(destranded == TRUE) {
-        invalidList = which(chr$strand == "-" | chr$strand == "R")
-        chr$start[invalidList] = chr$start[invalidList] - 1
-        # The files coming from methylKit don't have end columns
-        # chr$end[invalidList] = chr$end[invalidList] - 1
     }
 
     #chr$chr = as.factor(chr$chr)

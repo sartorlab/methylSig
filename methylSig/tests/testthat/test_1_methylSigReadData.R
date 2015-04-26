@@ -139,7 +139,7 @@ context('Test methylSigReadData')
 
     # Expectations
     test_that('filterSNPs works when destranded',{
-        expect_equal(any(test_msrd@data.start %in% start(CT_SNPs_hg19_chr21)), TRUE)
+        expect_equal(any(test_msrd@data.start %in% start(CT_SNPs_hg19_chr21)), FALSE)
     })
 
     test_that('Object of methylSigData class is returned destranded and filterSNPs',{

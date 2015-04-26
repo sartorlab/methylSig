@@ -1,13 +1,12 @@
 Package: methylSig
 Type: Package
 Title: a whole genome DNA methylation analysis pipline
-Version: 0.1.10
-Date: 2015-04-25 10:35
+Version: 0.1.11
+Date: 2015-04-26 11:15
 Author: Yongseok Park
 Maintainer: Who to complain to <yongpark@pitt.edu>
 Description: MethylSig is a method for testing for differentially methylated cytosines (DMCs) or regions (DMRs) in whole-genome bisulfite sequencing (bis-seq) or reduced representation bisulfite sequencing (RRBS) experiments. MethylSig uses a beta binomial model to test for significant differences between groups of samples. Several options exist for either site-specific or sliding window tests, combining strands, and for variance estimation. It allows annotating the resulting regions to multiple genome features, and visualizing the results for chosen genomic regions along with supporting genomic information.
 License: GPL-3
 Depends: R (>= 2.10), methods, boot, parallel, GenomicRanges
-Suggests: gplots,
-    testthat
-Packaged: 2015-04-25 10:35; rcavalca
+Suggests: gplots, testthat
+Packaged: 2015-04-26 11:15; rcavalca
