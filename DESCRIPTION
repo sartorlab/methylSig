@@ -1,6 +1,6 @@
 Package: methylSig
 Type: Package
-Title: a whole genome DNA methylation analysis pipline
+Title: a whole genome DNA methylation analysis pipeline
 Version: 0.1.12
 Date: 2015-04-26 12:15
 Author: Yongseok Park
