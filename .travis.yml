@@ -10,6 +10,7 @@ before_install:
   - ./travis-tool.sh bootstrap
 
 install:
+  - ./travis-tool.sh install_r gdata
   - ./travis-tool.sh install_r gplots
   - ./travis-tool.sh install_r testthat
   - ./travis-tool.sh install_bioc GenomicRanges
@@ -21,7 +22,10 @@ after_failure:
   - ./travis-tool.sh dump_logs
 
 env:
+  global:
+    - BIOC_USE_DEVEL="FALSE"
   - WARNINGS_ARE_ERRORS=0
+
 
 notifications:
   email:
