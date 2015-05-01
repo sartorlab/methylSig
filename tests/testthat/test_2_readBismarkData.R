@@ -54,7 +54,7 @@ context('Test methylSigReadData')
                 maxCount = 500,
                 minCount = 10,
                 filterSNPs = FALSE,
-                num.cores = 6,
+                num.cores = 2,
                 quiet = FALSE),
             throws_error('does not match the number'))
         })
@@ -73,7 +73,7 @@ context('Test methylSigReadData')
         maxCount = 500,
         minCount = 20,
         filterSNPs = FALSE,
-        num.cores = 6,
+        num.cores = 2,
         quiet = FALSE)
 
     # Expectations
@@ -110,7 +110,7 @@ context('Test methylSigReadData')
         maxCount = 500,
         minCount = 10,
         filterSNPs = FALSE,
-        num.cores = 6,
+        num.cores = 2,
         quiet = FALSE)
 
     # Expectations
@@ -142,7 +142,7 @@ context('Test methylSigReadData')
         maxCount = 500,
         minCount = 10,
         filterSNPs = TRUE,
-        num.cores = 6,
+        num.cores = 2,
         quiet = FALSE)
 
     # Expectations
@@ -168,7 +168,7 @@ context('Test methylSigReadData')
         maxCount = 500,
         minCount = 10,
         filterSNPs = TRUE,
-        num.cores = 6,
+        num.cores = 2,
         quiet = FALSE)
 
     # Expectations
