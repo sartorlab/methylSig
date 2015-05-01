@@ -10,7 +10,7 @@ methylSigCalc(meth, groups = c(Treatment = 1, Control = 0),
   weightFunc = methylSig_weightFunc, T.approx = TRUE, num.cores = 1)
 }
 \arguments{
-\item{meth}{A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.}
+\item{meth}{A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.}
 
 \item{groups}{A vector of two numbers specify two groups to compare. See `treatment' argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.}
 
@@ -33,7 +33,7 @@ methylSigCalc(meth, groups = c(Treatment = 1, Control = 0),
 \item{num.cores}{An integer denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores).}
 }
 \value{
-`methylSigDiff' object containing the differential methylation statistics and locations. p.adjust with method="BH" option is used for P-value correction.
+\code{methylSigDiff-class} object containing the differential methylation statistics and locations. p.adjust with method="BH" option is used for P-value correction.
 }
 \description{
 The function calculates differential methylation statistics between two groups of samples. This is the main function of the methylSig package, and the method most users should use to test for DMCs or DMRs. The function uses a Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group.

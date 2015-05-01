@@ -7,9 +7,9 @@
 methylSigWeightedAutoCorr(chr, start, methRates, coverage, lags = 2)
 }
 \arguments{
-\item{chr}{A single string indicating chromosome from `methylSigData' or `methylSigDiff' objects.}
+\item{chr}{A single string indicating chromosome from \code{methylSigData-class} or \code{link{methylSigDiff-class}} objects.}
 
-\item{start}{A vector of CpG site loci from `methylSigData' or `methylSigDiff' objects.}
+\item{start}{A vector of CpG site loci from \code{methylSigData-class} or \code{link{methylSigDiff-class}} objects.}
 
 \item{methRates}{A numeric vector of methylation rates at each CpG site.}
 

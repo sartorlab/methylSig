@@ -8,7 +8,7 @@ methylSig.tfbsEnrichTest(myDiff, dmcList, tfbsInfo, plot = TRUE,
   max.plot.num = 10, main = "tfbs Enrichment")
 }
 \arguments{
-\item{myDiff}{methylSigDiff object that contains all CpG sites that are tested for differential methylation.}
+\item{myDiff}{\code{methylSigDiff-class} object that contains all CpG sites that are tested for differential methylation.}
 
 \item{dmcList}{A boolean vector of the same length as myDiff defining the DMCs or DMRs. A value of TRUE for dmcList[i] means that the ith CpG site in myDiff is a DMC.}
 

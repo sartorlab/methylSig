@@ -42,7 +42,7 @@ readBismarkData(bismarkCovFiles, cytosineCovFiles, sample.ids, assembly = NA,
 A 'methylSigData' object.
 }
 \description{
-This function takes the coverage and cytosine report files from the \code{bismark_methylation_extractor} (options \code{--bedGraph} and \code{--cytosine_report}) and constructs a table conforming to that expected by the 'methylSigData' class.
+This function takes the coverage and cytosine report files from the \code{bismark_methylation_extractor} (options \code{--bedGraph} and \code{--cytosine_report}) and constructs a table conforming to that expected by the \code{methylSigData-class} class.
 }
 \seealso{
 \code{\link{methylSigCalc}}

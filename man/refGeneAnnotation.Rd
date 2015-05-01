@@ -9,7 +9,7 @@ refGeneAnnotation(refGeneInfo, myDiff)
 \arguments{
 \item{refGeneInfo}{RefGene information object from function \code{\link{getRefgeneInfo}}.}
 
-\item{myDiff}{`methylSigDiff' object to be used for annotation.}
+\item{myDiff}{\code{methylSigDiff-class} object to be used for annotation.}
 }
 \value{
 A logical matrix of 6 rows and number of columns equal to the size of `myDiff' with each entry indicating whether the related sites in `myDiff' are in a promoter, CDS, 3' UTR, 5' UTR, noncoding RNA or exon regions. Regions can overlap because of a single gene can have multiple isoforms.

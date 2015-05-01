@@ -9,7 +9,7 @@ methylSigPlot(meth, chr, loc.range, groups = c(Treatment = 1, Control = 0),
   noDataLine = TRUE, cex = 1, tfbsDense = TRUE, sigQ = 0.05)
 }
 \arguments{
-\item{meth}{A `methylSigData' object.}
+\item{meth}{A \code{link{methylSigData-class}} object.}
 
 \item{chr}{Chromosome in character that matches in methylation data (meth).}
 

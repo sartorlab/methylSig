@@ -492,7 +492,7 @@ rownames(x) =rep(NA, NROW(x))
 
 corrALL = cor(x, use="pairwise.complete.obs")
 heatmap.2(1-corrALL, na.rm=T, breaks=100,
-          hclustfun = function(x) hclust(x,method="ward"),
+          hclustfun = function(x) hclust(x,method="ward.D"),
           col="bluered",trace="none", symm=T, keysize=1,density.info="none")
 @
 
@@ -505,7 +505,7 @@ listInMeth = match(myDiffDMC@data.ids, meth@data.ids)
 y = x[listInMeth,]
 corrDMC = cor(y, use="pairwise.complete.obs")
 heatmap.2(1-corrDMC, na.rm=T, breaks=100,
-          hclustfun = function(x) hclust(x,method="ward"),
+          hclustfun = function(x) hclust(x,method="ward.D"),
           col="bluered",trace="none", symm=T, keysize=1,density.info="none")
 @
 
@@ -514,7 +514,7 @@ heatmap.2(1-corrDMC, na.rm=T, breaks=100,
      \centering%\large A
 <<label=heatmap1,fig=TRUE,echo=F>>=
 heatmap.2(1-corrALL, na.rm=T, breaks=100,
-          hclustfun = function(x) hclust(x,method="ward"),
+          hclustfun = function(x) hclust(x,method="ward.D"),
           col="bluered",trace="none", symm=T, keysize=1,density.info="none")
 @
 %     \subcaption{A subfigure}\label{fig:1a}
@@ -523,7 +523,7 @@ heatmap.2(1-corrALL, na.rm=T, breaks=100,
   \centering%\large B
 <<label=heatmap2,fig=TRUE,echo=F>>=
 heatmap.2(1-corrDMC, na.rm=T, breaks=100,
-          hclustfun = function(x) hclust(x,method="ward"),
+          hclustfun = function(x) hclust(x,method="ward.D"),
           col="bluered",trace="none", symm=T, keysize=1,density.info="none")
 @
 %     \subcaption{Another subfigure}\label{fig:1b}

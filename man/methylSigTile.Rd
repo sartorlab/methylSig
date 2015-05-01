@@ -7,12 +7,12 @@
 methylSigTile(meth, win.size = 25)
 }
 \arguments{
-\item{meth}{A \code{\link{methylSigData-class}} object used to tile data.}
+\item{meth}{A \code{methylSigData-class} object used to tile data.}
 
 \item{win.size}{An integer value indicating the desired window size in bps. Default is 25.}
 }
 \value{
-A \code{\link{methylSigData-class}} object.
+A \code{methylSigData-class} object.
 }
 \description{
 This funciton tiles data within windows of a given width across genome. It gives total number of methylated cytosines and total number of reads (coverage) within each tiled window. This is used prior to the \code{\link{methylSigCalc}} function when the user prefers to conduct a tiled analysis instead of a base specific analysis for differential methylation. Tiling may provide higher power to detect significant differences, especially for experiments with low coverage.

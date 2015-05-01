@@ -9,7 +9,7 @@ cpgAnnotation(cpgInfo, myDiff)
 \arguments{
 \item{cpgInfo}{A CpG island information object.}
 
-\item{myDiff}{A `methylSigDiff' object to be used for annotation.}
+\item{myDiff}{A \code{methylSigDiff-class} object to be used for annotation.}
 }
 \value{
 A factor vector with the same size as `myDiff' that indicates whether the related sites in `myDiff' are in a CpG island, CpG shore, CpG shelf or interCGI region.

@@ -1,8 +1,8 @@
 #' Write a methylSigDiff object as a text file
 #'
-#' This funciton writes \code{\link{methylSigDiff}} as a text file. All options for write.table are avaiable for this function.
+#' This funciton writes \code{methylSigDiff-class} as a text file. All options for write.table are avaiable for this function.
 #'
-#' @param object a \code{link{methylSigDiff}} object.
+#' @param object a \code{methylSigDiff-class} object.
 #' @param ... Arguments inherited from \code{\link[utils]{write.table}}
 #'
 #' @return None
@@ -26,11 +26,11 @@ write.methylSigDiff <- function(object, ...) {
 #'
 #' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{methylKit::calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{methylKit::calculateDiffMeth} function.
 #'
-#' @param meth A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.
+#' @param meth A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.
 #' @param groups A vector of two numbers specify two groups to compare. See \code{treatment} argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
 #' @param min.per.group A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylation region. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.
 #'
-#' @return A \code{\link{methylSigDiff-class}} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
+#' @return A \code{methylSigDiff-class} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
 #'
 #' @section Warning: This function does not take into account the variability among samples in each group being compared.
 #'
@@ -86,10 +86,10 @@ binomialDiffCalc <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.
 #'
 #' This funciton tiles data within windows of a given width across genome. It gives total number of methylated cytosines and total number of reads (coverage) within each tiled window. This is used prior to the \code{\link{methylSigCalc}} function when the user prefers to conduct a tiled analysis instead of a base specific analysis for differential methylation. Tiling may provide higher power to detect significant differences, especially for experiments with low coverage.
 #'
-#' @param meth A \code{\link{methylSigData-class}} object used to tile data.
+#' @param meth A \code{methylSigData-class} object used to tile data.
 #' @param win.size An integer value indicating the desired window size in bps. Default is 25.
 #'
-#' @return A \code{\link{methylSigData-class}} object.
+#' @return A \code{methylSigData-class} object.
 #'
 #' @examples
 #' data(sampleData)
@@ -124,10 +124,10 @@ methylSigTile <- function(meth,win.size=25) {
 #'
 #' Gives total number of methylated cytosines and total number of reads (coverage) for each TF. This is used prior to the \code{\link{methylSigCalc}} function when the user prefers to conduct tests to identify significant level of hypermethylation or hypomethylation across their binding sites.
 #'
-#' @param meth A \code{\link{methylSigData-class}} object used to tile data.
+#' @param meth A \code{methylSigData-class} object used to tile data.
 #' @param tfbsInfo An object that contains transcription factor binding sites information.
 #'
-#' @return A \code{\link{methylSigData-class}} object.
+#' @return A \code{methylSigData-class} object.
 #'
 #' @seealso \code{\link{getTFBSInfo}} and \code{\link{methylSigTile}}.
 #' @export
@@ -341,7 +341,7 @@ methylSig_dataProcess <- function(loc,obj){
 #'
 #' The function calculates differential methylation statistics between two groups of samples. The function uses Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. Users who wish to tile their data and test for differentially methylated regions (DMRs) instead DMCs should first use the \code{\link{methylSigTile}} function before using this function.
 #'
-#' @param meth A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.
+#' @param meth A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.
 #' @param groups A vector of two numbers specify two groups to compare. See `treatment' argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
 #' @param dispersion A value indicating which group or groups are used to estimate the variance (dispersion). If groups are defined as c(Treatment=1,Control=0), dispersion can take values "Treatment", "Control", 1, 0 or "both". Default is "both".
 #' @param local.disp A logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.
@@ -353,7 +353,7 @@ methylSig_dataProcess <- function(loc,obj){
 #' @param T.approx A logical value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (T.approx = FALSE) is recommended when the sample size is large.  Default is TRUE.
 #' @param num.cores An integer denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores).
 #'
-#' @return `methylSigDiff' object containing the differential methylation statistics and locations. p.adjust with method="BH" option is used for P-value correction.
+#' @return \code{methylSigDiff-class} object containing the differential methylation statistics and locations. p.adjust with method="BH" option is used for P-value correction.
 #'
 #' @seealso \code{\link{methylSigPlot}}, \code{\link{methylSigReadData}}
 #'
@@ -514,7 +514,7 @@ methylSigCalc = function(meth, groups=c("Treatment"=1,"Control"=0), dispersion="
 #'
 #'   This function offers a unique two-tiered visualization of the methylation data depending on the zoom level. For narrow regions (<1mbp) where at most 500 CpG sites have data reads, users can visualize sample-specific coverage levels and percent methylation at each site, together with group averages, significance levels and a number of genomic annotations.
 #'
-#' @param meth A `methylSigData' object.
+#' @param meth A \code{link{methylSigData-class}} object.
 #' @param chr Chromosome in character that matches in methylation data (meth).
 #' @param loc.range A vector of two numbers (from, to) to specify the region to visualize on chromosome `chr'.
 #' @param groups A vector of two numbers to specify two groups to show in the plot.
@@ -981,7 +981,7 @@ cpgAnnotationPlot <- function(listFrom, main="Plot", color, noShelf = FALSE) {
 #'   This function generates an object to annotate CpG island information. The same genome assembly should be used for `myDiff' and `cpgInfo'. CpG shores are defined as the region outside CpG islands but within 2,000 bp of any CpG island. CpG shelves are defined as the region within 2,000 bp away from a CpG shore. When regions overlap, the priority is CpG island, then CpG shore. Regions >4,000 bp from a CpG island are deemed interCGI.
 #'
 #' @param cpgInfo A CpG island information object.
-#' @param myDiff A `methylSigDiff' object to be used for annotation.
+#' @param myDiff A \code{methylSigDiff-class} object to be used for annotation.
 #'
 #' @return A factor vector with the same size as `myDiff' that indicates whether the related sites in `myDiff' are in a CpG island, CpG shore, CpG shelf or interCGI region.
 #'
@@ -1118,7 +1118,7 @@ refGeneAnnotationPlot <- function(listFrom, main="Plot", priority=c("cds", "prom
 #'   This function generates an object to annotate refGene information. The same genome assembly should be used for `myDiff' and `refGeneInfo'. The promoter region is defined as 1,000bp upstream from a transcription starting site (TSS) to the TSS.
 #'
 #' @param refGeneInfo RefGene information object from function \code{\link{getRefgeneInfo}}.
-#' @param myDiff `methylSigDiff' object to be used for annotation.
+#' @param myDiff \code{methylSigDiff-class} object to be used for annotation.
 #'
 #' @return A logical matrix of 6 rows and number of columns equal to the size of `myDiff' with each entry indicating whether the related sites in `myDiff' are in a promoter, CDS, 3' UTR, 5' UTR, noncoding RNA or exon regions. Regions can overlap because of a single gene can have multiple isoforms.
 #'
@@ -1234,7 +1234,7 @@ refGeneAnnotationByChrom <- function(refGeneInfo, startEnd, listToAnnotat) {
 #'
 #' Likelihood ratio test is used based on the binomial distribution.
 #'
-#' @param myDiff methylSigDiff object that contains all CpG sites that are tested for differential methylation.
+#' @param myDiff \code{methylSigDiff-class} object that contains all CpG sites that are tested for differential methylation.
 #' @param dmcList A boolean vector of the same length as myDiff defining the DMCs or DMRs. A value of TRUE for dmcList[i] means that the ith CpG site in myDiff is a DMC.
 #' @param tfbsInfo An object that contains transcription factor binding sites information.
 #' @param plot If plot = TRUE, this function draws a plot. Otherwise no plot is given. Default is TRUE.
@@ -1395,7 +1395,7 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
 
 #' Read output from bismark_methylation_extractor to make a 'methylSigData' object.
 #'
-#' This function takes the coverage and cytosine report files from the \code{bismark_methylation_extractor} (options \code{--bedGraph} and \code{--cytosine_report}) and constructs a table conforming to that expected by the 'methylSigData' class.
+#' This function takes the coverage and cytosine report files from the \code{bismark_methylation_extractor} (options \code{--bedGraph} and \code{--cytosine_report}) and constructs a table conforming to that expected by the \code{methylSigData-class} class.
 #'
 #' @param bismarkCovFiles Vector of coverage files (.cov as of Bismark v0.13.0) from \code{bismark_methylation_extractor} with \code{--bedGraph} flag. Sample order should match that of \code{cytosineCovFiles}.
 #' @param cytosineCovFiles Vector of cytosine report files from \code{bismark_methylation_extractor} with \code{--cytosine_report} flag. Sample order should match that of \code{bismarkCovFiles}.
@@ -1567,7 +1567,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
 
 #' Read methylation score files to make a 'methylSigData' object.
 #'
-#' This function reads methylation score files (having columns chrBase, chr, base, strand, coverage, freqC, freqT) to make a \code{\link{methylSigData-class}} object that can be used in differential methylation analysis.
+#' This function reads methylation score files (having columns chrBase, chr, base, strand, coverage, freqC, freqT) to make a \code{methylSigData-class} object that can be used in differential methylation analysis.
 #'
 #' @param fileList Vector of files to be read. The methylKit package can be used to generate the appropriate tables from sorted SAM output from Bismark.
 #' @param sample.ids Vector of sample ids.
@@ -1584,7 +1584,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
 #' @param num.cores Number of cores to be used in reading files. Default is 1.
 #' @param quiet A logical value. If quiet=TRUE, then this function does not show progress information. Default is FALSE.
 #'
-#' @return A \code{\link{methylSigData-class}} object.
+#' @return A \code{methylSigData-class} object.
 #'
 #' @seealso \code{\link{methylSigCalc}}
 #'
@@ -1719,8 +1719,8 @@ methylSigDf <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.group
 #'
 #' The weight for the locus i and j is \code{coverage[i]*coverage[j]/(coverage[i]+coverage[j])}.
 #'
-#' @param chr A single string indicating chromosome from `methylSigData' or `methylSigDiff' objects.
-#' @param start A vector of CpG site loci from `methylSigData' or `methylSigDiff' objects.
+#' @param chr A single string indicating chromosome from \code{methylSigData-class} or \code{methylSigDiff-class} objects.
+#' @param start A vector of CpG site loci from \code{methylSigData-class} or \code{methylSigDiff-class} objects.
 #' @param methRates A numeric vector of methylation rates at each CpG site.
 #' @param coverage A numeric vector of coverage levels (number of reads) at each CpG site.
 #' @param lags Autocorrelation lags. This argument can be a vector if you want to calculate multiiple lags. Default is 2.

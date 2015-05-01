@@ -8,14 +8,14 @@ binomialDiffCalc(meth, groups = c(Treatment = 1, Control = 0),
   min.per.group = c(3, 3))
 }
 \arguments{
-\item{meth}{A \code{\link{methylSigData-class}} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.}
+\item{meth}{A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.}
 
 \item{groups}{A vector of two numbers specify two groups to compare. See \code{treatment} argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.}
 
 \item{min.per.group}{A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylation region. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
 }
 \value{
-A \code{\link{methylSigDiff-class}} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
+A \code{methylSigDiff-class} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
 }
 \description{
 This function calculates differential methylation statistics using a binomial-based approach. See `Warning' message below.
