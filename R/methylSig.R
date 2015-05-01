@@ -1367,7 +1367,7 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
     }
 
     if(filterSNPs) {
-        data('CT_SNPs_hg19')
+        data('CT_SNPs_hg19',envir=environment())
         cov_gr = GRanges(seqnames=cov$chr, ranges=IRanges(start=cov$start, end=cov$start))
 
         overlaps = findOverlaps(cov_gr, CT_SNPs_hg19)
@@ -1546,7 +1546,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
     }
 
     if(filterSNPs) {
-        data('CT_SNPs_hg19')
+        data('CT_SNPs_hg19',envir=environment())
         chr_gr = GRanges(seqnames=chr$chr, ranges=IRanges(start=chr$start, end=chr$start))
 
         overlaps = findOverlaps(chr_gr, CT_SNPs_hg19)

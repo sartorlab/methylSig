@@ -26,8 +26,9 @@ setClass("methylSigDiff", representation(data.ids="numeric", data.chr="factor", 
                                          destranded="logical", resolution="character",
                                          options="character", data.options="character"))
 
-methylSig.newDiff <- function(data.ids, data.chr, data.start,data.end, data.strand, results, sample.ids="",
-                                sample.filenames="", treatment, destranded=TRUE, resolution="", options="", data.options="") {
+methylSig.newDiff <- function(data.ids, data.chr, data.start,data.end,
+    data.strand, results, sample.ids="", sample.filenames="", treatment,
+    destranded=TRUE, resolution="", options="", data.options="") {
     ret = new("methylSigDiff")
     ret@data.ids=data.ids
     ret@data.chr = data.chr
@@ -179,9 +180,10 @@ setClass("methylSigData", representation(data.ids="numeric", data.chr="factor", 
                                          destranded="logical", resolution="character",
                                          options="character"))
 
-methylSig.newData <- function(data.ids, data.chr, data.start,data.end, data.strand, data.coverage, data.numCs,
-                              data.numTs, sample.ids="", sample.filenames="", treatment, destranded=TRUE,
-                              resolution="", options="") {
+methylSig.newData <- function(data.ids, data.chr, data.start,data.end,
+    data.strand, data.coverage, data.numCs, data.numTs, sample.ids="",
+    sample.filenames="", treatment, destranded=TRUE, resolution="",
+    options="") {
     ret = new("methylSigData")
     ret@data.ids=data.ids
     ret@data.chr = data.chr
