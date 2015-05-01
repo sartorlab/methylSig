@@ -10,6 +10,8 @@ before_install:
   - ./travis-tool.sh bootstrap
 
 install:
+  - ./travis-tool.sh install_r gplots
+  - ./travis-tool.sh install_r testthat
   - ./travis-tool.sh install_bioc GenomicRanges
   - ./travis-tool.sh install_deps
 
