@@ -1,6 +1,6 @@
 # methylSig
 
-[![Travis-CI Build Status](https://travis-ci.org/rcavalcante/methylSig.png?branch=master)](https://travis-ci.org/rcavalcante/methylSig)
+[![Build Status](https://travis-ci.org/sartorlab/methylSig.svg?branch=master)](https://travis-ci.org/sartorlab/methylSig)
 
 A whole genome DNA methylation analysis pipeline.
 
