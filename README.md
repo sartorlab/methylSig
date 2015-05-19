@@ -1,4 +1,4 @@
-# methylSig
+﻿# methylSig
 
 [![Build Status](https://travis-ci.org/sartorlab/methylSig.svg?branch=master)](https://travis-ci.org/sartorlab/methylSig)
 
@@ -14,5 +14,5 @@ MethylSig is not currently on CRAN or Bioconductor. Installation is easiest with
 
 ```R
 library(devtools)
-install_github(‘rcavalcante/methylSig')
+install_github(‘sartorlab/methylSig')
 ```
