@@ -486,7 +486,12 @@ methylSigCalc = function(meth, groups=c("Treatment"=1,"Control"=0), dispersion="
          pvalue = pchisq(pmax(logLikRatio,0), 1, lower.tail=F)
     }
 
-    results=cbind(pvalue,p.adjust(pvalue, method ="BH"), (result[,4] - result[,5])*100, logLikRatio,
+    # Set any methylation difference less than 0.01 to 0
+    meth.diff = (result[,4] - result[,5])*100
+    meth.diff[which(meth.diff < 0.01)] = 0
+    meth.diff = as.numeric(meth.diff)
+
+    results=cbind(pvalue,p.adjust(pvalue, method ="BH"), meth.diff, logLikRatio,
                   result[,2], result[,7], result[,4]*100, result[,5]*100)
 
     colnames(results) = c("pvalue","qvalue", "meth.diff","logLikRatio","theta", "df", paste("mu", groups, sep=""))
@@ -500,7 +505,7 @@ methylSigCalc = function(meth, groups=c("Treatment"=1,"Control"=0), dispersion="
                              ",",min.per.group[2], ")& Total: ", NROW(results), sep="")
 
     methylSig.newDiff(meth@data.ids[orderMethStart[validLoci]], meth@data.chr[orderMethStart[validLoci]],
-                              meth@data.start[orderMethStart[validLoci]],meth@data.end[orderMethStart[validLoci]],
+                              as.integer(meth@data.start[orderMethStart[validLoci]]),as.integer(meth@data.end[orderMethStart[validLoci]]),
                               meth@data.strand[orderMethStart[validLoci]], results, sample.ids=meth@sample.ids[c(group1,group2)],
                               sample.filenames=meth@sample.filenames[c(group1,group2)],
                               treatment=meth@treatment[c(group1,group2)], destranded=meth@destranded,
