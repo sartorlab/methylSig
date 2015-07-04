@@ -488,7 +488,7 @@ methylSigCalc = function(meth, groups=c("Treatment"=1,"Control"=0), dispersion="
 
     # Set any methylation difference less than 0.01 to 0
     meth.diff = (result[,4] - result[,5])*100
-    meth.diff[which(meth.diff < 0.01)] = 0
+    meth.diff[which(abs(meth.diff) < 0.01)] = 0
     meth.diff = as.numeric(meth.diff)
 
     results=cbind(pvalue,p.adjust(pvalue, method ="BH"), meth.diff, logLikRatio,
