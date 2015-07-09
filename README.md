@@ -14,5 +14,5 @@ MethylSig is not currently on CRAN or Bioconductor. Installation is easiest with
 
 ```R
 library(devtools)
-install_github(‘sartorlab/methylSig')
+install_github('sartorlab/methylSig')
 ```
