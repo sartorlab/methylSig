@@ -329,7 +329,7 @@ methylSig_dataProcess <- function(loc,obj){
                            methylSig_logLik (muEstC[2], phiCommonEst, obj$creads[obj$groups[[2]], validMuList], obj$treads[obj$groups[[2]], validMuList], weightMu) -
                            methylSig_logLik (muEstC[3], phiCommonEst, obj$creads[obj$groups[[3]], validMuList], obj$treads[obj$groups[[3]], validMuList], weightMu)
 
-        return(c(loc,phiCommonEst,logLikRatio,muEstC,df))
+        return(c(loc,phiCommonEst,logLikRatio,muEstC,df+2))
     }
 
     return(c(loc,NA,NA,NA,NA,NA,NA))
