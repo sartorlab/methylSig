@@ -5,27 +5,13 @@ context('Test methylSigReadData')
     CT_SNPs_hg19_chr21 = CT_SNPs_hg19[seqnames(CT_SNPs_hg19) == 'chr21']
 
 # Files used to test readBismarkData (only chr21)
-#   IDH2mut_1_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz
 #   IDH2mut_1_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz
-#   IDH2mut_2_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz
 #   IDH2mut_2_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz
-#   IDH2mut_3_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz
 #   IDH2mut_3_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz
 #
-#   NBM_1_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz
 #   NBM_1_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz
-#   NBM_2_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz
 #   NBM_2_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz
-#   NBM_3_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz
 #   NBM_3_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz
-    rbd_cov_files = c(
-        system.file('extdata', 'IDH2mut_1_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz', package='methylSig'),
-        system.file('extdata', 'IDH2mut_2_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz', package='methylSig'),
-        system.file('extdata', 'IDH2mut_3_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz', package='methylSig'),
-        system.file('extdata', 'NBM_1_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz', package='methylSig'),
-        system.file('extdata', 'NBM_2_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz', package='methylSig'),
-        system.file('extdata', 'NBM_3_chr21_errbs.fastq_bismark_sorted.bismark.cov.gz', package='methylSig')
-        )
     rbd_cyt_files = c(
         system.file('extdata', 'IDH2mut_1_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz', package='methylSig'),
         system.file('extdata', 'IDH2mut_2_chr21_errbs.fastq_bismark_sorted.CpG_report.txt.gz', package='methylSig'),
