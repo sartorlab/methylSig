@@ -1321,33 +1321,21 @@ methylSig.tfbsEnrichTest <- function(myDiff, dmcList, tfbsInfo, plot=TRUE, max.p
 # *bismark.cov is first and *cytosine.cov is second.
 # Called by readBismarkData
 readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, destranded, filterSNPs, quiet=FALSE) {
-    # Read files and minimize memory footprint with colClasses
-    message(sprintf('Reading %s',fileList[[fileIndex]][1]))
-    cov = read.table(fileList[[fileIndex]][1], sep='\t', header=F,
-        col.names=c('chr','start','end','perc_meth','numCs','numTs'),
-        colClasses=c('character','numeric','NULL','NULL','numeric','numeric'),stringsAsFactors=F)
 
-    message(sprintf('Reading %s',fileList[[fileIndex]][2]))
-    cyt = read.table(fileList[[fileIndex]][2], sep='\t', header=F,
-        col.names=c('chr','pos','strand','numCs','numTs','C_context','tri_context'),
-        colClasses=c('character','numeric','character','NULL','NULL','NULL','NULL'), stringsAsFactors=F)
+    # Use system call to awk to extract the rows of the CpG report meating minCount requirements
+    # NOTE: Despite the documentation indicating the CpG report is 1-based, it actually appears
+    # to be 0-based upon investigation in the UCSC Genome Browser. All indices in the CpG report
+    # are -1 those shown in the Genome Browser (which displays 1-based).
 
-    # Create the chromBase column which matching will be done on
-    cov$chromBase = paste(cov$chr, cov$start, sep='.')
-    cyt$chromBase = paste(cyt$chr, cyt$pos, sep='.')
+    file_name = fileList[[fileIndex]]
+    new_file_name = sprintf('%s.methylsig.txt',file_name)
 
-    # Extract strand from the cytosine report
-    # This is the only purpose of the cytosine report
-    cov$strand = cyt[match(cov$chromBase,cyt$chromBase), 'strand']
+    awk_call = sprintf('awk \'$4 + $5 > %s { print $1 "." $2 + 1 "\t" $1 "\t" $2 + 1 "\t" $3 "\t" $4 + $5 "\t" $4 "\t" $5 }\' %s > %s',
+        minCount, file_name, new_file_name)
 
-    # Remove cyt to minimize memory footprint
-    rm(cyt)
+    system(awk_call)
 
-    # Indicate if some sites in *bismark.cov are not present in *cytosine.cov
-    # This probably shouldn't happen, but it would mean the strand is NA.
-    if(length(which(is.na(cov$strand))) > 0) {message('WARNING! Positions in coverage file not found in cytosine report.')}
-
-    cov$coverage = cov$numCs + cov$numTs
+    cov = read.table(new_file_name, header=F, sep='\t', col.names=c('id','chr','start','strand','coverage','numCs','numTs'), stringsAsFactors=F)
 
     # If the sum of frequencies of C's and T's is less than 95, discard sites
     # by setting coverage to 0, and report for each pair of files the
@@ -1383,27 +1371,21 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
         cov$coverage[invalidList] = 0
     }
 
-    # Pull out and rename relevant columns
-    final = cov[,c('chromBase','chr','start','strand','coverage','numCs','numTs')]
-    # Matching column names from methylSigReadData
-    colnames(final) = c('id','chr','start','strand','coverage','numCs','numTs')
-
     # Make strand column a factor.
-    final$strand = as.factor(final$strand)
+    cov$strand = as.factor(cov$strand)
     ## When only F observed in strand column, as.factor convert F to FALSE
-    levels(final$strand) = list("+"="F","-"="R","*"="*", "+"="FALSE")
+    levels(cov$strand) = list("+"="F","-"="R","*"="*", "+"="FALSE")
 
-    final = final[final$coverage > 0,]
+    cov = cov[cov$coverage > 0,]
 
-    return(final)
+    return(cov)
 }
 
 #' Read output from bismark_methylation_extractor to make a 'methylSigData' object.
 #'
 #' This function takes the coverage and cytosine report files from the \code{bismark_methylation_extractor} (options \code{--bedGraph} and \code{--cytosine_report}) and constructs a table conforming to that expected by the \code{methylSigData-class} class.
 #'
-#' @param bismarkCovFiles Vector of coverage files (.cov as of Bismark v0.13.0) from \code{bismark_methylation_extractor} with \code{--bedGraph} flag. Sample order should match that of \code{cytosineCovFiles}.
-#' @param cytosineCovFiles Vector of cytosine report files from \code{bismark_methylation_extractor} with \code{--cytosine_report} flag. Sample order should match that of \code{bismarkCovFiles}.
+#' @param fileList Vector of cytosine report files from \code{bismark_methylation_extractor} with \code{--cytosine_report} flag.
 #' @param sample.ids Vector of sample ids.
 #' @param assembly Character string indicating the genome assembly, such as "hg18", "hg19", "mm9", or "mm10".
 #' @param pipeline Character string indicating the pipepline name that generated the data, for example, "bismark".
@@ -1422,16 +1404,9 @@ readBismarkOutputSingleFile = function(fileIndex, fileList, minCount, maxCount, 
 #' @seealso \code{\link{methylSigCalc}}
 #'
 #' @export
-readBismarkData = function(bismarkCovFiles, cytosineCovFiles,
+readBismarkData = function(fileList,
             sample.ids, assembly=NA, pipeline=NA, context=NA,resolution="base",treatment,
             destranded=TRUE, maxCount=500, minCount=10, filterSNPs=FALSE, num.cores=1, quiet=FALSE) {
-
-    # Checks to verify *bismark.cov files match *cytosine.cov files
-    if(length(bismarkCovFiles) != length(cytosineCovFiles)){
-        stop('The number of *bismark.cov files does not match the number of *cytosine.cov files! Each sample should have these files from bismark_methylation_extractor.')
-    }
-
-    fileList = lapply(1:length(bismarkCovFiles),function(i){c(bismarkCovFiles[i],cytosineCovFiles[i])})
 
     n.files = length(fileList)
 

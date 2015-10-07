@@ -36,33 +36,10 @@ context('Test methylSigReadData')
         )
 
 # Testing readBismarkData
-#   Test for failure when file lists have different lengths
-
-    # Expectations
-    test_that('Error thrown for unpaired coverage/cytosine files',{
-        expect_that(
-            readBismarkData(
-                bismarkCovFiles = rbd_cov_files,
-                cytosineCovFiles = rbd_cyt_files[1:3],
-                sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
-                assembly = 'hg19',
-                pipeline = 'bismark',
-                context = 'CpG',
-                resolution = "base",
-                treatment = c(1,1,1,0,0,0),
-                destranded = TRUE,
-                maxCount = 500,
-                minCount = 10,
-                filterSNPs = FALSE,
-                num.cores = 2,
-                quiet = FALSE),
-            throws_error('does not match the number'))
-        })
 
 #   Test different values of minCount and maxCount
     test_rbd = readBismarkData(
-        bismarkCovFiles = rbd_cov_files,
-        cytosineCovFiles = rbd_cyt_files,
+        fileList = rbd_cyt_files,
         sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
         assembly = 'hg19',
         pipeline = 'bismark',
@@ -88,7 +65,7 @@ context('Test methylSigReadData')
 
     # The maximum coverage test is for 2*maxCount because destranding happens
     # AFTER the maxCount filter. Meaning sites can have up to 2*maxCount reads.
-    test_that('Filtering by maxCoutn works',{
+    test_that('Filtering by maxCount works',{
         expect_less_than(max(test_rbd@data.coverage,na.rm=T), 500*2 + 1)
     })
 
@@ -98,8 +75,7 @@ context('Test methylSigReadData')
 
 #   Test destranded=F
     test_rbd = readBismarkData(
-        bismarkCovFiles = rbd_cov_files,
-        cytosineCovFiles = rbd_cyt_files,
+        fileList = rbd_cyt_files,
         sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
         assembly = 'hg19',
         pipeline = 'bismark',
@@ -130,8 +106,7 @@ context('Test methylSigReadData')
 
 #   Test filterSNPs=T and destranded=F
     test_rbd = readBismarkData(
-        bismarkCovFiles = rbd_cov_files,
-        cytosineCovFiles = rbd_cyt_files,
+        fileList = rbd_cyt_files,
         sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
         assembly = 'hg19',
         pipeline = 'bismark',
@@ -156,8 +131,7 @@ context('Test methylSigReadData')
 
 #   Test filterSNPs=T and destranded=T
     test_rbd = readBismarkData(
-        bismarkCovFiles = rbd_cov_files,
-        cytosineCovFiles = rbd_cyt_files,
+        fileList = rbd_cyt_files,
         sample.ids = c('IDH2_1','IDH2_2','IDH2_3','NBM_1','NBM_2','NBM_3'),
         assembly = 'hg19',
         pipeline = 'bismark',
