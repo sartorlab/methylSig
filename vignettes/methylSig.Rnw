@@ -64,7 +64,13 @@ Loading required package: parallel
 This will load \verb@methylSig@ package as well as other dependent packages.
 
 \subsection{Methylation score files}
-CpG methylation score files can be obtained using programs such as \verb@bismark@. The typical CpG methylation score files are as follows:
+CpG methylation score files can be obtained using \verb@bismark@ with the flags \verb@--bedGraph$ and \verb@--cytosine_report@. An awk script can then be used on the cytosine report result to conform to the expected output.
+
+\begin{verbatim}
+$ awk '$4 + $5 > %s { print $1 "." $2 + 1 "\t" $1 "\t" $2 + 1 "\t" $3 "\t" $4 + $5 "\t" $4 "\t" $5 }' in.txt > out.txt
+\end{verbatim}
+
+Where the expected output is as follows
 
 <<echo=FALSE>>=
 library(methylSig)
