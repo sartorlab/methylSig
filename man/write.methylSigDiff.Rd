@@ -7,7 +7,7 @@
 write.methylSigDiff(object, ...)
 }
 \arguments{
-\item{object}{a \code{link{methylSigDiff-class}} object.}
+\item{object}{a \code{methylSigDiff-class} object.}
 
 \item{...}{Arguments inherited from \code{\link[utils]{write.table}}}
 }
