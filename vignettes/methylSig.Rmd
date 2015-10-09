@@ -1,6 +1,6 @@
 ---
 title: "methylSig: A package for whole genome DNA methylation analysis"
-author: "Yongseok Park, Maria E. Figueroa, Laura S. Rozek, and Maureen A. Sartor"
+author: "Yongseok Park, Raymond Cavalcante, Maria E. Figueroa, Laura S. Rozek, and Maureen A. Sartor"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -45,7 +45,18 @@ print(read.table(system.file("extdata", "AML_1.txt", package = "methylSig"),head
 Such CpG methylation score files can be obtained using `bismark` with the `--bedGraph` `--cytosine_report` flags in the `bismark_methylation_extractor`. The following `awk` command can be used on each cytosine report to obtain the correct format. Note, in `$4 + $5 > 10`, the 10 refers to the desired minimum coverage at each CpG site.
 
 ```{awk, eval=FALSE}
-awk -v OFS="\t" '$4 + $5 > 10 {print $1"."$2, $1, $2, $3, $4 + $5, $4, $5}' in > out
+awk -v OFS="\t" '$4 + $5 > 10 {print $1"."$2, $1, $2, $3, $4 + $5, $4, $5}' in.file > out.file
+```
+
+If there are many samples to convert, in the directory containing the `CpG_report.txt` outputs from `bismark`, do:
+
+```{bash, eval=FALSE}
+for reportFile in `find . -name '*CpG_report.txt'`
+do
+  msigFile=./`basename $reportFile .txt`_for_methylSig.txt
+  echo 'Formatting ' $reportFile ' into ' $msigFile
+  awk -v OFS="\t" '$4 + $5 > 10 {print $1"."$2, $1, $2, $3, $4 + $5, $4, $5}' $reportFile > $msigFile
+done
 ```
 
 The CpG methylation score file must contain at least seven columns. Among these, second to seventh column must be, in order, chromosome, base, strand, coverage, percentage of Cs and percentage of Ts. Column names are not important. Strand format is F/R or +/-, where F/+ represents forward and R/- represents reverse strand.
