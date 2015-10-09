@@ -16,3 +16,7 @@ MethylSig is not currently on CRAN or Bioconductor. Installation is easiest with
 library(devtools)
 install_github('sartorlab/methylSig')
 ```
+
+## Citation
+
+Yongseok Park, Maria E. Figueroa, Laura S. Rozek, and Maureen A. Sartor, MethylSig: a whole genome DNA methylation analysis pipeline, *Bioinformatics* (2014) 30 (17): 2414-2422, doi:10.1093/bioinformatics/btu339
