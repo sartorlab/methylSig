@@ -1,7 +1,7 @@
 Package: methylSig
 Type: Package
 Title: a whole genome DNA methylation analysis pipeline
-Version: 0.3.2
+Version: 0.3.3
 Date: 2015-10-09
 Author: Yongseok Park
 Maintainer: Who to complain to <yongpark@pitt.edu>
