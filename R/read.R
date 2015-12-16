@@ -134,8 +134,7 @@ methylSigReadData = function(fileList,
 
     for(fileIndex in 1:n.files) {
         if(quiet == FALSE) {
-            cat("(",fileIndex,")",sep="")
-            if(fileIndex %% 10 == 0) cat("\n")
+            message(sprintf('(%s)', fileIndex))
         }
         location =  findInterval( (as.numeric(chrList[[fileIndex]]$chr) * MAXBASE+chrList[[fileIndex]]$start) , uniqueLoc)
         if(destranded == FALSE) {
@@ -193,9 +192,9 @@ methylSigReadData = function(fileList,
     if(!is.na(context))  options = paste(options, " & context=",  context,  sep="")
     if(!is.na(pipeline)) options = paste(options, " & pipeline=", pipeline, sep="")
 
-    numTs[coverage==0] = NA
-    numCs[coverage==0] = NA
-    coverage[coverage==0] = NA
+    # numTs[coverage==0] = NA
+    # numCs[coverage==0] = NA
+    # coverage[coverage==0] = NA
     methylSig.newData(data.ids=uniqueLoc, data.chr=as.factor(uniqueChr[as.integer(uniqueLoc/MAXBASE)]),
                       data.start=uniqueLoc%%MAXBASE, data.end=uniqueLoc%%MAXBASE,
                       data.strand=strand, data.coverage = coverage, data.numTs = numTs, data.numCs = numCs,

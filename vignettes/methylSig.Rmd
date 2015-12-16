@@ -1,13 +1,9 @@
 ---
 title: "methylSig: A package for whole genome DNA methylation analysis"
-author: "Yongseok Park, Raymond Cavalcante, Maria E. Figueroa, Laura S. Rozek, and Maureen A. Sartor"
+author: "Yongseok Park, Raymond G. Cavalcante, Maria E. Figueroa, Laura S. Rozek, and Maureen A. Sartor"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: true
-    toc_depth: 3
-    number_section: true
-    fig_caption: yes
+  BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{Introduction to methylSig}
   %\VignetteEngine{knitr::rmarkdown}
@@ -27,8 +23,7 @@ This document provides a step by step guide for the `methylSig` package.
 `methylSig` is available on GitHub at <http://www.github.com/sartorlab/methylSig>, and the easiest way to install it is as follows:
 
 ```{r, eval=FALSE}
-library(devtools)
-install_github('sartorlab/methylSig')
+devtools::install_github('sartorlab/methylSig')
 ```
 
 # Basic usage
@@ -96,7 +91,7 @@ meth <- methylSigReadData(fileList, sample.ids = sample.id, assembly = "hg18",
 
 It is possible for the user to filter out CpG sites based on the read coverage. CpG sites with very large read coverage may be due to PCR bias and hence including CpG sites with very high coverage may distort the statistics of data analysis. The `methylSigReadData()` function provides `minCount` and `maxCount` arguments for defining lower and upper limits for coverage. The default values are 10 and 500 respectively. It is also possible to exclude C > T SNPs determined by the 1000 Genomes Project with the `filterSNPs` option. This is not done by default.
 
-There are many arguments for the `methylSigReadData()` funciton.  Among these `fileList`, `sample.ids` and `treatment` are required. Some options have default values, for example, `destranded=TRUE`, `num.cores=1`, and `quiet=FALSE`. Other arguments such as `assembly`, `context` and `pipeline` are optional and for information purposes only. The data type of `treatment` is a numeric vector. Each number represents a group. Multiple groups can be stored in one `methylSigData` object.
+There are many arguments for the `methylSigReadData()` function.  Among these `fileList`, `sample.ids` and `treatment` are required. Some options have default values, for example, `destranded=TRUE`, `num.cores=1`, and `quiet=FALSE`. Other arguments such as `assembly`, `context` and `pipeline` are optional and for information purposes only. The data type of `treatment` is a numeric vector. Each number represents a group. Multiple groups can be stored in one `methylSigData` object.
 
 The arguemnt `num.cores` is used for multi-thread reading.
 
@@ -128,10 +123,10 @@ myDiffSigbothDMCs = myDiffSigboth[myDiffSigboth[,"qvalue"] <= 0.05
 
 ## Tiled data analysis
 
-`methylSig` package also provides `methylSigTile()` function to tile data within continuous non-overlapping windows. The default window size is 25bp. After tiling data, the `methylSigCalc()` function can be used to calculate differential methylation statistics.
+`methylSig` package also provides `methylSigTile()` function to tile data within continuous non-overlapping windows or annotations such as CpG islands. The default window size is 25bp, and to tile over annotations, you must first read in a BED3 file as a `data.frame`. After tiling data, the `methylSigCalc()` function can be used to calculate differential methylation statistics.
 
 ```{r}
-### Tiled analysis
+### Tiled window analysis
 methTile = methylSigTile(meth,win.size = 25)
 myDiffSigbothTile = methylSigCalc(methTile, groups=c(1,0), min.per.group=3)
 ```
@@ -377,8 +372,8 @@ You can easily use other R functions to summarize or draw plots.
 
 ```{r}
 methRaw = methylSigReadData(fileList, sample.ids = sample.id,assembly = "hg18",
-             treatment = treatment, context = "CpG", minCount = 0,
-             maxCount=Inf, destranded=F, quiet=T)
+             treatment = treatment, context = "CpG", minCount = 5,
+             maxCount=500, destranded=F, quiet=T)
 
 summary(methRaw[,"numCs1"]/methRaw[,"coverage1"])
 summary(methRaw[,"coverage1"])

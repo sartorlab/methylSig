@@ -30,33 +30,39 @@ methylSigTile <- function(meth, tiles = NULL, win.size=25) {
            coverage[whichRow[i],] = coverage[whichRow[i],] + meth@data.coverage[i,]
            numCs[whichRow[i],] = numCs[whichRow[i],] + meth@data.numCs[i,]
            numTs[whichRow[i],] = numTs[whichRow[i],] + meth@data.numTs[i,]
-      }
+       }
+
+       # Need to deal with the very last end
+       data.MAXBASE = uniqueStartList%%MAXBASE + win.size - 1
+       data.MAXBASE[length(data.MAXBASE)] = data.MAXBASE[length(data.MAXBASE)] - win.size + 2
+
       methylSig.newData(data.ids=uniqueStartList, data.chr=as.factor(levels(meth@data.chr)[as.integer(uniqueStartList/MAXBASE)]),
-                        data.start=uniqueStartList%%MAXBASE, data.end=uniqueStartList%%MAXBASE + win.size - 1,
+                        data.start=uniqueStartList%%MAXBASE, data.end=data.MAXBASE,
                         data.strand=factor(rep("*",NROW(uniqueStartList))), data.coverage = coverage, data.numTs = numTs, data.numCs = numCs,
                         sample.ids=meth@sample.ids, treatment=meth@treatment, destranded=meth@destranded,
                         resolution="region", sample.filenames=meth@sample.filenames,options=meth@options)
    } else {
      message('Tiling by regions')
-#### added YPark
-#### modified RGCavalcante
+
      # Need to have matrices corresponding to the number of samples
      numCs = numTs = matrix(0, nrow = nrow(tiles), ncol = ncol(meth@data.numCs))
      for(chr in levels(meth@data.chr)) {
          whichInTiles = which(tiles$chr == chr)
          if(length(whichInTiles) > 0) {
              # Determine the start and end locations for the tiles on this chromosome
-             endList = tiles$end[whichInTiles]
              startList = tiles$start[whichInTiles]
+             endList = tiles$end[whichInTiles]
 
              # Extract rows of meth are relevant
              whichVlist = which(meth@data.chr==chr)
-             whichEND = findInterval(endList, meth@data.start[whichVlist])
+
+             # Find which
              whichSTART = findInterval(startList, meth@data.start[whichVlist]+1)
+             whichEND = findInterval(endList, meth@data.start[whichVlist])
 
              for(i in which(whichEND > whichSTART)) {
-                 numCs[whichInTiles[i],] = numCs[whichInTiles[i],] + colSums(meth@data.numCs[whichVlist[(whichSTART[i]+1):whichEND[i]],], na.rm=T)
-                 numTs[whichInTiles[i],] = numTs[whichInTiles[i],] + colSums(meth@data.numTs[whichVlist[(whichSTART[i]+1):whichEND[i]],], na.rm=T)
+                 numCs[whichInTiles[i],] = numCs[whichInTiles[i], ] + colSums(meth@data.numCs[ whichVlist[whichSTART[i]:whichEND[i]], ], na.rm=T)
+                 numTs[whichInTiles[i],] = numTs[whichInTiles[i], ] + colSums(meth@data.numTs[ whichVlist[whichSTART[i]:whichEND[i]], ], na.rm=T)
              }
          }
      }
