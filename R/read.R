@@ -172,8 +172,7 @@ methylSigReadData = function(fileList,
           ((coverage[, fileIndex] != 0) & (coverage[, fileIndex] < minCount)) |
           ((coverage[, fileIndex] != 0) & (coverage[, fileIndex] > maxCount)) ) ) )
       }
-
-      uniqueChr = uniqueChr[-countInvalidList]
+    
       uniqueLoc = uniqueLoc[-countInvalidList]
       strand = strand[-countInvalidList]
       coverage = coverage[-countInvalidList, ]

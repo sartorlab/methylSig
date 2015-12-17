@@ -1,8 +1,8 @@
 Package: methylSig
 Type: Package
 Title: a whole genome DNA methylation analysis pipeline
-Version: 0.4.0
-Date: 2015-12-16
+Version: 0.4.1
+Date: 2015-12-17
 Author: Yongseok Park
 Maintainer: Who to complain to <yongpark@pitt.edu>
 Description: MethylSig is a method for testing for differentially methylated
@@ -28,6 +28,6 @@ Suggests:
     testthat,
     knitr,
     rmarkdown
-Packaged: 2015-12-16; rcavalca
+Packaged: 2015-12-17; rcavalca
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
