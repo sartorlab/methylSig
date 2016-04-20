@@ -172,16 +172,21 @@ methylSigReadData = function(fileList,
           ((coverage[, fileIndex] != 0) & (coverage[, fileIndex] < minCount)) |
           ((coverage[, fileIndex] != 0) & (coverage[, fileIndex] > maxCount)) ) ) )
       }
-    
-      uniqueLoc = uniqueLoc[-countInvalidList]
-      strand = strand[-countInvalidList]
-      coverage = coverage[-countInvalidList, ]
-      numCs = numCs[-countInvalidList, ]
-      numTs = numTs[-countInvalidList, ]
 
-      message(sprintf('Sites > maxCount or < minCount: %s / %s = %s',
-        length(countInvalidList), nrow(coverage) + length(countInvalidList),
-        signif( length(countInvalidList) / (nrow(coverage) + length(countInvalidList)) , 3)))
+	# For simulated data you could have nothing in the countInvalidList
+	if(length(countInvalidList) > 0) {
+		uniqueLoc = uniqueLoc[-countInvalidList]
+		strand = strand[-countInvalidList]
+		coverage = coverage[-countInvalidList, ]
+		numCs = numCs[-countInvalidList, ]
+		numTs = numTs[-countInvalidList, ]
+
+		message(sprintf('Sites > maxCount or < minCount: %s / %s = %s',
+			length(countInvalidList), nrow(coverage) + length(countInvalidList),
+			signif( length(countInvalidList) / (nrow(coverage) + length(countInvalidList)) , 3)))
+    } else {
+		message('Sites > maxCount or < minCount = 0')
+	}
 
 #    strand = as.factor(strand)
 #    levels(strand) = list("+"="1","-"="2","*"="3")
