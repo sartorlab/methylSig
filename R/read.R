@@ -131,7 +131,7 @@ methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, m
 
 		df_gr = GRanges(seqnames=df$chr, ranges=IRanges(start=df$start, end=df$start))
 		overlaps = findOverlaps(df_gr, CT_SNPs_hg19)
-		snpInvalidList = overlaps@queryHits
+		snpInvalidList = queryHits(overlaps)
 
 		if(length(snpInvalidList) > 0) {
 			if(!quiet) {
