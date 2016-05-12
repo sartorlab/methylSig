@@ -144,7 +144,7 @@ myDiffSignormTile = methylSigCalc(methTile, groups=c(1,0),
 
 ## Using local information
 
-It is also possible to use information from nearby CpG sites to improve the variance and methylation level estimates. The default \verb@winsize.disp@ and \verb@winsize.meth@ are 200 bps.  The \verb@winsize.disp@ argument only takes into effect when \verb@local.disp@ is set to `TRUE'. Similarly \verb@winsize.meth@ argument only takes into effect when \verb@local.meth@ is set to `TRUE'.
+It is also possible to use information from nearby CpG sites to improve the variance and methylation level estimates. The default `winsize.disp` and `winsize.meth` are 200 bps.  The `winsize.disp` argument only takes into effect when `local.disp` is set to `TRUE`. Similarly `winsize.meth` argument only takes into effect when `local.meth` is set to `TRUE'.
 
 ```{r}
 ### Variance from both groups and using local information for variance
@@ -208,7 +208,7 @@ cpgAnnotationPlot(cpgAnnDmc,main="DMCs")
 
 ## RefGene annotation
 
-Again, there are two functions, \verb@refGeneAnnotation()@ and \verb@refGeneAnnotationPlot()@, in `methylSig` package for annotation using RefGene models. The refGene information file can be download from websites such UCSC genome browser. The appropriate genome assembly (the same genome assembly of the provided data) should be used.
+Again, there are two functions, `refGeneAnnotation()` and `refGeneAnnotationPlot()`, in `methylSig` package for annotation using RefGene models. The refGene information file can be download from websites such UCSC genome browser. The appropriate genome assembly (the same genome assembly of the provided data) should be used.
 
 In a linux server, the user may use the following command to download the annotation file for hg19. Please use appropriate directories for hg18, mm9 or mm10.
 
@@ -287,7 +287,7 @@ methylSigPlot(meth, "chr21", c(43800000, 43900000), groups=c(1,0),
 
 ### S4 data structure
 
-The `methylSig` package uses S4 object. The contents of `methylSigData@` can be shown using the `show()` function in R or just type the object itself.
+The `methylSig` package uses S4 object. The contents of `methylSigData` can be shown using the `show()` function in R or just type the object itself.
 
 ```{r}
 show(meth)

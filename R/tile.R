@@ -13,11 +13,11 @@
 #' methTile = methylSigTile(meth)
 #' @export
 methylSigTile <- function(meth, tiles = NULL, win.size=25) {
-   if(meth@resolution == "region") stop("Object has already been tiled")
+	if(meth@resolution == "region") stop("Object has already been tiled")
 
-   if(is.null(tiles)) {
-     message(sprintf('Tiling by %s bp windows', win.size))
-       MAXBASE = max(meth@data.start) + win.size + 1
+	if(is.null(tiles)) {
+		message(sprintf('Tiling by %s bp windows', win.size))
+		MAXBASE = max(meth@data.start) + win.size + 1
 #        MAXBASE10 = MAXBASE = 10^{ceiling(log10(MAXBASE + 1))}
 
        startList = as.numeric(meth@data.chr)*MAXBASE + meth@data.start

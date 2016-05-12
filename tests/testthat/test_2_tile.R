@@ -21,7 +21,7 @@ data_error_tiled = methylSigReadData(
   minCount = 10,
   filterSNPs = FALSE,
   num.cores = 1,
-  quiet = FALSE)
+  quiet = TRUE)
 
 test_that('Already tiled data throws error', {
   expect_error(methylSigTile(data_error_tiled), 'Object has already been tiled')
@@ -44,7 +44,7 @@ data_default = methylSigReadData(
   minCount = 10,
   filterSNPs = FALSE,
   num.cores = 1,
-  quiet = FALSE)
+  quiet = TRUE)
 
 tiled_windows = methylSigTile(meth = data_default, win.size = 25)
 

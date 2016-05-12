@@ -1,55 +1,158 @@
 # Called by methylSigReadData
 methylSigReadDataSingleFile <- function(fileIndex, fileList, header, minCount, maxCount, destranded, filterSNPs, quiet=FALSE) {
-    if(quiet==FALSE) {
-      message(sprintf('Reading file (%s / %s) -- %s', fileIndex, nrow(fileList), fileList[[fileIndex]]))
-    }
-    chr = read.table(fileList[[fileIndex]], header=header, stringsAsFactors=FALSE)
-    #### order for base ####
-    ##chr = chr[order(chr$base),]
-    ####
-    names(chr) <- c("id",  "chr", "start", "strand", "coverage", "numCs", "numTs")
+	if(!quiet) {
+		message(sprintf('Reading file (%s/%s) -- %s', fileIndex, length(fileList), fileList[[fileIndex]]))
+	}
+
+    df = read.table(fileList[[fileIndex]], header=header, stringsAsFactors=FALSE)
+    names(df) <- c("id", "chr", "start", "strand", "coverage", "numCs", "numTs")
+
+	# Convert all strand information into +/-/* from {+,-,*,F,R,.}
+	df$strand[which(df$strand == 'F')] = '+'
+	df$strand[which(df$strand == 'R')] = '-'
+	df$strand[which(df$strand == '.')] = '*'
+	df$strand = factor(df$strand, levels=c('+','-','*'))
 
     # At this point, numCs and numTs are actually freqC and freqT from methylKit.
-    freqInvalidList = which(chr$numCs + chr$numTs < 95)
+	# Filter sites with C + T < 95%
+    freqInvalidList = which(df$numCs + df$numTs < 95)
     if(length(freqInvalidList) > 0) {
-        message(sprintf('File (%s / %s) Sites with numCs + numTs < 95: %s / %s = %s',
-          fileIndex, nrow(fileList), nrow(freqInvalidList), nrow(chr), signif(nrow(freqInvalidList) / nrow(chr), 3)))
-        chr$coverage[freqInvalidList] = 0
-    }
+		if(!quiet) {
+			message(sprintf('File (%s/%s) Sites with numCs + numTs < 95: %s/%s = %s',
+				fileIndex, length(fileList), length(freqInvalidList), nrow(df), signif(length(freqInvalidList) / nrow(df), 3)))
+		}
+		df$coverage[freqInvalidList] = 0
+    } else {
+		if(!quiet) {
+			message(sprintf('File (%s/%s) Sites with numCs + numTs < 95: 0 / %s = 0',
+				fileIndex, length(fileList), nrow(df)))
+		}
+	}
 
-    # Now numCs and numTs have frequencies replaced by counts
-    chr$numCs<- round(chr$numCs * chr$coverage / 100)
-    chr$numTs<- round(chr$numTs * chr$coverage / 100)
+	# Now numCs and numTs have frequencies replaced by counts
+	df$numCs = round(df$numCs * df$coverage / 100)
+	df$numTs = round(df$numTs * df$coverage / 100)
 
-    # countInvalidList = which(chr$coverage > maxCount | chr$coverage < minCount)
-    # message(sprintf('File (%s / %s) Sites > maxCount or < minCount: %s / %s = %s',
-    #   fileIndex, nrow(fileList), nrow(countInvalidList), nrow(chr), signif(nrow(countInvalidList) / nrow(chr), 3)))
-    # chr$coverage[countInvalidList] = 0
+	# Destrand (or not)
+	if(destranded == TRUE) {
+		if(!quiet) {
+			message(sprintf('File (%s/%s) Destranding',
+				fileIndex, length(fileList)))
+		}
 
-    if(destranded == TRUE) {
-        destrandList = which(chr$strand == "-" | chr$strand == "R")
-        chr$start[destrandList] = chr$start[destrandList] - 1
-    }
+		# Shift positions on - strand back by 1bp to combine with + strand
+		destrandList = which(df$strand == "-" | df$strand == "R")
+        df$start[destrandList] = df$start[destrandList] - 1
 
-    if(filterSNPs) {
-        data('CT_SNPs_hg19', envir=environment())
-        chr_gr = GRanges(seqnames=chr$chr, ranges=IRanges(start=chr$start, end=chr$start))
+		# Need to re-sort the df in case destranding puts things out of order
+		# For example,
+		# chr1	6	+
+		# chr1	6	-
+		# Would be destranded to
+		# chr1	6	+
+		# chr1	5	+
+		df = df[order(df$chr, df$start),]
 
-        overlaps = findOverlaps(chr_gr, CT_SNPs_hg19)
-        snpInvalidList = overlaps@queryHits
+		# Some ingredients for the hash / destranding
+		MAXBASE = 10^{ceiling(log10(max(df$start) + 1))}
+		uniqueChr = sort(unique(df$chr))
 
-        message(sprintf('File (%s / %s) Sites overlapping C > T SNP: %s / %s = %s',
-          fileIndex, nrow(fileList), nrow(snpInvalidList), nrow(chr), signif(nrow(snpInvalidList) / nrow(chr), 3)))
+		# Hash the locations
+		uniqueLoc = unique(as.numeric(as.factor(df$chr)) * MAXBASE + df$start)
+		numSites = length(uniqueLoc)
 
-        chr$coverage[snpInvalidList] = 0
-    }
+		# Create empty matrices where file data will be columns
+	    chrom = pos = coverage = numCs = numTs = rep.int(0, numSites)
+	    strand = factor(rep(NA, numSites), levels=c('+','-','*'))
 
-    #chr$chr = as.factor(chr$chr)
-    chr$strand = as.factor(chr$strand)
-    ## When only F observed in strand column, as.factor convert F to FALSE
-    levels(chr$strand) = list("+"="F","-"="R","*"="*", "+"="FALSE")
+		# Determine locations of data in uniqueLoc. This should behave so that
+		# base shifted - strand sites have the same "location".
+		location =  findInterval( (as.numeric(as.factor(df$chr)) * MAXBASE) + df$start, uniqueLoc)
 
-    chr[chr$coverage>0,2:7]
+		# Deal with locations having strand NA and set to *
+		# settingList = is.na(strand[location])
+		# strand[location][settingList] = df$strand[settingList]
+		# settingList = !settingList & (strand[location] != df$strand)
+		# strand[location][settingList] = "*"
+		strand = factor(rep.int('*', numSites), levels=c('+','-','*'))
+
+		# Deal with positive strand
+		forward = (df$strand == "+") | (df$strand == "F")
+		chrom[location[forward]] = df$chr[forward]
+		pos[location[forward]] = df$start[forward]
+		coverage[location[forward]] = df$coverage[forward]
+		numCs[location[forward]] = df$numCs[forward]
+		numTs[location[forward]] = df$numTs[forward]
+
+		# Deal with reverse strand
+		reverse = (df$strand == "-") | (df$strand == "R")
+		chrom[location[reverse]] = df$chr[reverse]
+		pos[location[reverse]] = df$start[reverse]
+		coverage[location[reverse]] = coverage[location[reverse]] + df$coverage[reverse]
+		numCs[location[reverse]] = numCs[location[reverse]] + df$numCs[reverse]
+		numTs[location[reverse]] = numTs[location[reverse]] + df$numTs[reverse]
+
+		# Rebuild the data.frame
+		df = data.frame(
+			chr = chrom,
+			start = pos,
+			strand = strand,
+			coverage = coverage,
+			numCs = numCs,
+			numTs = numTs,
+			stringsAsFactors=F)
+    } else {
+		if(!quiet) {
+			message(sprintf('File (%s/%s) Not destranding',
+				fileIndex, length(fileList)))
+		}
+		# Remove the first column of the data.frame
+		df = df[,2:7]
+	}
+
+	# Filter for minCount or maxCount
+	countInvalidList = which(df$coverage > maxCount | df$coverage < minCount)
+	if(length(countInvalidList) > 0) {
+		if(!quiet) {
+			message(sprintf('File (%s/%s) Sites > maxCount or < minCount: %s/%s = %s',
+				fileIndex, length(fileList), length(countInvalidList), nrow(df), signif(length(countInvalidList) / nrow(df), 3)))
+		}
+		df$coverage[countInvalidList] = 0
+	} else {
+		if(!quiet) {
+			message(sprintf('File (%s/%s) Sites > maxCount or < minCount: 0 / %s = 0',
+				fileIndex, length(fileList), nrow(df)))
+		}
+	}
+
+	# Filter C > T SNPs
+	if(filterSNPs) {
+		data('CT_SNPs_hg19', envir=environment())
+
+		df_gr = GRanges(seqnames=df$chr, ranges=IRanges(start=df$start, end=df$start))
+		overlaps = findOverlaps(df_gr, CT_SNPs_hg19)
+		snpInvalidList = queryHits(overlaps)
+
+		if(length(snpInvalidList) > 0) {
+			if(!quiet) {
+				message(sprintf('File (%s/%s) Sites overlapping C > T SNP: %s/%s = %s',
+					fileIndex, length(fileList), length(snpInvalidList), nrow(df), signif(length(snpInvalidList) / nrow(df), 3)))
+			}
+			df$coverage[snpInvalidList] = 0
+		} else {
+			if(!quiet) {
+				message(sprintf('File (%s/%s) Sites overlapping C > T SNP: 0 / %s = 0',
+					fileIndex, length(fileList), nrow(df)))
+			}
+		}
+    } else {
+		if(!quiet) {
+			message(sprintf('File (%s/%s) filterSNPs == FALSE',
+				fileIndex, length(fileList)))
+		}
+	}
+
+	return(df[df$coverage>0,])
 }
 
 #' Read methylation score files to make a 'methylSigData' object.
@@ -108,6 +211,8 @@ methylSigReadData = function(fileList,
         }
     }
 
+	# Collect chromosomes present in each of the files and determine the maximum
+	# start location. (MAXBASE PURPOSE NOT CLEAR YET)
     MAXBASE = 0
     uniqueChr = NULL
     for(fileIndex in 1:n.files) {
@@ -115,90 +220,47 @@ methylSigReadData = function(fileList,
          MAXBASE = max(MAXBASE, max(chrList[[fileIndex]]$start))
     }
 
+	# Determine the unique chromosomes and order them
     uniqueChr = unique(uniqueChr)
     uniqueChr = uniqueChr[order(uniqueChr)]
 
+	# Basically round MAXBASE to the nearest power of 10
     MAXBASE = 10^{ceiling(log10(MAXBASE + 1))}
-    uniqueLoc = NULL
+
+	# Create a hash for unique locations
+	uniqueLoc = NULL
     for(fileIndex in 1:n.files) {
         chrList[[fileIndex]]$chr = factor(chrList[[fileIndex]]$chr, levels=uniqueChr)
         uniqueLoc = unique(c(uniqueLoc, as.numeric(chrList[[fileIndex]]$chr) * MAXBASE+chrList[[fileIndex]]$start))
     }
 
+	# Determine only the unique locations and the number to create the empty
+	# matrices for aggregation
     uniqueLoc = uniqueLoc[order(uniqueLoc)]
-
     sizeRet = NROW(uniqueLoc)
 
+	# Create empty matrices where file data will be columns
     coverage = numCs = numTs = matrix(0, nrow=sizeRet, ncol=n.files)
     strand = factor(rep(NA, sizeRet), levels=levels(chrList[[1]]$strand))
 
+	# Aggregate
     for(fileIndex in 1:n.files) {
-        if(quiet == FALSE) {
-            message(sprintf('(%s)', fileIndex))
-        }
+        # if(quiet == FALSE) {
+        #     message(sprintf('(%s)', fileIndex))
+        # }
         location =  findInterval( (as.numeric(chrList[[fileIndex]]$chr) * MAXBASE+chrList[[fileIndex]]$start) , uniqueLoc)
-        if(destranded == FALSE) {
-            strand[location] = chrList[[fileIndex]]$strand
-            coverage[location,fileIndex] = chrList[[fileIndex]]$coverage
-            numCs[location,fileIndex] = chrList[[fileIndex]]$numCs
-            numTs[location,fileIndex] = chrList[[fileIndex]]$numTs
-        } else {
-            # Deal with locations having strand NA and set to *
-            settingList = is.na(strand[location])
-            strand[location][settingList] = chrList[[fileIndex]]$strand[settingList]
-            settingList = !settingList & (strand[location] != chrList[[fileIndex]]$strand)
-            strand[location][settingList] = "*"
 
-            # Deal with positive strand
-            forward = (chrList[[fileIndex]]$strand == "+")
-            coverage[location[forward],fileIndex] = chrList[[fileIndex]]$coverage[forward]
-            numCs[location[forward],fileIndex] = chrList[[fileIndex]]$numCs[forward]
-            numTs[location[forward],fileIndex] = chrList[[fileIndex]]$numTs[forward]
-
-            # Deal with reverse strand
-            reverse = (chrList[[fileIndex]]$strand == "-")
-            coverage[location[reverse],fileIndex] = coverage[location[reverse],fileIndex] + chrList[[fileIndex]]$coverage[reverse]
-            numCs[location[reverse],fileIndex] = numCs[location[reverse],fileIndex] + chrList[[fileIndex]]$numCs[reverse]
-            numTs[location[reverse],fileIndex] = numTs[location[reverse],fileIndex] + chrList[[fileIndex]]$numTs[reverse]
-        }
+        strand[location] = chrList[[fileIndex]]$strand
+        coverage[location,fileIndex] = chrList[[fileIndex]]$coverage
+        numCs[location,fileIndex] = chrList[[fileIndex]]$numCs
+        numTs[location,fileIndex] = chrList[[fileIndex]]$numTs
     }
-
-    # Filter by minCount and maxCount while also modifying chr, uniqueLoc, strand, numCs, numTs
-    # This is in the idiom of the what's been implemented
-      countInvalidList = NULL
-      for(fileIndex in 1:n.files) {
-        # Record the countInvalidList
-        countInvalidList = unique( c(countInvalidList, which(
-          ((coverage[, fileIndex] != 0) & (coverage[, fileIndex] < minCount)) |
-          ((coverage[, fileIndex] != 0) & (coverage[, fileIndex] > maxCount)) ) ) )
-      }
-
-	# For simulated data you could have nothing in the countInvalidList
-	if(length(countInvalidList) > 0) {
-		uniqueLoc = uniqueLoc[-countInvalidList]
-		strand = strand[-countInvalidList]
-		coverage = coverage[-countInvalidList, ]
-		numCs = numCs[-countInvalidList, ]
-		numTs = numTs[-countInvalidList, ]
-
-		message(sprintf('Sites > maxCount or < minCount: %s / %s = %s',
-			length(countInvalidList), nrow(coverage) + length(countInvalidList),
-			signif( length(countInvalidList) / (nrow(coverage) + length(countInvalidList)) , 3)))
-    } else {
-		message('Sites > maxCount or < minCount = 0')
-	}
-
-#    strand = as.factor(strand)
-#    levels(strand) = list("+"="1","-"="2","*"="3")
 
     options = paste("maxCount=", maxCount, " & minCount=", minCount, " & filterSNPs=", filterSNPs, sep="")
     if(!is.na(assembly)) options = paste(options, " & assembly=", assembly, sep="")
     if(!is.na(context))  options = paste(options, " & context=",  context,  sep="")
     if(!is.na(pipeline)) options = paste(options, " & pipeline=", pipeline, sep="")
 
-    # numTs[coverage==0] = NA
-    # numCs[coverage==0] = NA
-    # coverage[coverage==0] = NA
     methylSig.newData(data.ids=uniqueLoc, data.chr=as.factor(uniqueChr[as.integer(uniqueLoc/MAXBASE)]),
                       data.start=uniqueLoc%%MAXBASE, data.end=uniqueLoc%%MAXBASE,
                       data.strand=strand, data.coverage = coverage, data.numTs = numTs, data.numCs = numCs,
