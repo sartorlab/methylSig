@@ -240,7 +240,7 @@ methylSig.subData <- function(meth,i,j, d) {
     ret
 }
 
-methlSig.subDataElement<-function(meth,i,j) {
+methylSig.subDataElement<-function(meth,i,j) {
     if(j=="chr") {
         meth@data.chr[i]
     } else if(j=="start") {
