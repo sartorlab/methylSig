@@ -280,7 +280,7 @@ setMethod("[", signature(x = "methylSigData", i = "ANY", j = "ANY", drop="ANY"),
         } else {
             if(missing(i)) i = 1:NROW(x@data.chr)
             if(!missing(j) && is.character(j)) {
-                methlSig.subDataElement(x,i,j)
+                methylSig.subDataElement(x,i,j)
             } else {
                 methylSig.subData(x,i,j,drop)
             }
