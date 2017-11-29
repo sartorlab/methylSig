@@ -36,4 +36,3 @@ refGeneAnnotationPlot(refGeneAnn,main="ALL", priority=c("promoter","cds",
 \code{\link{refGeneAnnotation}} and \code{\link{getRefgeneInfo}}
 }
 \keyword{refGeneAnnotation}
-

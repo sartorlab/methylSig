@@ -44,4 +44,3 @@ pvalue = methylSig.tfbsEnrichTest(myDiffSigboth,
 \code{\link{getTFBSInfo}}
 }
 \keyword{tfbsAnnotation}
-

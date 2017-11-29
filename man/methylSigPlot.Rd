@@ -62,4 +62,3 @@ methylSigPlot(meth, "chr21", c(43800000, 43900000), groups=c(1,0),
              tfbsDense=FALSE, sigQ=0.05)
 
 }
-

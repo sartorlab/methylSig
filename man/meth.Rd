@@ -13,4 +13,3 @@ There are 4 AML (acute myeloid leukemia) samples and 4 NBM (normal bone marrow)
 samples. Data are in hg18 coordinates.
 }
 \keyword{datasets}
-

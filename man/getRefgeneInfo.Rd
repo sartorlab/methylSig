@@ -27,4 +27,3 @@ refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
 \code{\link{refGeneAnnotation}} and \code{\link{refGeneAnnotationPlot}}
 }
 \keyword{refGeneAnnotation}
-

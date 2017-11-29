@@ -15,4 +15,3 @@ samples. Data are in hg18 coordinates.
 of the site-wise differential methylation test using \code{\link{methylSigCalc}}.
 }
 \keyword{datasets}
-

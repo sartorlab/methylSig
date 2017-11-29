@@ -2,10 +2,10 @@
 % Please edit documentation in R/methods.R
 \docType{class}
 \name{methylSigDiff-class}
+\alias{methylSigDiff-class}
+\alias{methylSigDiff}
 \alias{[,methylSigDiff,ANY,character-method}
 \alias{[,methylSigDiff,ANY,missing-method}
-\alias{methylSigDiff}
-\alias{methylSigDiff-class}
 \alias{show,methylSigDiff-method}
 \title{This class is for generating 'methylSigDiff' object.}
 \usage{
@@ -64,6 +64,7 @@ This method is for printing a methylSigDiff object.
 
 \item{\code{data.options}}{A character vector}
 }}
+
 \examples{
 show("myDiff")
 
@@ -71,4 +72,3 @@ show("myDiff")
 \keyword{classes}
 \keyword{internal}
 \keyword{methods}
-

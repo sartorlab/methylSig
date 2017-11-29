@@ -37,4 +37,3 @@ autoCorr = methylSigWeightedAutoCorr(meth[,"chr"], meth[,"start"],
 autoCorr
 
 }
-

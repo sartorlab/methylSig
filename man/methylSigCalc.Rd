@@ -58,4 +58,3 @@ myDiffSig = methylSigCalc (meth, dispersion=0, local.disp=TRUE,
 \code{\link{methylSigPlot}}, \code{\link{methylSigReadData}}
 }
 \keyword{differentialMethylation}
-

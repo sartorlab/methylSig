@@ -2,9 +2,9 @@
 % Please edit documentation in R/methods.R
 \docType{class}
 \name{methylSigData-class}
-\alias{[,methylSigData,ANY,ANY-method}
-\alias{methylSigData}
 \alias{methylSigData-class}
+\alias{methylSigData}
+\alias{[,methylSigData,ANY,ANY-method}
 \alias{show,methylSigData-method}
 \title{This class is for generating 'methylSigData' object.}
 \usage{
@@ -57,6 +57,7 @@ This method is for printing a methylSigData object.
 
 \item{\code{options}}{A character vector}
 }}
+
 \examples{
 showClass("methylSigData")
 
@@ -66,4 +67,3 @@ show("methylSigData")
 \keyword{classes}
 \keyword{internal}
 \keyword{methods}
-

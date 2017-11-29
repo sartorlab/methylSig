@@ -36,4 +36,3 @@ cpgAnnotationPlot(cpgAnn,main="ALL")
 \code{\link{cpgAnnotation}} and \code{\link{getCpGInfo}}
 }
 \keyword{CpGAnnotation}
-

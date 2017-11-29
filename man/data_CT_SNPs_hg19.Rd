@@ -2,8 +2,8 @@
 % Please edit documentation in R/methylSig_data_doc.R
 \docType{data}
 \name{data_CT_SNPs_hg19}
-\alias{CT_SNPs_hg19}
 \alias{data_CT_SNPs_hg19}
+\alias{CT_SNPs_hg19}
 \title{CpG Index for hg19}
 \format{A GenomicRanges object of length 1,321,463}
 \source{
@@ -21,4 +21,3 @@ to pull all sites with alternate frequency greater than 0.05. We then used
 SNPs.
 }
 \keyword{datasets}
-

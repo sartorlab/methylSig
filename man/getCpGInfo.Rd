@@ -18,6 +18,7 @@ This function reads CpG island information from a text or bed file for future an
 \section{Warning}{
  The same genome assembly of data should be used in annotation. This function does not check genome assembly type or version.
 }
+
 \examples{
 cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
                       package = "methylSig"))
@@ -27,4 +28,3 @@ cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
 \code{\link{cpgAnnotationPlot}} and \code{\link{cpgAnnotation}}
 }
 \keyword{CpGAnnotation}
-

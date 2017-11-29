@@ -33,4 +33,3 @@ cpgAnn = cpgAnnotation(cpgInfo,myDiffSigboth)
 \code{\link{cpgAnnotationPlot}} and \code{\link{getCpGInfo}}
 }
 \keyword{CpGAnnotation}
-

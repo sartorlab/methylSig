@@ -23,4 +23,3 @@ This funciton tiles data within windows of a given width across genome. It gives
 data(sampleData)
 methTile = methylSigTile(meth)
 }
-

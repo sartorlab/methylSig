@@ -26,6 +26,7 @@ This function uses a binomial-based model to calculate differential methylation 
 \section{Warning}{
  This function does not take into account the variability among samples in each group being compared.
 }
+
 \examples{
 data(sampleData)
 myDiff = binomialDiffCalc(meth)
@@ -35,4 +36,3 @@ myDiff = binomialDiffCalc(meth)
 \code{\link{methylSigCalc}}
 }
 \keyword{differentialMethylation}
-

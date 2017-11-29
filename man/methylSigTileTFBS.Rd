@@ -20,4 +20,3 @@ Gives total number of methylated cytosines and total number of reads (coverage) 
 \seealso{
 \code{\link{getTFBSInfo}} and \code{\link{methylSigTile}}.
 }
-

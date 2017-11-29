@@ -22,4 +22,3 @@ data(sampleData)
 write.methylSigDiff(myDiffSigboth, file="myResult.txt", row.names=FALSE, quote=FALSE, sep="\\t")
 
 }
-

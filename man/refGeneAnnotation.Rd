@@ -32,4 +32,3 @@ refGeneAnn = refGeneAnnotation(refGeneInfo,myDiffSigboth)
 \code{\link{refGeneAnnotationPlot}} and \code{\link{getRefgeneInfo}}
 }
 \keyword{refGeneAnnotation}
-

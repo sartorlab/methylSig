@@ -24,4 +24,3 @@ This function reads the transcription factor binding site information for future
 \code{\link{methylSig.tfbsEnrichTest}}
 }
 \keyword{tfbsAnnotation}
-
