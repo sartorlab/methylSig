@@ -1,530 +1,166 @@
 context('Test methylSigReadData')
 
+# Lay out what you expect to happen in all cases
+
+########################
+### test_1.txt
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = -; M = - # at 9413839
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 45; M = 40 # at 9413839
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = -/25; M = -/20
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 20/25; M = 0/5
+# 9413839 is a CT SNP
+# chr21	9413839	+	20	0	CG	CGG
+# chr21	9413840	-	20	5	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = 34; M = 34 # at 9419909
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 34; M = 34 # at 9419909
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = 14/-; M = 14/-
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 14/20; M = 14/20
+# 9419909 is a CT SNP
+# chr21	9419908	+	14	0	CG	CGG
+# chr21	9419909	-	20	0	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = 0; M = 0 (kept because test_2.txt has identical location that is kept)
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 0; M = 0 (kept because test_2.txt has identical location that is kept)
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = 0; M = 0 (kept because test_2.txt has identical location that is kept)
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 0; M = 0 (kept because test_2.txt has identical location that is kept)
+# No SNP
+# chr21	43052356	-	550	0	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = 96; M = 87 # at 43053297
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 96; M = 87 # at 43053297
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = 24/72; M = 23/64
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 24/72; M = 23/64
+# No SNP
+# chr21	43053297	+	23	1	CG	CGG
+# chr21	43053298	-	64	8	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# No SNP
+# chr21	43053323	+	4	0	CG	CGG
+
+########################
+### test_2.txt
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = -; M = - # at 9413839
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 0; M = 0 # at 9413839
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = -/0; M = -/0
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 0/0; M = 0/0
+# EXCLUDE THESE FROM THIS FILE
+# chr21	9413839	+	20	0	CG	CGG
+# chr21	9413840	-	20	5	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = 10; M = 10 # at 9419909
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 10; M = 10  # at 9419909
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = 0/-; M = 0/-
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 0/0; M = 0/0
+# 9419910 is a CT SNP
+# chr21	9419908	+	5	0	CG	CGG
+# chr21	9419909	-	5	0	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = 300; M = 300
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 300; M = 300
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = 300; M = 300
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 300; M = 300
+# No SNP
+# chr21	43052356	-	300	0	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = 458; M = 434 # at 43053297 (kept because test_1.txt has identical location that is kept)
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = 458; M = 434 # at 43053297 (kept because test_1.txt has identical location that is kept)
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = 318/140; M = 300/134
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = 318/140; M = 300/134
+# No SNP
+# chr21	43053297	+	300	18	CG	CGG
+# chr21	43053298	-	134	6	CG	CGG
+
+# destrand = T, filterSNPs = T, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# destrand = T, filterSNPs = F, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# destrand = F, filterSNPs = T, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# destrand = F, filterSNPs = F, min/max = 10/500: cov = -; M = - (removed because test_2.txt has identical and 0 in both)
+# No SNP
+# chr21	43053323	+	4	0	CG	CGG
+
+result1_cov = matrix(c(34,0,96,10,300,458), nrow = 3, ncol = 2, byrow = FALSE)
+result1_M = matrix(c(34,0,87,10,300,434), nrow = 3, ncol = 2, byrow = FALSE)
+
+result2_cov = matrix(c(45,34,0,96,0,10,300,458), nrow = 4, ncol = 2, byrow = FALSE)
+result2_M = matrix(c(40,34,0,87,0,10,300,434), nrow = 4, ncol = 2, byrow = FALSE)
+
+result3_cov = matrix(c(25,14,0,24,72,0,0,300,318,140), nrow = 5, ncol = 2, byrow = FALSE)
+result3_M = matrix(c(20,14,0,23,64,0,0,300,300,134), nrow = 5, ncol = 2, byrow = FALSE)
+
+result4_cov = matrix(c(20,25,14,20,0,24,72,0,0,0,0,300,318,140), nrow = 7, ncol = 2, byrow = FALSE)
+result4_M = matrix(c(20,20,14,20,0,23,64,0,0,0,0,300,300,134), nrow = 7, ncol = 2, byrow = FALSE)
+
+
 ################################################################################
 # Test min/max filters
 
-files = system.file('extdata', 'test_minmax_1.txt', package='methylSig')
+files = c(system.file('extdata', 'test_1.txt', package='methylSig'),
+    system.file('extdata', 'test_2.txt', package='methylSig'))
 
-data1 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
+test_that('data1 coverage and M matrices are as expected', {
+    data1 = methylSigReadData(
+        fileList = files,
+        sample.ids = c('test_1', 'test_2'),
+        assembly = 'hg19',
+        destranded = TRUE,
+        maxCount = 500,
+        minCount = 10,
+        filterSNPs = TRUE,
+        num.cores = 1,
+        fileType = 'cytosineReport')
 
-test_that('Test minCount removal (data1)', {
-	expect_equal( length(data1@data.start), expected = 5 )
-	expect_equal( 3 %in% data1@data.start, expected = FALSE )
+    expect_true(all(as.matrix(bsseq::getCoverage(data1, type = 'Cov')) == result1_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data1, type = 'M')) == result1_M))
 })
 
-data2 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
+test_that('data2 coverage and M matrices are as expected', {
+    data2 = methylSigReadData(
+        fileList = files,
+        sample.ids = c('test_1', 'test_2'),
+        assembly = 'hg19',
+        destranded = TRUE,
+        maxCount = 500,
+        minCount = 10,
+        filterSNPs = FALSE,
+        num.cores = 1,
+        fileType = 'cytosineReport')
 
-test_that('Test minCount rescue (data2)', {
-	expect_equal( length(data2@data.start), expected = 3 )
-	expect_equal( 3 %in% data2@data.start, expected = TRUE )
-	expect_equal( all( c(3,6,8) %in% data2@data.start ), expected = TRUE )
+    expect_true(all(as.matrix(bsseq::getCoverage(data2, type = 'Cov')) == result2_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data2, type = 'M')) == result2_M))
 })
 
-##############
+test_that('data3 coverage and M matrices are as expected', {
+    data3 = methylSigReadData(
+        fileList = files,
+        sample.ids = c('test_1', 'test_2'),
+        assembly = 'hg19',
+        destranded = FALSE,
+        maxCount = 500,
+        minCount = 10,
+        filterSNPs = TRUE,
+        num.cores = 1,
+        fileType = 'cytosineReport')
 
-files = system.file('extdata', 'test_minmax_2.txt', package='methylSig')
-
-data3 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test maxCount removal (data3)', {
-	expect_equal( length(data3@data.start), expected = 5 )
-	expect_equal( 8 %in% data3@data.start, expected = FALSE )
+    expect_true(all(as.matrix(bsseq::getCoverage(data3, type = 'Cov')) == result3_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data3, type = 'M')) == result3_M))
 })
 
-data4 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
+test_that('data3 coverage and M matrices are as expected', {
+    data4 = methylSigReadData(
+        fileList = files,
+        sample.ids = c('test_1', 'test_2'),
+        assembly = 'hg19',
+        destranded = FALSE,
+        maxCount = 500,
+        minCount = 10,
+        filterSNPs = FALSE,
+        num.cores = 1,
+        fileType = 'cytosineReport')
 
-test_that('Test maxCount removal (data4)', {
-	expect_equal( length(data4@data.start), expected = 2 )
-	expect_equal( all( c(3,6) %in% data4@data.start ), expected = TRUE )
-	expect_equal( 8 %in% data4@data.start, expected = FALSE )
-	expect_equal( all( c(4,7,9) %in% data4@data.start ), expected = FALSE )
-})
-
-##############
-
-files = c(
-	system.file('extdata', 'test_minmax_1.txt', package='methylSig'),
-	system.file('extdata', 'test_minmax_2.txt', package='methylSig')
-	)
-
-data5 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1','test_2'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1,0),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test minCount/maxCount site preservation (data5)', {
-	expect_equal( length(data5@data.start), expected = 6 )
-	expect_equal( data5@data.coverage[which(data5@data.start == 3), 1], expected = 0 )
-	expect_equal( data5@data.coverage[which(data5@data.start == 3), 2], expected = 10 )
-	expect_equal( data5@data.coverage[which(data5@data.start == 8), 1], expected = 200 )
-	expect_equal( data5@data.coverage[which(data5@data.start == 8), 2], expected = 0 )
-})
-
-data6 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1','test_2'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1,0),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test minCount/maxCount site preservation (data6)', {
-	expect_equal( length(data6@data.start), expected = 3 )
-	expect_equal( data6@data.coverage[which(data6@data.start == 3), 1], expected = 19 )
-	expect_equal( data6@data.coverage[which(data6@data.start == 3), 2], expected = 24 )
-	expect_equal( data6@data.coverage[which(data6@data.start == 8), 1], expected = 400 )
-	expect_equal( data6@data.coverage[which(data6@data.start == 8), 2], expected = 0 )
-})
-
-################################################################################
-# Test %C + %T < 95%
-
-files = system.file('extdata', 'test_freq_1.txt', package='methylSig')
-
-data7 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test %C + %T < 95% removal (data7)', {
-	expect_equal( length(data7@data.start), expected = 5 )
-	expect_equal( 3 %in% data7@data.start, expected = FALSE )
-})
-
-data8 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-# Is this the behavior we want? In this case, destranding causes the data
-# on the forward strand to be destroyed and shifts the data on the reverse
-# strand to that position. Or do we want to do this check after destranding?
-# That would cause the CpG at 3 to be lost completely.
-test_that('Test %C + %T < 95% removal (data8)', {
-	expect_equal( length(data8@data.start), expected = 3 )
-	expect_equal( 3 %in% data8@data.start, expected = TRUE )
-	expect_equal( data8@data.coverage[which(data8@data.start == 3), 1], expected = 14 )
-})
-
-##############
-
-files = system.file('extdata', 'test_freq_2.txt', package='methylSig')
-
-data9 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test %C + %T < 95% removal (data9)', {
-	expect_equal( length(data9@data.start), expected = 5 )
-	expect_equal( 9 %in% data9@data.start, expected = FALSE )
-})
-
-data10 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test %C + %T < 95% removal (data10)', {
-	expect_equal( length(data10@data.start), expected = 3 )
-	expect_equal( 8 %in% data10@data.start, expected = TRUE )
-	expect_equal( data10@data.coverage[which(data10@data.start == 8), 1], expected = 200 )
-})
-
-##############
-
-files = c(
-	system.file('extdata', 'test_freq_1.txt', package='methylSig'),
-	system.file('extdata', 'test_freq_2.txt', package='methylSig')
-	)
-
-data11 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1','test_2'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1,0),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test %C + %T < 95% removal (data11)', {
-	expect_equal( length(data11@data.start), expected = 6 )
-	expect_equal( data11@data.coverage[which(data11@data.start == 3), 1], expected = 0 )
-	expect_equal( data11@data.coverage[which(data11@data.start == 3), 2], expected = 10 )
-	expect_equal( data11@data.coverage[which(data11@data.start == 9), 1], expected = 200 )
-	expect_equal( data11@data.coverage[which(data11@data.start == 9), 2], expected = 0 )
-})
-
-data12 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1','test_2'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1,0),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test %C + %T < 95% removal (data12)', {
-	expect_equal( length(data12@data.start), expected = 3 )
-	expect_equal( data12@data.coverage[which(data12@data.start == 3), 1], expected = 14 )
-	expect_equal( data12@data.coverage[which(data12@data.start == 3), 2], expected = 24 )
-	expect_equal( data12@data.coverage[which(data12@data.start == 8), 1], expected = 400 )
-	expect_equal( data12@data.coverage[which(data12@data.start == 8), 2], expected = 200 )
-})
-
-################################################################################
-# Test combinations
-
-files = system.file('extdata', 'test_combo_1.txt', package='methylSig')
-
-data13 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data13)', {
-	expect_equal( length(data13@data.start), expected = 7 )
-	expect_equal( all( c(1,3,4,8,10,30,31) %in% data13@data.start ), expected = FALSE )
-	expect_equal( all( c(6,7,15,16,20,25,9411410) %in% data13@data.start ), expected = TRUE )
-})
-
-data14 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = TRUE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data14)', {
-	expect_equal( length(data14@data.start), expected = 6 )
-	expect_equal( all( c(1,3,4,8,10,30,31) %in% data14@data.start ), expected = FALSE )
-	expect_equal( all( c(6,7,15,16,20,25) %in% data14@data.start ), expected = TRUE )
-})
-
-data15 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data15)', {
-	expect_equal( length(data15@data.start), expected = 5 )
-	expect_equal( all( c(1,4,8,10,15,25,30,31) %in% data15@data.start ), expected = FALSE )
-	expect_equal( all( c(3,6,20,24,9411410) %in% data15@data.start ), expected = TRUE )
-})
-
-data16 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = TRUE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data16)', {
-	expect_equal( length(data16@data.start), expected = 4 )
-	expect_equal( all( c(1,4,8,10,15,25,30,31) %in% data16@data.start ), expected = FALSE )
-	expect_equal( all( c(3,6,20,24) %in% data16@data.start ), expected = TRUE )
-})
-
-##############
-
-files = system.file('extdata', 'test_combo_2.txt', package='methylSig')
-
-data17 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = TRUE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data17)', {
-	expect_equal( length(data17@data.start), expected = 6 )
-	expect_equal( all( c(10,16,25,30,31,48086569,48086570) %in% data17@data.start ), expected = FALSE )
-	expect_equal( all( c(1,6,8,15,20,24) %in% data17@data.start ), expected = TRUE )
-	expect_equal( data17@data.coverage[which(data17@data.start == 6), 1], expected = 55 )
-	expect_equal( data17@data.coverage[which(data17@data.start == 15), 1], expected = 475 )
-})
-
-##############
-
-files = c(
-	system.file('extdata', 'test_combo_1.txt', package='methylSig'),
-	system.file('extdata', 'test_combo_2.txt', package='methylSig')
-	)
-
-data18 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1','test_2'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1,0),
-	destranded = FALSE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data18)', {
-	expect_equal( length(data18@data.start), expected = 10 )
-	expect_equal( all( c(10,30,31) %in% data18@data.start ), expected = FALSE )
-	expect_equal( all( c(1,6,7,8,15,16,20,25,9411410,48086570) %in% data18@data.start ), expected = TRUE )
-	expect_equal( data18@data.coverage[which(data18@data.start == 1), 1], expected = 0 )
-	expect_equal( data18@data.coverage[which(data18@data.start == 1), 2], expected = 14 )
-})
-
-data19 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1','test_2'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1,0),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = FALSE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data19)', {
-	expect_equal( length(data19@data.start), expected = 9 )
-	expect_equal( all( c(4,7,10,16,25,30,31,48086570) %in% data19@data.start ), expected = FALSE )
-	expect_equal( all( c(1,3,6,8,15,20,24,9411410,48086569) %in% data19@data.start ), expected = TRUE )
-	expect_equal( data19@data.coverage[which(data19@data.start == 3), 1], expected = 12 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 3), 2], expected = 0 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 6), 1], expected = 36 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 6), 2], expected = 55 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 8), 1], expected = 0 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 8), 2], expected = 400 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 15), 1], expected = 0 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 15), 2], expected = 475 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 20), 1], expected = 30 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 20), 2], expected = 80 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 24), 1], expected = 50 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 24), 2], expected = 25 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 9411410), 1], expected = 72 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 9411410), 2], expected = 0 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 48086569), 1], expected = 0 )
-	expect_equal( data19@data.coverage[which(data19@data.start == 48086569), 2], expected = 34 )
-})
-
-data20 = methylSigReadData(
-	fileList = files,
-	sample.ids = c('test_1','test_2'),
-	assembly = 'hg19',
-	pipeline = 'bismark and methylKit',
-	header = FALSE,
-	context = 'CpG',
-	resolution = "base",
-	treatment = c(1,0),
-	destranded = TRUE,
-	maxCount = 500,
-	minCount = 10,
-	filterSNPs = TRUE,
-	num.cores = 1,
-	quiet = TRUE)
-
-test_that('Test combination (data20)', {
-	expect_equal( length(data20@data.start), expected = 7 )
-	expect_equal( all( c(4,7,10,16,25,30,31,9411410,48086569,48086570) %in% data20@data.start ), expected = FALSE )
-	expect_equal( all( c(1,3,6,8,15,20,24) %in% data20@data.start ), expected = TRUE )
-	expect_equal( data20@data.coverage[which(data20@data.start == 3), 1], expected = 12 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 3), 2], expected = 0 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 6), 1], expected = 36 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 6), 2], expected = 55 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 8), 1], expected = 0 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 8), 2], expected = 400 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 15), 1], expected = 0 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 15), 2], expected = 475 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 20), 1], expected = 30 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 20), 2], expected = 80 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 24), 1], expected = 50 )
-	expect_equal( data20@data.coverage[which(data20@data.start == 24), 2], expected = 25 )
+    expect_true(all(as.matrix(bsseq::getCoverage(data4, type = 'Cov')) == result4_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data4, type = 'M')) == result4_M))
 })

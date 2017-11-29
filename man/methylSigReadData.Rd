@@ -2,29 +2,18 @@
 % Please edit documentation in R/read.R
 \name{methylSigReadData}
 \alias{methylSigReadData}
-\title{Read methylation score files to make a 'methylSigData' object.}
+\title{Read methylation score files to make a 'BSseq' object.}
 \usage{
-methylSigReadData(fileList, sample.ids, assembly = NA, pipeline = NA,
-  header = TRUE, context = NA, resolution = "base", treatment,
-  destranded = TRUE, maxCount = 500, minCount = 10, filterSNPs = FALSE,
-  num.cores = 1, quiet = FALSE)
+methylSigReadData(fileList, sample.ids, assembly = NA, destranded = TRUE,
+  maxCount = 500, minCount = 10, filterSNPs = FALSE, num.cores = 1,
+  fileType = c("cov", "cytosineReport"))
 }
 \arguments{
-\item{fileList}{Vector of files to be read. The methylKit package can be used to generate the appropriate tables from sorted SAM output from Bismark.}
+\item{fileList}{Files to be read. These can be \code{cov} or \code{cytosine_reports} from the Bismark Methylation Extractor. See \code{fileType} for details.}
 
-\item{sample.ids}{Vector of sample ids.}
+\item{sample.ids}{Sample IDs to be used for the samples.}
 
-\item{assembly}{Character string indicating the genome assembly, such as "hg18", "hg19", "mm9", or "mm10".}
-
-\item{pipeline}{Character string indicating the pipepline name that generated the data, for example, "bismark".}
-
-\item{header}{A logical value indicating whether the score files have header or not.  Default is TRUE.}
-
-\item{context}{Methylation context string such "CpG","CpH",or "CHH".}
-
-\item{resolution}{A string indicating whether the input data are  base-pair or regional resolution. Either "base" or "region" is allowed. Default is "base".}
-
-\item{treatment}{A numeric vector contatining numbers to distinguish the group classification.}
+\item{assembly}{The genome assembly used for alignment. e.g. \code{hg19}, \code{mm10}, etc.}
 
 \item{destranded}{A logical value indicating whether to destrand the reverse to forward strand. If TRUE, the reads from both will be combined. Default is TRUE.}
 
@@ -32,37 +21,34 @@ methylSigReadData(fileList, sample.ids, assembly = NA, pipeline = NA,
 
 \item{minCount}{A number indicating the minimum coverage count to be included.}
 
-\item{filterSNPs}{A logical value indicating whether or not to filter out C > T SNPs based on the 1000 Genomes Project.}
+\item{filterSNPs}{A logical value indicating whether or not to filter out C > T SNPs based on the 1000 Genomes Project. NOTE: Only supported when \code{assembly = 'hg19'}.}
 
 \item{num.cores}{Number of cores to be used in reading files. Default is 1.}
 
-\item{quiet}{A logical value. If quiet=TRUE, then this function does not show progress information. Default is FALSE.}
+\item{fileType}{The format of the input file. Either \code{cov} or \code{cytosineReport}. One of the outputs of the Bismark Methylation Extractor.}
 }
 \value{
 A \code{methylSigData-class} object.
 }
 \description{
-This function reads methylation score files (having columns chrBase, chr, base, strand, coverage, freqC, freqT) to make a \code{methylSigData-class} object that can be used in differential methylation analysis.
+This function reads files created by the Bismark Methylation Extractor, and outputs a \code{BSseq} object.
 }
 \examples{
-fileList = c( system.file("extdata", "AML_1.txt", package = "methylSig"),
-              system.file("extdata", "AML_2.txt", package = "methylSig"),
-              system.file("extdata", "AML_3.txt", package = "methylSig"),
-              system.file("extdata", "AML_4.txt", package = "methylSig"),
-              system.file("extdata", "NBM_1.txt", package = "methylSig"),
-              system.file("extdata", "NBM_2.txt", package = "methylSig"),
-              system.file("extdata", "NBM_3.txt", package = "methylSig"),
-              system.file("extdata", "NBM_4.txt", package = "methylSig"))
-sample.id = c("AML1","AML2","AML3","AML4","NBM1","NBM2","NBM3","NBM4")
+files = c(system.file('extdata', 'test_1.txt', package='methylSig'),
+   system.file('extdata', 'test_2.txt', package='methylSig'))
 
-treatment = c(1,1,1,1,0,0,0,0)
-
-meth <- methylSigReadData(fileList, sample.ids = sample.id,
-            assembly = "hg18", treatment = treatment,
-            context = "CpG", destranded=TRUE)
+test = methylSigReadData(
+       fileList = files,
+       sample.ids = c('test_1', 'test_2'),
+       assembly = 'hg19',
+       destranded = TRUE,
+       maxCount = 500,
+       minCount = 10,
+       filterSNPs = TRUE,
+       num.cores = 1,
+       fileType = 'cytosineReport')
 
 }
 \seealso{
 \code{\link{methylSigCalc}}
 }
-

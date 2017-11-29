@@ -7,6 +7,7 @@
 #'
 #' @importFrom parallel mclapply
 #' @importFrom boot corr
+#' @import bsseq
 #' @import GenomicRanges
 #' @import methods
 #'
