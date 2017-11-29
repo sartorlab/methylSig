@@ -1,6 +1,0 @@
-chr21.3	chr21	3	F	5	100	0
-chr21.4	chr21	4	R	14	100	0
-chr21.6	chr21	6	F	16	80	20
-chr21.7	chr21	7	R	20	100	0
-chr21.8	chr21	8	F	200	100	0
-chr21.9	chr21	9	R	200	98	2
