@@ -3,7 +3,7 @@
 #' This function reads files created by the Bismark Methylation Extractor, and outputs a \code{BSseq} object.
 #'
 #' @param fileList Files to be read. These can be \code{cov} or \code{cytosine_reports} from the Bismark Methylation Extractor. See \code{fileType} for details.
-#' @param sample.ids Sample IDs to be used for the samples.
+#' @param pData A \code{data.frame} containing phenotype information for the samples in \code{fileList}.
 #' @param assembly The genome assembly used for alignment. e.g. \code{hg19}, \code{mm10}, etc.
 #' @param destranded A logical value indicating whether to destrand the reverse to forward strand. If TRUE, the reads from both will be combined. Default is TRUE.
 #' @param maxCount A number indicating the maximum coverage count to be included.
@@ -32,7 +32,7 @@
 #'        fileType = 'cytosineReport')
 #'
 #' @export
-methylSigReadData = function(fileList, sample.ids, assembly = NA,
+methylSigReadData = function(fileList, pData, assembly = NA,
     destranded = TRUE, maxCount = 500, minCount = 10, filterSNPs = FALSE,
     num.cores = 1, fileType = c("cov", "cytosineReport")) {
 
@@ -44,7 +44,7 @@ methylSigReadData = function(fileList, sample.ids, assembly = NA,
     # Read
     bs = bsseq::read.bismark(
         files = fileList,
-        sampleNames = sample.ids,
+        sampleNames = rownames(pData),
         rmZeroCov = TRUE,
         strandCollapse = destranded,
         fileType = fileType,
@@ -81,7 +81,7 @@ methylSigReadData = function(fileList, sample.ids, assembly = NA,
     }
 
     # Rebuild the BSseq object after altering the Cov and M counts
-    bs = bsseq::BSseq(gr = granges(bs), M = m, Cov = cov, rmZeroCov = TRUE)
+    bs = bsseq::BSseq(gr = granges(bs), M = m, Cov = cov, pData = pData, rmZeroCov = TRUE)
 
     # Add the seqinfo information
     genome_seqinfo = tryCatch({

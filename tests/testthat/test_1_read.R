@@ -101,10 +101,19 @@ result4_M = matrix(c(20,20,14,20,0,23,64,0,0,0,0,300,300,134), nrow = 7, ncol = 
 files = c(system.file('extdata', 'test_1.txt', package='methylSig'),
     system.file('extdata', 'test_2.txt', package='methylSig'))
 
+sample_names = gsub('.txt', '', basename(files))
+
+pData = data.frame(
+    Sample_Names = sample_names,
+    Group = relevel(factor(c(1,0)), ref = '0'),
+    Note = c("Hello", "Goodbye"),
+    row.names = sample_names,
+    stringsAsFactors = FALSE)
+
 test_that('data1 coverage and M matrices are as expected', {
     data1 = methylSigReadData(
         fileList = files,
-        sample.ids = c('test_1', 'test_2'),
+        pData = pData,
         assembly = 'hg19',
         destranded = TRUE,
         maxCount = 500,
@@ -120,7 +129,7 @@ test_that('data1 coverage and M matrices are as expected', {
 test_that('data2 coverage and M matrices are as expected', {
     data2 = methylSigReadData(
         fileList = files,
-        sample.ids = c('test_1', 'test_2'),
+        pData = pData,
         assembly = 'hg19',
         destranded = TRUE,
         maxCount = 500,
@@ -136,7 +145,7 @@ test_that('data2 coverage and M matrices are as expected', {
 test_that('data3 coverage and M matrices are as expected', {
     data3 = methylSigReadData(
         fileList = files,
-        sample.ids = c('test_1', 'test_2'),
+        pData = pData,
         assembly = 'hg19',
         destranded = FALSE,
         maxCount = 500,
@@ -152,7 +161,7 @@ test_that('data3 coverage and M matrices are as expected', {
 test_that('data3 coverage and M matrices are as expected', {
     data4 = methylSigReadData(
         fileList = files,
-        sample.ids = c('test_1', 'test_2'),
+        pData = pData,
         assembly = 'hg19',
         destranded = FALSE,
         maxCount = 500,
