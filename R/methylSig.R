@@ -461,6 +461,8 @@ methylSigCalc = function(meth, groups=c("Treatment"=1,"Control"=0), dispersion="
     muList2 <- colSums(methSigObject$creads[group2,])/(colSums((methSigObject$creads+methSigObject$treads)[group2,])+1e-100)
 
     # Populate the muEst
+    # This gives all samples in the same group, the same mu estimates within each locus
+    # NOTE: Is this the correct thing to do?
     for(g in group1) {
         methSigObject$muEst[g,] = muList1
     }
