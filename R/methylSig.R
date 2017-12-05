@@ -319,7 +319,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         } else {
             df_subtract = 1
         }
-        df = pmax(DelayedArray::rowSums(locus_cov[, disp_idx] > 0) - df_subtract, 0)
+        df = pmax(DelayedArray::rowSums(disp_cov[, disp_idx] > 0) - df_subtract, 0)
         # Compute the degrees of freedom to be used in the test for differential methylation
         df = sum(df * weightPhi)
 
