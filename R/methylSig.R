@@ -237,6 +237,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     muEst = matrix(0, ncol = ncol(meth), nrow = nrow(meth))
     muEst[, group2_idx] = DelayedArray::rowSums(all_m[, group2_idx]) / (DelayedArray::rowSums(all_cov[, group2_idx]) + 1e-100)
     muEst[, group1_idx] = DelayedArray::rowSums(all_m[, group1_idx]) / (DelayedArray::rowSums(all_cov[, group1_idx]) + 1e-100)
+    muEst = DelayedArray::DelayedArray(muEst)
 
     # Determine which loci satisfy min.per.group
     valid_idx = which(
