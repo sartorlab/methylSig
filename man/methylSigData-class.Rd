@@ -4,11 +4,11 @@
 \name{methylSigData-class}
 \alias{methylSigData-class}
 \alias{methylSigData}
-\alias{[,methylSigData,ANY,ANY-method}
+\alias{[,methylSigData,ANY,ANY,ANY-method}
 \alias{show,methylSigData-method}
 \title{This class is for generating 'methylSigData' object.}
 \usage{
-\S4method{[}{methylSigData,ANY,ANY}(x, i, j, drop)
+\S4method{[}{methylSigData,ANY,ANY,ANY}(x, i, j, drop)
 
 \S4method{show}{methylSigData}(object)
 }

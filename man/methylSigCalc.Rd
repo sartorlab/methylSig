@@ -4,15 +4,15 @@
 \alias{methylSigCalc}
 \title{Calculates differential methylation statistics using a Beta-binomial approach.}
 \usage{
-methylSigCalc(meth, groups = c(Treatment = 1, Control = 0),
-  dispersion = "both", local.disp = FALSE, winsize.disp = 200,
-  local.meth = FALSE, winsize.meth = 200, min.per.group = c(3, 3),
+methylSigCalc(meth, comparison = NA, dispersion = "both",
+  local.disp = FALSE, winsize.disp = 200, local.meth = FALSE,
+  winsize.meth = 200, min.per.group = c(3, 3),
   weightFunc = methylSig_weightFunc, T.approx = TRUE, num.cores = 1)
 }
 \arguments{
 \item{meth}{A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.}
 
-\item{groups}{A vector of two numbers specify two groups to compare. See `treatment' argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.}
+\item{comparison}{The name of the column in \code{pData(meth)} to use for the comparisons.}
 
 \item{dispersion}{A value indicating which group or groups are used to estimate the variance (dispersion). If groups are defined as c(Treatment=1,Control=0), dispersion can take values "Treatment", "Control", 1, 0 or "both". Default is "both".}
 

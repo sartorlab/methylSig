@@ -4,14 +4,14 @@
 \alias{methylSigReadData}
 \title{Read methylation score files to make a 'BSseq' object.}
 \usage{
-methylSigReadData(fileList, sample.ids, assembly = NA, destranded = TRUE,
+methylSigReadData(fileList, pData, assembly = NA, destranded = TRUE,
   maxCount = 500, minCount = 10, filterSNPs = FALSE, num.cores = 1,
   fileType = c("cov", "cytosineReport"))
 }
 \arguments{
 \item{fileList}{Files to be read. These can be \code{cov} or \code{cytosine_reports} from the Bismark Methylation Extractor. See \code{fileType} for details.}
 
-\item{sample.ids}{Sample IDs to be used for the samples.}
+\item{pData}{A \code{data.frame} containing phenotype information for the samples in \code{fileList}.}
 
 \item{assembly}{The genome assembly used for alignment. e.g. \code{hg19}, \code{mm10}, etc.}
 

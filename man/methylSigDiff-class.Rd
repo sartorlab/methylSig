@@ -4,14 +4,14 @@
 \name{methylSigDiff-class}
 \alias{methylSigDiff-class}
 \alias{methylSigDiff}
-\alias{[,methylSigDiff,ANY,character-method}
-\alias{[,methylSigDiff,ANY,missing-method}
+\alias{[,methylSigDiff,ANY,character,ANY-method}
+\alias{[,methylSigDiff,ANY,missing,ANY-method}
 \alias{show,methylSigDiff-method}
 \title{This class is for generating 'methylSigDiff' object.}
 \usage{
-\S4method{[}{methylSigDiff,ANY,character}(x, i, j)
+\S4method{[}{methylSigDiff,ANY,character,ANY}(x, i, j)
 
-\S4method{[}{methylSigDiff,ANY,missing}(x, i)
+\S4method{[}{methylSigDiff,ANY,missing,ANY}(x, i)
 
 \S4method{show}{methylSigDiff}(object)
 }

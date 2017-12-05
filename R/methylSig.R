@@ -1,25 +1,3 @@
-#' Write a methylSigDiff object as a text file
-#'
-#' This funciton writes \code{methylSigDiff-class} as a text file. All options for write.table are avaiable for this function.
-#'
-#' @param object a \code{methylSigDiff-class} object.
-#' @param ... Arguments inherited from \code{\link[utils]{write.table}}
-#'
-#' @return None
-#'
-#' @examples
-#' data(sampleData)
-#' write.methylSigDiff(myDiffSigboth, file="myResult.txt", row.names=FALSE, quote=FALSE, sep="\t")
-#'
-#' @export
-write.methylSigDiff <- function(object, ...) {
-    printRange = 1:NROW(object@data.ids)
-    printData = data.frame(chr=object@data.chr[printRange], start=object@data.start[printRange],
-                           end=object@data.end[printRange], strand=object@data.strand[printRange],
-                           object@results[printRange,,drop=FALSE])
-    write.table(printData, ...)
-}
-
 #' Differential methylation analysis using binomial model
 #'
 #' This function calculates differential methylation statistics using a binomial-based approach. See `Warning' message below.
@@ -82,41 +60,37 @@ binomialDiffCalc <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.
                               data.options = meth@options)
 }
 
-######## Functions ########
-#                         #
-#    Row: Samples         #
-#    Column: Locations    #
-###########################
+methylSig_weightFunc <- function(u) (1-u^2)^3
 
 # Called by methylSig_dataProcess
 methylSig_derivativePhi <- function(phi, lCreads, lTreads, mu, weight) {
-    derivative <- 0
-    if(NCOL(lCreads) == 1) {
+    derivative = 0
+    if(nrow(lCreads) == 1) {
         ### Only one location, weight does not matter
-            vlist <- which(lCreads > 0)
+            vlist <- which(as.logical(lCreads > 0))
             if(length(vlist) > 0)
-                derivative = derivative + sum( mu[vlist] * (digamma((mu[vlist] * phi) + lCreads[vlist]) - digamma(mu[vlist] * phi + 1e-100)) )
+                derivative = derivative + sum( mu[vlist] * (digamma((mu[vlist] * phi) + lCreads[vlist] + 1e-100) - digamma(mu[vlist] * phi + 1e-100)) )
 
-            vlist <- which(lTreads > 0)
+            vlist <- which(as.logical(lTreads > 0))
             if(length(vlist) > 0)
-                derivative = derivative + sum( (1 - mu[vlist]) * (digamma( ((1-mu[vlist]) * phi) + lTreads[vlist]) - digamma( ((1-mu[vlist]) * phi) + 1e-100)))
+                derivative = derivative + sum( (1 - mu[vlist]) * (digamma( ((1 - mu[vlist]) * phi) + lTreads[vlist] + 1e-100) - digamma( ((1-mu[vlist]) * phi) + 1e-100)))
 
-            vlist <- which((lCreads+lTreads) > 0)
+            vlist <- which(as.logical(lCreads + lTreads) > 0)
             if(length(vlist) > 0)
-                derivative = derivative - sum( digamma(phi + lCreads[vlist] + lTreads[vlist]) - digamma(phi))
+                derivative = derivative - sum( digamma(phi + lCreads[vlist] + lTreads[vlist] + 1e-100) - digamma(phi))
     } else {
-        for(g in 1:NROW(lCreads)) {
-            vlist <- which(lCreads[g,] > 0)
+        for(g in 1:ncol(lCreads)) {
+            vlist <- which(as.logical(lCreads[, g] > 0))
             if(length(vlist) > 0)
-                derivative = derivative + sum( weight[vlist] * mu[g,vlist] * (digamma(mu[g,vlist] * phi + lCreads[g,vlist]) - digamma(mu[g,vlist] * phi + 1e-100)) )
+                derivative = derivative + sum( weight[vlist] * mu[vlist, g] * (digamma(mu[vlist, g] * phi + lCreads[vlist, g] + 1e-100) - digamma(mu[vlist, g] * phi + 1e-100)) )
 
-            vlist <- which(lTreads[g,] > 0)
+            vlist <- which(as.logical(lTreads[vlist, g] > 0))
             if(length(vlist) > 0)
-                derivative = derivative + sum( weight[vlist] * (1 - mu[g,vlist]) * (digamma((1 - mu[g,vlist]) * phi + lTreads[g,vlist]) - digamma((1 - mu[g,vlist]) * phi + 1e-100)) )
+                derivative = derivative + sum( weight[vlist] * (1 - mu[vlist, g]) * (digamma((1 - mu[vlist, g]) * phi + lTreads[vlist, g] + 1e-100) - digamma((1 - mu[vlist, g]) * phi + 1e-100)) )
 
-            vlist <- which((lCreads[g,]+lTreads[g,]) > 0)
+            vlist <- which(as.logical((lCreads[, g] + lTreads[, g]) > 0))
             if(length(vlist) > 0)
-                derivative = derivative - sum( weight[vlist] * (digamma(phi + lCreads[g,vlist] + lTreads[g,vlist]) - digamma(phi)) )
+                derivative = derivative - sum( weight[vlist] * (digamma(phi + lCreads[vlist, g] + lTreads[vlist, g] + 1e-100) - digamma(phi)) )
         }
     }
 
@@ -126,170 +100,58 @@ methylSig_derivativePhi <- function(phi, lCreads, lTreads, mu, weight) {
 # Called by methylSig_dataProcess
 methylSig_derivativeMu <- function(mu, lCreads, lTreads, phi, weight) {
     derivative <- 0
-    if(NCOL(lCreads) == 1) {
-        vlist <- which(lCreads > 0)
+    if(nrow(lCreads) == 1) {
+        vlist <- which(as.logical(lCreads > 0))
         if(length(vlist) > 0)
-            derivative = derivative + sum(digamma(mu*phi+lCreads[vlist])-digamma(mu*phi+1e-100))
-        vlist <- which(lTreads > 0)
+            derivative = derivative + sum(digamma(mu * phi + lCreads[vlist] + 1e-100) - digamma(mu * phi + 1e-100))
+        vlist <- which(as.logical(lTreads > 0))
         if(length(vlist) > 0)
-            derivative = derivative - sum(digamma((1-mu)*phi+lTreads[vlist])-digamma((1-mu)*phi+1e-100))
+            derivative = derivative - sum(digamma((1 - mu) * phi + lTreads[vlist] + 1e-100) - digamma((1 - mu) * phi + 1e-100))
     } else {
-        for(g in 1:NROW(lCreads)) {
-            vlist <- which(lCreads[g,] > 0)
+        for(g in 1:ncol(lCreads)) {
+            vlist <- which(as.logical(lCreads[,g] > 0))
             if(length(vlist) > 0)
-                derivative = derivative + sum(weight[vlist]*(digamma(mu*phi+lCreads[g,vlist])-digamma(mu*phi+1e-100)))
-            vlist <- which(lTreads[g,] > 0)
+                derivative = derivative + sum(weight[vlist] * (digamma(mu * phi + lCreads[vlist, g]+ 1e-100) - digamma(mu * phi + 1e-100)))
+            vlist <- which(as.logical(lTreads[, g] > 0))
             if(length(vlist) > 0)
-                derivative = derivative - sum(weight[vlist]*(digamma((1-mu)*phi+lTreads[g,vlist])-digamma((1-mu)*phi+1e-100)))
+                derivative = derivative - sum(weight[vlist] * (digamma((1 - mu) * phi + lTreads[vlist, g] + 1e-100) - digamma((1 - mu) * phi + 1e-100)))
         }
     }
+
     derivative
 }
 
 # Called by methylSig_dataProcess
 methylSig_logLik  <- function(mu, phi, lCreads, lTreads, weight) {
-    llik  <- 0
-    if(NCOL(lCreads) == 1) {
+    llik = 0
+    if(nrow(lCreads) == 1) {
         ###### single location, weight should be 1
-        for(g in 1:NROW(lCreads)) {
-            if(lCreads[g] > 0) llik = llik + lgamma(mu*phi+lCreads[g]) - lgamma(mu*phi+1e-100)
-            if(lTreads[g] > 0) llik = llik + lgamma((1-mu)*phi+lTreads[g])-lgamma((1-mu)*phi+1e-100)
+        for(g in 1:ncol(lCreads)) {
+            if(lCreads[g] > 0) {
+                llik = llik + as.numeric(lgamma(mu * phi + lCreads[g]) - lgamma(mu * phi + 1e-100))
+            }
+            if(lTreads[g] > 0) {
+                llik = llik + as.numeric(lgamma((1 - mu) * phi + lTreads[g]) - lgamma((1 - mu) * phi + 1e-100))
+            }
         }
     } else {
-        for(g in 1:NROW(lCreads)) {
-            vlist <- which(lCreads[g,] > 0)
-            if(length(vlist) > 0) for(i in vlist) { llik = llik + weight[i]*(lgamma(mu*phi+lCreads[g,i])-lgamma(mu*phi+1e-100))}
-            vlist <- which(lTreads[g,] > 0)
-            if(length(vlist) > 0) for(i in vlist) { llik = llik + weight[i]*(lgamma((1-mu)*phi+lTreads[g,i])-lgamma((1-mu)+1e-100))}
+        for(g in 1:ncol(lCreads)) {
+            vlist <- which(as.logical(lCreads[,g] > 0))
+            if(length(vlist) > 0) {
+                for(i in vlist) {
+                    llik = llik + as.numeric(weight[i] * (lgamma(mu * phi + lCreads[i, g]) - lgamma(mu * phi + 1e-100)))
+                }
+            }
+            vlist <- which(as.logical(lTreads[, g] > 0))
+            if(length(vlist) > 0) {
+                for(i in vlist) {
+                    llik = llik + as.numeric(weight[i] * (lgamma((1 - mu) * phi + lTreads[i, g]) - lgamma((1 - mu) + 1e-100)))
+                }
+            }
         }
     }
 
     2*llik
-}
-
-##### Weight function: tri-weight
-# Called in methylSigCalc
-methylSig_weightFunc <- function(u) (1-u^2)^3
-
-# Called by methylSigCalc
-# loc is an index for a locus in the obj
-methylSig_dataProcess <- function(loc,obj){
-    minMu = 0
-    maxMu = 1
-    group1=obj$groups[[1]]
-    group2=obj$groups[[2]]
-
-    ### all Groups is used to calculate common dispersion prameters)
-    # NOTE: This is not used
-    allGroupsIndex = 3
-
-    # This is really just nLoci again...
-    locSize = NCOL(obj$creads)
-    ############################
-
-    # Counter
-    if(obj$whichOrd[loc] %%10000 == 0) {
-       if(obj$whichOrd[loc] %% 50000 == 0) cat("|") else cat(".")
-       if(obj$whichOrd[loc] %% 200000 == 0) {
-           if(obj$whichOrd[loc] >= 1000000) {
-               cat("(",obj$whichOrd[loc] / 1000000, "m)\n", sep="")
-           } else {
-               cat("(",obj$whichOrd[loc] / 1000, "k)\n", sep="")
-           }
-       }
-    }
-
-    # The wMethIndex and wDispIndex is based on the window
-    # Let's say loc = 2, then saying we have 1000 loci:
-    # validMuList = max(1, 2 - 100):min(1000, 2 + 100) = 1:102
-    validMuList  <- max(1, loc - obj$wMethIndex):min(locSize, loc + obj$wMethIndex )
-    validPhiList <- max(1, loc - obj$wDispIndex):min(locSize, loc + obj$wDispIndex )
-
-    # Converts an index into actual locations by determining which are within the window?
-    validMuList  = validMuList[which(abs(obj$uniqueLoc[validMuList]  - obj$uniqueLoc[loc]) <= obj$wMeth)]
-    validPhiList = validPhiList[which(abs(obj$uniqueLoc[validPhiList] - obj$uniqueLoc[loc]) <= obj$wDispersion)]
-
-    # Of the locations in the window, which can be used for the phi calculation?
-    # These are the locations in the windows whose coverage is > 0 (depending on both or either group as the choice for dispersion estimate)
-    whichUseful = which(obj$validForPhiCalculate[validPhiList] > 0)
-    if(length(whichUseful) == 0)  return(c(loc,NA,NA,NA,NA,NA,NA))
-
-    # Subset the validPhiList by whichUseful
-    validPhiList = validPhiList[whichUseful]
-
-    # If there are more than 5 CpGs in validPhiList, restrict to the first 5?
-    # These 5 will be the closest ones?
-    if(length(validPhiList) > 5) validPhiList = validPhiList[order(abs(obj$uniqueLoc[validPhiList]  - obj$uniqueLoc[loc]))[1:5]]
-
-    # These are the weights
-    # NOTE: I don't quite understand the calculation... What is the second half of the difference?
-    # The function has domain [-1, 1] so you need to see how far away each thing in the window
-    # is from the CpG and then normalize it to be in that domain.
-    weightPhi <- obj$weightFunc((obj$uniqueLoc[validPhiList] - obj$uniqueLoc[loc])*obj$wDispNorm)
-    weightMu  <- obj$weightFunc((obj$uniqueLoc[validMuList]  - obj$uniqueLoc[loc])*obj$wMethNorm)
-
-#    weightMu = weightMu / sum(weightMu)
-
-    df = sum(obj$validForPhiCalculate[validPhiList]*weightPhi)
-    if(df > 1) {
-##          && sum(obj$creads[group1,validMuList] +  obj$treads[group1,validMuList] > 0) >= obj$numValidMu[1]
-##          && sum(obj$creads[group2,validMuList] +  obj$treads[group2,validMuList] > 0) >= obj$numValidMu[2]) {
-
-        ##### common dispersion calculation
-        if(methylSig_derivativePhi(
-            phi = obj$max.InvDisp,
-            lCreads = obj$creads[obj$dispersionGroups, validPhiList],
-            lTreads = obj$treads[obj$dispersionGroups, validPhiList],
-            mu = obj$muEst[obj$dispersionGroups, validPhiList],
-            weight = weightPhi) >= 0) {
-
-            phiCommonEst = obj$max.InvDisp
-        } else if(methylSig_derivativePhi(
-            phi = obj$min.InvDisp,
-            lCreads = obj$creads[obj$dispersionGroups, validPhiList],
-            lTreads = obj$treads[obj$dispersionGroups, validPhiList],
-            mu = obj$muEst[obj$dispersionGroups, validPhiList],
-            weight = weightPhi) <= 0){
-
-            phiCommonEst = obj$min.InvDisp
-        } else {
-            phiCommonEst = uniroot(
-                methylSig_derivativePhi,
-                    c(obj$min.InvDisp, obj$max.InvDisp),
-                    obj$creads[obj$dispersionGroups, validPhiList],
-                    obj$treads[obj$dispersionGroups, validPhiList],
-                    obj$muEst[obj$dispersionGroups, validPhiList],
-                    weightPhi)$root
-        }
-
-        ##### common group means calculation
-
-        muEstC = rep(0,NROW(obj$groups))
-        for(groupsIndex in 1:NROW(obj$groups)) {
-           if(sum(obj$creads[obj$groups[[groupsIndex]], validMuList])==0) {
-                muEstC[groupsIndex] = 0
-           } else if(sum(obj$treads[obj$groups[[groupsIndex]], validMuList])==0) {
-                muEstC[groupsIndex] = 1
-           } else {
-                muEstC[groupsIndex] = uniroot(methylSig_derivativeMu ,c(minMu,maxMu), obj$creads[obj$groups[[groupsIndex]], validMuList],
-                                    obj$treads[obj$groups[[groupsIndex]], validMuList],phiCommonEst, weightMu)$root
-           }
-        }
-
-        #### log Likelihood ratio calculation
-        ###### testing ###########
-        validMuList = loc
-        weightMu = 1
-        ##########################
-
-        logLikRatio = methylSig_logLik (muEstC[1], phiCommonEst, obj$creads[obj$groups[[1]], validMuList], obj$treads[obj$groups[[1]], validMuList], weightMu) +
-                           methylSig_logLik (muEstC[2], phiCommonEst, obj$creads[obj$groups[[2]], validMuList], obj$treads[obj$groups[[2]], validMuList], weightMu) -
-                           methylSig_logLik (muEstC[3], phiCommonEst, obj$creads[obj$groups[[3]], validMuList], obj$treads[obj$groups[[3]], validMuList], weightMu)
-
-        return(c(loc,phiCommonEst,logLikRatio,muEstC,df+2))
-    }
-
-    return(c(loc,NA,NA,NA,NA,NA,NA))
 }
 
 #' Calculates differential methylation statistics using a Beta-binomial approach.
@@ -299,15 +161,15 @@ methylSig_dataProcess <- function(loc,obj){
 #' The function calculates differential methylation statistics between two groups of samples. The function uses Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. Users who wish to tile their data and test for differentially methylated regions (DMRs) instead DMCs should first use the \code{\link{methylSigTile}} function before using this function.
 #'
 #' @param meth A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.
-#' @param groups A vector of two numbers specify two groups to compare. See `treatment' argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
+#' @param comparison The name of the column in \code{pData(meth)} to use for the comparisons.
 #' @param dispersion A value indicating which group or groups are used to estimate the variance (dispersion). If groups are defined as c(Treatment=1,Control=0), dispersion can take values "Treatment", "Control", 1, 0 or "both". Default is "both".
-#' @param local.disp A logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.
+#' @param local.disp A as.logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.
 #' @param winsize.disp A number to specify the window size in basepairs for local dispersion estimation. The dispersion (variance) parameter of the groups at the particular location LOC is calculated using information from LOC - winsize.disp to LOC + winsize.disp. This argument is only activated when local.disp=TRUE. Default is 200.
-#' @param local.meth A logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.
+#' @param local.meth A as.logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.
 #' @param winsize.meth a number to specify the window size in basepairs for local methylation level estimation. The group methylation level at the particular location LOC is calculated using information from LOC - winsize.meth to LOC + winsize.meth. This argument is only activated when local.meth=TRUE. Default is 200.
 #' @param min.per.group A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylated region.  If it is a single number, both groups will use it as the minimum requried number of samples. Default is c(3,3).
 #' @param weightFunc A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as function(u) = (1-u^2)^3. Function value and range of parameter for weight function should be from 0 to 1.
-#' @param T.approx A logical value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (T.approx = FALSE) is recommended when the sample size is large.  Default is TRUE.
+#' @param T.approx A as.logical value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (T.approx = FALSE) is recommended when the sample size is large.  Default is TRUE.
 #' @param num.cores An integer denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores).
 #'
 #' @return \code{methylSigDiff-class} object containing the differential methylation statistics and locations. p.adjust with method="BH" option is used for P-value correction.
@@ -329,205 +191,246 @@ methylSig_dataProcess <- function(loc,obj){
 #' @keywords differentialMethylation
 #'
 #' @export
-methylSigCalc = function(meth, groups=c("Treatment"=1,"Control"=0), dispersion="both",
+methylSigCalc = function(meth, comparison = NA, dispersion="both",
          local.disp=FALSE, winsize.disp=200,
          local.meth=FALSE, winsize.meth=200,
          min.per.group=c(3,3), weightFunc=methylSig_weightFunc, T.approx = TRUE,
          num.cores = 1) {
 
-    # Smallest dispersion?
+    if(!local.disp) {
+        winsize.disp = 0
+    }
+    if(!local.meth) {
+        winsize.meth = 0
+    }
+
     min.disp=1e-6
+    min.InvDisp = 0.001
+    max.InvDisp = max(1/max(min.disp, 1e-6), min.InvDisp)
 
-    if(meth@resolution == "tfbs") {
-        local.disp=FALSE
-        local.meth=FALSE
-    }
+    minMu = 0
+    maxMu = 1
 
-    # Set window sizes to 0 if either is FALSE
-    if(local.meth == FALSE) winsize.meth = 0
-    if(local.disp == FALSE) winsize.disp = 0
+    # Get the group labels, THIS ASSUMES CORRECT REFERENCE LEVEL SET
+    group2 = levels(pData(meth)[, comparison])[2]
+    group1 = levels(pData(meth)[, comparison])[1]
 
-    # Get the treatment vector from the meth object
-    treatment = slot(meth,"treatment")
+    # Determine which rows of pData belong to which group
+    # / which columns of Cov and M matrices belong to which group
+    group2_idx = which(pData(meth)[,comparison] == group2)
+    group1_idx = which(pData(meth)[,comparison] == group1)
 
-    # Determine the indices in the treatment vector belonging to each group
-    group1 = which(treatment == groups[1])
-    group2 = which(treatment == groups[2])
-
-    if(length(group1) == 0 || length(group2) == 0) {
-        stop("Groups do not match your treatment in the input data")
-    }
-
-    # If min.per.group is a single number, make it apply to both groups
-    if(length(min.per.group) == 1) {
-        min.per.group = c(min.per.group,min.per.group)
-    }
-
-    # Instantiate a new environment in which to do the DM testing...?
-    # globalenv() is probably not recommended...
-    methSigObject=new.env(parent=globalenv())
-    class(methSigObject)='pointer'
-
-    #
-    methSigObject$groups <- list(group1 = group1,
-               group2 = group2,
-               group3 = c(group1,group2)
-              )
-
-    # Order the data (data.ids takes the form chr1.390, for example)
-    orderMethStart = order(meth@data.ids)
-
-    ########################################################
-    # Take the transpose of the numTs and numTs from the meth object.
-    # Why take the transpose?
-    # NOTE: These are indeed counts
-    methSigObject$treads   = t(meth@data.numTs[orderMethStart,])
-    methSigObject$creads   = t(meth@data.numCs[orderMethStart,])
-
-    # Reset any NAs to 0
-    methSigObject$treads[is.na(methSigObject$treads)] = 0
-    methSigObject$creads[is.na(methSigObject$creads)] = 0
-
-    ########################################################
-    # vector: uniqueLoc is like a hash of the chromosome locations (they are integers)
-    methSigObject$uniqueLoc = meth@data.ids[orderMethStart]
-
-    ########################################################
-    # integer: Not really sure what to make of this...
-    methSigObject$stepSize = ifelse(meth@destranded, 2, 1)
-
-    ############################
-    # integer: Window size for for localalized methylation estimates
-    methSigObject$wMeth = winsize.meth
-    # numeric: If destranded, then shrink the window by half because you're
-    # incorporating twice the amount of information?
-    # So if winsize.meth = 200 and destranded, then wMethIndex = 100
-    methSigObject$wMethIndex = winsize.meth/methSigObject$stepSize
-    # numeric: A normalization factor of some sort...?
-    # Continuing the above, we'd have 1 / (2 * (100 + 1)) = 0.00495
-    methSigObject$wMethNorm = 1/(methSigObject$stepSize*(methSigObject$wMethIndex+1))
-
-    ############################
-    # integer: Similar procedure to three preceding lines
-    methSigObject$wDispersion = winsize.disp
-    # numeric: If destranded, then shrink the window by half because you're
-    # incorporating twice the amount of information?
-    methSigObject$wDispIndex = winsize.disp/methSigObject$stepSize
-    # numeric: A normalization factor of some sort...?
-    methSigObject$wDispNorm  = 1/(methSigObject$stepSize*(methSigObject$wDispIndex+1))
-
-    ########################################################
-    # Inverted dispersion?
-    # numeric:
-    methSigObject$min.InvDisp = 0.001
-    # numeric: Will always be 1e+6..., so ... why?
-    methSigObject$max.InvDisp = max(1/max(min.disp,1e-6), methSigObject$min.InvDisp)
-
-    ########################################################
-    methSigObject$numValidMu = min.per.group
-    methSigObject$weightFunc = weightFunc
-
-    if(dispersion == "both") {
-        methSigObject$dispersionGroups = c(group1,group2)
-        # This is a vector of which CpGs will have phi (dispersion) calcualted for them.
-        # NOTE: creads and treads are count matrices
-        # numCs and numTs are misnomers until fixed in methylSigReadData (old version)
-        # df$numCs = round(df$numCs * df$coverage / 100)
-        # df$numTs = round(df$numTs * df$coverage / 100)
-        # NOTE: Not sure why 1 is subtracted from the colSums...
-        # NOTE: Columns are locations and rows are samples
-        # locations valid for phi calculation are those with coverage in the both groups (or each, depending) is greater than 0.
-        methSigObject$validForPhiCalculate = pmax(colSums((methSigObject$creads + methSigObject$treads > 0)[group2,]) - 1, 0) + pmax(colSums((methSigObject$creads + methSigObject$treads > 0)[group1,]) - 1, 0)
-    }  else if(dispersion == groups[1] || (length(names(groups)[1])>0 && dispersion == names(groups)[1])) {
-        methSigObject$dispersionGroups = group1
-        # Use only group1
-        methSigObject$validForPhiCalculate = pmax(colSums((methSigObject$creads + methSigObject$treads > 0)[group1,]) - 1, 0)
-    } else if(dispersion == names(groups)[2] || dispersion == groups[2]) {
-        methSigObject$dispersionGroups = group2
-        # Use only group2
-        methSigObject$validForPhiCalculate = pmax(colSums((methSigObject$creads + methSigObject$treads > 0)[group2,]) - 1, 0)
+    # Determine which sample column indexes to use for dispersion calculation
+    if(dispersion == 'both') {
+        disp_idx = c(group2_idx, group1_idx)
+    } else if (dispersion == group2) {
+        disp_idx = group2_idx
+    } else if (dispersion == group1) {
+        disp_idx = group1_idx
     } else {
-        cat("Dispersion should be \"", names(groups)[1], "\", \"", names(groups)[2], "\" or \"both\".\n", sep="")
-        return(NULL)
+        stop('"dispersion" should be one of "both", the name of group2, or the name of group1')
     }
 
-    # For some reason Yongseok took the transpose, so columns are sites and rows are samples...
-    nLoci = NCOL(methSigObject$creads)
-    # Instantiate a matrix to hold the mu estimates (methylation rates)
-    methSigObject$muEst <- matrix(0, ncol=nLoci, nrow=NROW(methSigObject$creads))
+    all_cov = bsseq::getCoverage(meth, type = 'Cov')
+    all_m = bsseq::getCoverage(meth, type = 'M')
 
-    # Get the methylation rates at each site by taking creads / coverages summed over the samples in each group
-    muList1 <- colSums(methSigObject$creads[group1,])/(colSums((methSigObject$creads+methSigObject$treads)[group1,])+1e-100)
-    muList2 <- colSums(methSigObject$creads[group2,])/(colSums((methSigObject$creads+methSigObject$treads)[group2,])+1e-100)
+    muEst = matrix(0, ncol = ncol(meth), nrow = nrow(meth))
+    muEst[, group2_idx] = DelayedArray::rowSums(all_m[, group2_idx]) / (DelayedArray::rowSums(all_cov[, group2_idx]) + 1e-100)
+    muEst[, group1_idx] = DelayedArray::rowSums(all_m[, group1_idx]) / (DelayedArray::rowSums(all_cov[, group1_idx]) + 1e-100)
 
-    # Populate the muEst
-    # This gives all samples in the same group, the same mu estimates within each locus
-    # NOTE: Is this the correct thing to do?
-    for(g in group1) {
-        methSigObject$muEst[g,] = muList1
-    }
-    for(g in group2) {
-        methSigObject$muEst[g,] = muList2
-    }
+    # Determine which loci satisfy min.per.group
+    valid_idx = which(
+        DelayedArray::rowSums(bsseq::getCoverage(meth, type = 'Cov')[, group2_idx] > 0) >= min.per.group[2] & DelayedArray::rowSums(bsseq::getCoverage(meth, type = 'Cov')[, group1_idx] > 0) >= min.per.group[1]
+    )
 
-    # Which sites meet the min.per.group threshold?
-    validLoci = ((colSums((methSigObject$creads + methSigObject$treads> 0)[group1,]) >= min.per.group[1])
-               & (colSums((methSigObject$creads + methSigObject$treads> 0)[group2,]) >= min.per.group[2]))
+    # Go through each index for a valid locus
+    results = GRangesList(mclapply(valid_idx[1:10], function(idx){
 
-    # Used for status updates.
-    methSigObject$whichOrd = cumsum(validLoci)
+        # Pull out the BSseq object for just the locus of interest
+        locus = meth[idx]
 
-    # Some reporting
-    nLoci = sum(validLoci)
-    if(nLoci >= 1000000) {
-        cat("Total number of ", meth@resolution, "s: ", round(nLoci/1000000,2), "m\n", sep="")
-    } else if(nLoci >= 1000) {
-        cat("Total number of ", meth@resolution, "s: ", round(nLoci/1000,2), "k\n", sep="")
-    } else {
-        cat("Total number of ", meth@resolution, "s: ", nLoci, "\n", sep="")
-    }
+        # Setup GRanges where we expand from each CpG by the winsize
+        # Since extending in both directions, divide the winsize.* by 2
+        # This is a GRanges object with only 1 range
+        disp_win_gr = GenomicRanges::flank(GenomicRanges::granges(locus), width = winsize.disp, start = TRUE, both = TRUE)
+        meth_win_gr = GenomicRanges::flank(GenomicRanges::granges(locus), width = winsize.meth, start = TRUE, both = TRUE)
 
-    # Go through each validLoci index (loc) and perform methylSig_dataProcess with the methSigObject (obj)
-    if(num.cores == 1) {
-        result = do.call(rbind, lapply(which(validLoci), methylSig_dataProcess, methSigObject))
-    } else {
-        result = do.call(rbind, mclapply(which(validLoci), methylSig_dataProcess, methSigObject, mc.cores=num.cores))
-    }
-    cat("\n")
+        # If not using local information, then adjust the result of GenomicRanges::flank(). I think
+        # there is a bug where if the width is set to 0, it actually subtracts 1 from then end.
+        # NOTE: Consider reporting this as a bug to Bioc
+        if(winsize.disp == 0){
+            end(disp_win_gr) = end(disp_win_gr) + 1
+        }
+        if(winsize.meth == 0){
+            end(meth_win_gr) = end(meth_win_gr) + 1
+        }
 
-    logLikRatio = result[,3]
+        # Look for overlaps in the original meth for each of the above two
+        # NOTE: You can use meth (BSseq) and it will access the GRanges for GenomicRanges::findOverlaps()
+        disp_overlaps = GenomicRanges::findOverlaps(query = meth, subject = disp_win_gr, ignore.strand = TRUE)
+        meth_overlaps = GenomicRanges::findOverlaps(query = meth, subject = meth_win_gr, ignore.strand = TRUE)
+
+        # Normalize the locations of the loci in the window to be in the domain of
+        # the weight function [-1, 1]
+        # locus is GRanges with a single range
+        # disp_loci and meth_loci are GRanges with number of ranges equal to overlaps
+        # based on the window size
+        disp_loci = meth[S4Vectors::queryHits(disp_overlaps)]
+        meth_loci = meth[S4Vectors::queryHits(meth_overlaps)]
+
+        # Each is a vector of input values to the weight function
+        # We need to scale the loci in the window onto the interval [-1, 1] because
+        # that is the domain of the weightFuncction.
+        disp_loci_norm = (start(disp_loci) - start(locus)) / width(disp_win_gr)
+        meth_loci_norm = (start(meth_loci) - start(locus)) / width(meth_win_gr)
+
+        # Calculate the weights
+        # Each is a vector of values of the weight function.
+        weightPhi = weightFunc(disp_loci_norm)
+        weightMu = weightFunc(meth_loci_norm)
+
+        # Collect Cov and M matrices for all the loci in the window
+        # These are delayed matrices. Rows are loci and columns are samples
+        locus_cov = bsseq::getCoverage(locus, type = 'Cov')
+        locus_meth = bsseq::getCoverage(locus, type = 'M')
+
+        disp_cov = bsseq::getCoverage(meth[S4Vectors::queryHits(disp_overlaps), ], type = 'Cov')
+        disp_meth = bsseq::getCoverage(meth[S4Vectors::queryHits(disp_overlaps), ], type = 'M')
+
+        meth_cov = bsseq::getCoverage(meth[S4Vectors::queryHits(meth_overlaps), ], type = 'Cov')
+        meth_meth = bsseq::getCoverage(meth[S4Vectors::queryHits(meth_overlaps), ], type = 'M')
+
+        # Collect the correct rows of muEst
+        muEst_local = muEst[S4Vectors::queryHits(disp_overlaps),]
+
+        # Convert to old methylSig notion of C reads (methylated) and T reads (unmethylated)
+        # Then we can reuse the derivative and log likelihood functions Yongseok implemented.
+        # These are delayed matrices. Rows are loci and columns are samples
+        disp_local_creads = disp_meth
+        disp_local_treads = disp_cov - disp_meth
+
+        meth_local_creads = meth_meth
+        meth_local_treads = meth_cov - meth_meth
+
+        # Compute the degrees of freedom for the locus
+        if(dispersion == 'both') {
+            df_subtract = 2
+        } else {
+            df_subtract = 1
+        }
+        df = pmax(DelayedArray::rowSums(locus_cov[, disp_idx] > 0) - df_subtract, 0)
+        # Compute the degrees of freedom to be used in the test for differential methylation
+        df = sum(df * weightPhi)
+
+        if(df > 1) {
+            ### Common dispersion calculation
+            # This returns a singleton numeric
+            if(methylSig_derivativePhi(
+                phi = max.InvDisp,
+                lCreads = disp_local_creads[, disp_idx],
+                lTreads = disp_local_treads[, disp_idx],
+                mu = muEst_local[, disp_idx],
+                weight = weightPhi) >= 0) {
+
+                # Describe
+                phiCommonEst = max.InvDisp
+            } else if(methylSig_derivativePhi(
+                phi = min.InvDisp,
+                lCreads = disp_local_creads[, disp_idx],
+                lTreads = disp_local_treads[, disp_idx],
+                mu = muEst_local[, disp_idx],
+                weight = weightPhi) <= 0){
+
+                # Describe
+                phiCommonEst = min.InvDisp
+            } else {
+                # Describe
+                phiCommonEst = stats::uniroot(methylSig_derivativePhi,
+                    c(min.InvDisp, max.InvDisp),
+                    disp_local_creads[, disp_idx],
+                    disp_local_treads[, disp_idx],
+                    muEst_local[, disp_idx],
+                    weightPhi)$root
+            }
+
+            ### Common group means calculation
+            # This returns a numeric vector (group1 and then group2) with the mu estimate
+            muEstC = sapply(list(group1_idx, group2_idx, c(group1_idx, group2_idx)), function(group_idx){
+                if(sum(meth_local_creads[, group_idx]) == 0) {
+                    # If there are no local C reads, methylation is 0
+                    return(0)
+                } else if (sum(meth_local_treads[, group_idx]) == 0) {
+                    # If there are no local T reads, methylation is 1
+                    return(1)
+                } else {
+                    # Otherwise, do something fancier
+                    return(
+                        stats::uniroot(methylSig_derivativeMu ,
+                            c(minMu, maxMu),
+                            meth_local_creads[, group_idx],
+                            meth_local_treads[, group_idx],
+                            phiCommonEst,
+                            weightMu)$root
+                    )
+                }
+            })
+
+            ### log Likelihood ratio calculation
+            logLikRatio =
+                methylSig_logLik(
+                    mu = muEstC[1],
+                    phi = phiCommonEst,
+                    lCreads = meth_local_creads[, group1_idx],
+                    lTreads = meth_local_treads[, group1_idx],
+                    weight = weightMu) +
+                methylSig_logLik(
+                    mu = muEstC[2],
+                    phi = phiCommonEst,
+                    lCreads = meth_local_creads[, group2_idx],
+                    lTreads = meth_local_treads[, group2_idx],
+                    weight = weightMu) -
+                methylSig_logLik(
+                    mu = muEstC[3],
+                    phi = phiCommonEst,
+                    lCreads = meth_local_creads[, c(group1_idx, group2_idx)],
+                    lTreads = meth_local_treads[, c(group1_idx, group2_idx)],
+                    weight = weightMu)
+
+            locus = GenomicRanges::granges(locus)
+            ### Add results to mcols(locus)
+            mcols(locus)$phiCommonEst = phiCommonEst
+            mcols(locus)$logLikRatio = logLikRatio
+            mcols(locus)$muEstC_group1 = muEstC[1]*100
+            mcols(locus)$muEstC_group2 = muEstC[2]*100
+            mcols(locus)$muEstC_group12 = muEstC[3]*100
+            mcols(locus)$df = df + 2
+        } else {
+            # Not enough degrees of freedom, return NAs
+            mcols(locus)$phiCommonEst = NA
+            mcols(locus)$logLikRatio = NA
+            mcols(locus)$muEstC_group1 = NA
+            mcols(locus)$muEstC_group2 = NA
+            mcols(locus)$muEstC_group12 = NA
+            mcols(locus)$df = NA
+        }
+
+        return(locus)
+    }, mc.cores = num.cores))
+
+    results = unlist(results)
 
     if(T.approx) {
-         pvalue = pt(-sqrt(pmax(logLikRatio,0)),result[,7])*2
+         results$pvalue = stats::pt(-sqrt(pmax(results$logLikRatio, 0)), results$df) * 2
     } else {
-         pvalue = pchisq(pmax(logLikRatio,0), 1, lower.tail=F)
+         results$pvalue = stats::pchisq(pmax(results$logLikRatio, 0), 1, lower.tail = F)
     }
 
     # Set any methylation difference less than 0.01 to 0
-    meth.diff = (result[,4] - result[,5])*100
-    meth.diff[which(abs(meth.diff) < 0.01)] = 0
-    meth.diff = as.numeric(meth.diff)
+    results$meth.diff = (results$muEstC_group2 - results$muEstC_group1)
+    results$meth.diff[abs(results$meth.diff) < 0.01] = 0
+    results$meth.diff = as.numeric(results$meth.diff)
 
-    results=cbind(pvalue,p.adjust(pvalue, method ="BH"), meth.diff, logLikRatio,
-                  result[,2], result[,7], result[,4]*100, result[,5]*100)
-
-    colnames(results) = c("pvalue","qvalue", "meth.diff","logLikRatio","theta", "df", paste("mu", groups, sep=""))
-
-
-    optionForLocalDisp = ifelse(local.disp, paste(" & winsize.disp=", winsize.disp, sep=""), "")
-    optionForLocalMeth = ifelse(local.meth, paste(" & winsize.meth=", winsize.meth, sep=""), "")
-
-    options = paste("dispersion=", dispersion, " & local.disp=", local.disp, optionForLocalDisp,
-                             " & local.meth=", local.meth, optionForLocalMeth, "& min.per.group=c(",min.per.group[1],
-                             ",",min.per.group[2], ")& Total: ", NROW(results), sep="")
-
-    methylSig.newDiff(meth@data.ids[orderMethStart[validLoci]], meth@data.chr[orderMethStart[validLoci]],
-                              as.integer(meth@data.start[orderMethStart[validLoci]]),as.integer(meth@data.end[orderMethStart[validLoci]]),
-                              meth@data.strand[orderMethStart[validLoci]], results, sample.ids=meth@sample.ids[c(group1,group2)],
-                              sample.filenames=meth@sample.filenames[c(group1,group2)],
-                              treatment=meth@treatment[c(group1,group2)], destranded=meth@destranded,
-                              resolution=meth@resolution,
-                              options=options, data.options = meth@options)
+    return(results)
 }
 
 
