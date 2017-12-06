@@ -60,9 +60,10 @@ binomialDiffCalc <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.
                               data.options = meth@options)
 }
 
+# Called by methylSigCalc
 methylSig_weightFunc <- function(u) (1-u^2)^3
 
-# Called by methylSig_dataProcess
+# Called by methylSigCalc
 methylSig_derivativePhi <- function(phi, lCreads, lTreads, mu, weight) {
     derivative = 0
     if(nrow(lCreads) == 1) {
@@ -97,7 +98,7 @@ methylSig_derivativePhi <- function(phi, lCreads, lTreads, mu, weight) {
     derivative
 }
 
-# Called by methylSig_dataProcess
+# Called by methylSigCalc
 methylSig_derivativeMu <- function(mu, lCreads, lTreads, phi, weight) {
     derivative <- 0
     if(nrow(lCreads) == 1) {
@@ -277,14 +278,11 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
 
         # Collect Cov and M matrices for all the loci in the window
         # These are delayed matrices. Rows are loci and columns are samples
-        locus_cov = bsseq::getCoverage(locus, type = 'Cov')
-        locus_meth = bsseq::getCoverage(locus, type = 'M')
-
-        local_cov = all_cov[S4Vectors::queryHits(local_overlaps), ]
-        local_meth = all_meth[S4Vectors::queryHits(local_overlaps), ]
+        local_cov = as.matrix(all_cov[S4Vectors::queryHits(local_overlaps), ])
+        local_meth = as.matrix(all_meth[S4Vectors::queryHits(local_overlaps), ])
 
         # Collect the correct rows of muEst
-        local_muEst = muEst[S4Vectors::queryHits(local_overlaps),]
+        local_muEst = as.matrix(muEst[S4Vectors::queryHits(local_overlaps), ])
 
         # Convert to old methylSig notion of C reads (methylated) and T reads (unmethylated)
         # Then we can reuse the derivative and log likelihood functions Yongseok implemented.
@@ -298,7 +296,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         } else {
             df_subtract = 1
         }
-        df = pmax(DelayedArray::rowSums(local_cov[, local_idx] > 0) - df_subtract, 0)
+        df = pmax(rowSums(local_cov[, local_idx, drop = FALSE] > 0) - df_subtract, 0)
         # Compute the degrees of freedom to be used in the test for differential methylation
         df = sum(df * local_weights)
 
@@ -307,18 +305,18 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
             # This returns a singleton numeric
             if(methylSig_derivativePhi(
                 phi = max.InvDisp,
-                lCreads = local_creads[, local_idx],
-                lTreads = local_treads[, local_idx],
-                mu = local_muEst[, local_idx],
+                lCreads = local_creads[, local_idx, drop = FALSE],
+                lTreads = local_treads[, local_idx, drop = FALSE],
+                mu = local_muEst[, local_idx, drop = FALSE],
                 weight = local_weights) >= 0) {
 
                 # Describe
                 phiCommonEst = max.InvDisp
             } else if(methylSig_derivativePhi(
                 phi = min.InvDisp,
-                lCreads = local_creads[, local_idx],
-                lTreads = local_treads[, local_idx],
-                mu = local_muEst[, local_idx],
+                lCreads = local_creads[, local_idx, drop = FALSE],
+                lTreads = local_treads[, local_idx, drop = FALSE],
+                mu = local_muEst[, local_idx, drop = FALSE],
                 weight = local_weights) <= 0){
 
                 # Describe
@@ -327,19 +325,19 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                 # Describe
                 phiCommonEst = stats::uniroot(methylSig_derivativePhi,
                     c(min.InvDisp, max.InvDisp),
-                    local_creads[, local_idx],
-                    local_treads[, local_idx],
-                    local_muEst[, local_idx],
+                    local_creads[, local_idx, drop = FALSE],
+                    local_treads[, local_idx, drop = FALSE],
+                    local_muEst[, local_idx, drop = FALSE],
                     local_weights)$root
             }
 
             ### Common group means calculation
             # This returns a numeric vector (group1 and then group2) with the mu estimate
             muEstC = sapply(list(group1_idx, group2_idx, c(group1_idx, group2_idx)), function(group_idx){
-                if(sum(local_creads[, group_idx]) == 0) {
+                if(sum(local_creads[, group_idx, drop = FALSE]) == 0) {
                     # If there are no local C reads, methylation is 0
                     return(0)
-                } else if (sum(local_treads[, group_idx]) == 0) {
+                } else if (sum(local_treads[, group_idx, drop = FALSE]) == 0) {
                     # If there are no local T reads, methylation is 1
                     return(1)
                 } else {
@@ -347,8 +345,8 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                     return(
                         stats::uniroot(methylSig_derivativeMu ,
                             c(minMu, maxMu),
-                            local_creads[, group_idx],
-                            local_treads[, group_idx],
+                            local_creads[, group_idx, drop = FALSE],
+                            local_treads[, group_idx, drop = FALSE],
                             phiCommonEst,
                             local_weights)$root
                     )
@@ -360,20 +358,20 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                 methylSig_logLik(
                     mu = muEstC[1],
                     phi = phiCommonEst,
-                    lCreads = local_creads[, group1_idx],
-                    lTreads = local_treads[, group1_idx],
+                    lCreads = local_creads[, group1_idx, drop = FALSE],
+                    lTreads = local_treads[, group1_idx, drop = FALSE],
                     weight = local_weights) +
                 methylSig_logLik(
                     mu = muEstC[2],
                     phi = phiCommonEst,
-                    lCreads = local_creads[, group2_idx],
-                    lTreads = local_treads[, group2_idx],
+                    lCreads = local_creads[, group2_idx, drop = FALSE],
+                    lTreads = local_treads[, group2_idx, drop = FALSE],
                     weight = local_weights) -
                 methylSig_logLik(
                     mu = muEstC[3],
                     phi = phiCommonEst,
-                    lCreads = local_creads[, c(group1_idx, group2_idx)],
-                    lTreads = local_treads[, c(group1_idx, group2_idx)],
+                    lCreads = local_creads[, c(group1_idx, group2_idx), drop = FALSE],
+                    lTreads = local_treads[, c(group1_idx, group2_idx), drop = FALSE],
                     weight = local_weights)
 
             locus = GenomicRanges::granges(locus)
