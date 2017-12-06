@@ -68,28 +68,28 @@ methylSig_derivativePhi <- function(phi, lCreads, lTreads, mu, weight) {
     derivative = 0
     if(nrow(lCreads) == 1) {
         ### Only one location, weight does not matter
-            vlist <- which(as.logical(lCreads > 0))
+            vlist <- which(lCreads > 0)
             if(length(vlist) > 0)
                 derivative = derivative + sum( mu[vlist] * (digamma((mu[vlist] * phi) + lCreads[vlist] + 1e-100) - digamma(mu[vlist] * phi + 1e-100)) )
 
-            vlist <- which(as.logical(lTreads > 0))
+            vlist <- which(lTreads > 0)
             if(length(vlist) > 0)
                 derivative = derivative + sum( (1 - mu[vlist]) * (digamma( ((1 - mu[vlist]) * phi) + lTreads[vlist] + 1e-100) - digamma( ((1-mu[vlist]) * phi) + 1e-100)))
 
-            vlist <- which(as.logical(lCreads + lTreads) > 0)
+            vlist <- which((lCreads + lTreads) > 0)
             if(length(vlist) > 0)
                 derivative = derivative - sum( digamma(phi + lCreads[vlist] + lTreads[vlist] + 1e-100) - digamma(phi))
     } else {
         for(g in 1:ncol(lCreads)) {
-            vlist <- which(as.logical(lCreads[, g] > 0))
+            vlist <- which(lCreads[, g] > 0)
             if(length(vlist) > 0)
                 derivative = derivative + sum( weight[vlist] * mu[vlist, g] * (digamma(mu[vlist, g] * phi + lCreads[vlist, g] + 1e-100) - digamma(mu[vlist, g] * phi + 1e-100)) )
 
-            vlist <- which(as.logical(lTreads[vlist, g] > 0))
+            vlist <- which(lTreads[vlist, g] > 0)
             if(length(vlist) > 0)
                 derivative = derivative + sum( weight[vlist] * (1 - mu[vlist, g]) * (digamma((1 - mu[vlist, g]) * phi + lTreads[vlist, g] + 1e-100) - digamma((1 - mu[vlist, g]) * phi + 1e-100)) )
 
-            vlist <- which(as.logical((lCreads[, g] + lTreads[, g]) > 0))
+            vlist <- which((lCreads[, g] + lTreads[, g]) > 0)
             if(length(vlist) > 0)
                 derivative = derivative - sum( weight[vlist] * (digamma(phi + lCreads[vlist, g] + lTreads[vlist, g] + 1e-100) - digamma(phi)) )
         }
@@ -102,18 +102,18 @@ methylSig_derivativePhi <- function(phi, lCreads, lTreads, mu, weight) {
 methylSig_derivativeMu <- function(mu, lCreads, lTreads, phi, weight) {
     derivative <- 0
     if(nrow(lCreads) == 1) {
-        vlist <- which(as.logical(lCreads > 0))
+        vlist <- which(lCreads > 0)
         if(length(vlist) > 0)
             derivative = derivative + sum(digamma(mu * phi + lCreads[vlist] + 1e-100) - digamma(mu * phi + 1e-100))
-        vlist <- which(as.logical(lTreads > 0))
+        vlist <- which(lTreads > 0)
         if(length(vlist) > 0)
             derivative = derivative - sum(digamma((1 - mu) * phi + lTreads[vlist] + 1e-100) - digamma((1 - mu) * phi + 1e-100))
     } else {
         for(g in 1:ncol(lCreads)) {
-            vlist <- which(as.logical(lCreads[,g] > 0))
+            vlist <- which(lCreads[,g] > 0)
             if(length(vlist) > 0)
                 derivative = derivative + sum(weight[vlist] * (digamma(mu * phi + lCreads[vlist, g]+ 1e-100) - digamma(mu * phi + 1e-100)))
-            vlist <- which(as.logical(lTreads[, g] > 0))
+            vlist <- which(lTreads[, g] > 0)
             if(length(vlist) > 0)
                 derivative = derivative - sum(weight[vlist] * (digamma((1 - mu) * phi + lTreads[vlist, g] + 1e-100) - digamma((1 - mu) * phi + 1e-100)))
         }
@@ -137,13 +137,13 @@ methylSig_logLik  <- function(mu, phi, lCreads, lTreads, weight) {
         }
     } else {
         for(g in 1:ncol(lCreads)) {
-            vlist <- which(as.logical(lCreads[,g] > 0))
+            vlist <- which(lCreads[,g] > 0)
             if(length(vlist) > 0) {
                 for(i in vlist) {
                     llik = llik + as.numeric(weight[i] * (lgamma(mu * phi + lCreads[i, g]) - lgamma(mu * phi + 1e-100)))
                 }
             }
-            vlist <- which(as.logical(lTreads[, g] > 0))
+            vlist <- which(lTreads[, g] > 0)
             if(length(vlist) > 0) {
                 for(i in vlist) {
                     llik = llik + as.numeric(weight[i] * (lgamma((1 - mu) * phi + lTreads[i, g]) - lgamma((1 - mu) + 1e-100)))
