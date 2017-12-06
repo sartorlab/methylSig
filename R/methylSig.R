@@ -163,10 +163,8 @@ methylSig_logLik  <- function(mu, phi, lCreads, lTreads, weight) {
 #' @param meth A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.
 #' @param comparison The name of the column in \code{pData(meth)} to use for the comparisons.
 #' @param dispersion A value indicating which group or groups are used to estimate the variance (dispersion). If groups are defined as c(Treatment=1,Control=0), dispersion can take values "Treatment", "Control", 1, 0 or "both". Default is "both".
-#' @param local.disp A as.logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.
-#' @param winsize.disp A number to specify the window size in basepairs for local dispersion estimation. The dispersion (variance) parameter of the groups at the particular location LOC is calculated using information from LOC - winsize.disp to LOC + winsize.disp. This argument is only activated when local.disp=TRUE. Default is 200.
-#' @param local.meth A as.logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.
-#' @param winsize.meth a number to specify the window size in basepairs for local methylation level estimation. The group methylation level at the particular location LOC is calculated using information from LOC - winsize.meth to LOC + winsize.meth. This argument is only activated when local.meth=TRUE. Default is 200.
+#' @param local.info A as.logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.
+#' @param local.winsize A number to specify the window size in basepairs for local dispersion estimation. The dispersion (variance) parameter of the groups at the particular location LOC is calculated using information from LOC - local.winsize to LOC + local.winsize. This argument is only activated when local.info=TRUE. Default is 200.
 #' @param min.per.group A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylated region.  If it is a single number, both groups will use it as the minimum requried number of samples. Default is c(3,3).
 #' @param weightFunc A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as function(u) = (1-u^2)^3. Function value and range of parameter for weight function should be from 0 to 1.
 #' @param T.approx A as.logical value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (T.approx = FALSE) is recommended when the sample size is large.  Default is TRUE.
@@ -185,23 +183,19 @@ methylSig_logLik  <- function(mu, phi, lCreads, lTreads, weight) {
 #' ### treatment group 0 to evaluate dispersion parameter.
 #' ### Also use local information to improve variance estimation.
 #'
-#' myDiffSig = methylSigCalc (meth, dispersion=0, local.disp=TRUE,
+#' myDiffSig = methylSigCalc (meth, dispersion=0, local.info=TRUE,
 #'                            min.per.group=4)
 #'
 #' @keywords differentialMethylation
 #'
 #' @export
 methylSigCalc = function(meth, comparison = NA, dispersion="both",
-         local.disp=FALSE, winsize.disp=200,
-         local.meth=FALSE, winsize.meth=200,
+         local.info=FALSE, local.winsize=200,
          min.per.group=c(3,3), weightFunc=methylSig_weightFunc, T.approx = TRUE,
          num.cores = 1) {
 
-    if(!local.disp) {
-        winsize.disp = 0
-    }
-    if(!local.meth) {
-        winsize.meth = 0
+    if(!local.info) {
+        local.winsize = 0
     }
 
     min.disp=1e-6
@@ -222,26 +216,26 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
 
     # Determine which sample column indexes to use for dispersion calculation
     if(dispersion == 'both') {
-        disp_idx = c(group2_idx, group1_idx)
+        local_idx = c(group2_idx, group1_idx)
     } else if (dispersion == group2) {
-        disp_idx = group2_idx
+        local_idx = group2_idx
     } else if (dispersion == group1) {
-        disp_idx = group1_idx
+        local_idx = group1_idx
     } else {
         stop('"dispersion" should be one of "both", the name of group2, or the name of group1')
     }
 
     all_cov = bsseq::getCoverage(meth, type = 'Cov')
-    all_m = bsseq::getCoverage(meth, type = 'M')
+    all_meth = bsseq::getCoverage(meth, type = 'M')
 
     muEst = matrix(0, ncol = ncol(meth), nrow = nrow(meth))
-    muEst[, group2_idx] = DelayedArray::rowSums(all_m[, group2_idx]) / (DelayedArray::rowSums(all_cov[, group2_idx]) + 1e-100)
-    muEst[, group1_idx] = DelayedArray::rowSums(all_m[, group1_idx]) / (DelayedArray::rowSums(all_cov[, group1_idx]) + 1e-100)
+    muEst[, group2_idx] = DelayedArray::rowSums(all_meth[, group2_idx]) / (DelayedArray::rowSums(all_cov[, group2_idx]) + 1e-100)
+    muEst[, group1_idx] = DelayedArray::rowSums(all_meth[, group1_idx]) / (DelayedArray::rowSums(all_cov[, group1_idx]) + 1e-100)
     muEst = DelayedArray::DelayedArray(muEst)
 
     # Determine which loci satisfy min.per.group
     valid_idx = which(
-        DelayedArray::rowSums(bsseq::getCoverage(meth, type = 'Cov')[, group2_idx] > 0) >= min.per.group[2] & DelayedArray::rowSums(bsseq::getCoverage(meth, type = 'Cov')[, group1_idx] > 0) >= min.per.group[1]
+        DelayedArray::rowSums(all_cov[, group2_idx] > 0) >= min.per.group[2] & DelayedArray::rowSums(all_cov[, group1_idx] > 0) >= min.per.group[1]
     )
 
     # Go through each index for a valid locus
@@ -251,67 +245,52 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         locus = meth[idx]
 
         # Setup GRanges where we expand from each CpG by the winsize
-        # Since extending in both directions, divide the winsize.* by 2
         # This is a GRanges object with only 1 range
-        disp_win_gr = GenomicRanges::flank(GenomicRanges::granges(locus), width = winsize.disp, start = TRUE, both = TRUE)
-        meth_win_gr = GenomicRanges::flank(GenomicRanges::granges(locus), width = winsize.meth, start = TRUE, both = TRUE)
+        local_win_gr = GenomicRanges::flank(GenomicRanges::granges(locus), width = local.winsize, start = TRUE, both = TRUE)
 
         # If not using local information, then adjust the result of GenomicRanges::flank(). I think
         # there is a bug where if the width is set to 0, it actually subtracts 1 from then end.
         # NOTE: Consider reporting this as a bug to Bioc
-        if(winsize.disp == 0){
-            end(disp_win_gr) = end(disp_win_gr) + 1
-        }
-        if(winsize.meth == 0){
-            end(meth_win_gr) = end(meth_win_gr) + 1
+        if(local.winsize == 0){
+            end(local_win_gr) = end(local_win_gr) + 1
         }
 
         # Look for overlaps in the original meth for each of the above two
         # NOTE: You can use meth (BSseq) and it will access the GRanges for GenomicRanges::findOverlaps()
-        disp_overlaps = GenomicRanges::findOverlaps(query = meth, subject = disp_win_gr, ignore.strand = TRUE)
-        meth_overlaps = GenomicRanges::findOverlaps(query = meth, subject = meth_win_gr, ignore.strand = TRUE)
+        local_overlaps = GenomicRanges::findOverlaps(query = meth, subject = local_win_gr, ignore.strand = TRUE)
 
         # Normalize the locations of the loci in the window to be in the domain of
         # the weight function [-1, 1]
         # locus is GRanges with a single range
-        # disp_loci and meth_loci are GRanges with number of ranges equal to overlaps
+        # local_loci and meth_loci are GRanges with number of ranges equal to overlaps
         # based on the window size
-        disp_loci = meth[S4Vectors::queryHits(disp_overlaps)]
-        meth_loci = meth[S4Vectors::queryHits(meth_overlaps)]
+        local_loci = meth[S4Vectors::queryHits(local_overlaps)]
 
         # Each is a vector of input values to the weight function
         # We need to scale the loci in the window onto the interval [-1, 1] because
         # that is the domain of the weightFuncction.
-        disp_loci_norm = (start(disp_loci) - start(locus)) / (winsize.disp + 1)
-        meth_loci_norm = (start(meth_loci) - start(locus)) / (winsize.meth + 1)
+        local_loci_norm = (start(local_loci) - start(locus)) / (local.winsize + 1)
 
         # Calculate the weights
         # Each is a vector of values of the weight function.
-        weightPhi = weightFunc(disp_loci_norm)
-        weightMu = weightFunc(meth_loci_norm)
+        local_weights = weightFunc(local_loci_norm)
 
         # Collect Cov and M matrices for all the loci in the window
         # These are delayed matrices. Rows are loci and columns are samples
         locus_cov = bsseq::getCoverage(locus, type = 'Cov')
         locus_meth = bsseq::getCoverage(locus, type = 'M')
 
-        disp_cov = bsseq::getCoverage(meth[S4Vectors::queryHits(disp_overlaps), ], type = 'Cov')
-        disp_meth = bsseq::getCoverage(meth[S4Vectors::queryHits(disp_overlaps), ], type = 'M')
-
-        meth_cov = bsseq::getCoverage(meth[S4Vectors::queryHits(meth_overlaps), ], type = 'Cov')
-        meth_meth = bsseq::getCoverage(meth[S4Vectors::queryHits(meth_overlaps), ], type = 'M')
+        local_cov = all_cov[S4Vectors::queryHits(local_overlaps), ]
+        local_meth = all_meth[S4Vectors::queryHits(local_overlaps), ]
 
         # Collect the correct rows of muEst
-        muEst_local = muEst[S4Vectors::queryHits(disp_overlaps),]
+        local_muEst = muEst[S4Vectors::queryHits(local_overlaps),]
 
         # Convert to old methylSig notion of C reads (methylated) and T reads (unmethylated)
         # Then we can reuse the derivative and log likelihood functions Yongseok implemented.
         # These are delayed matrices. Rows are loci and columns are samples
-        disp_local_creads = disp_meth
-        disp_local_treads = disp_cov - disp_meth
-
-        meth_local_creads = meth_meth
-        meth_local_treads = meth_cov - meth_meth
+        local_creads = local_meth
+        local_treads = local_cov - local_meth
 
         # Compute the degrees of freedom for the locus
         if(dispersion == 'both') {
@@ -319,28 +298,28 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         } else {
             df_subtract = 1
         }
-        df = pmax(DelayedArray::rowSums(disp_cov[, disp_idx] > 0) - df_subtract, 0)
+        df = pmax(DelayedArray::rowSums(local_cov[, local_idx] > 0) - df_subtract, 0)
         # Compute the degrees of freedom to be used in the test for differential methylation
-        df = sum(df * weightPhi)
+        df = sum(df * local_weights)
 
         if(df > 1) {
             ### Common dispersion calculation
             # This returns a singleton numeric
             if(methylSig_derivativePhi(
                 phi = max.InvDisp,
-                lCreads = disp_local_creads[, disp_idx],
-                lTreads = disp_local_treads[, disp_idx],
-                mu = muEst_local[, disp_idx],
-                weight = weightPhi) >= 0) {
+                lCreads = local_creads[, local_idx],
+                lTreads = local_treads[, local_idx],
+                mu = local_muEst[, local_idx],
+                weight = local_weights) >= 0) {
 
                 # Describe
                 phiCommonEst = max.InvDisp
             } else if(methylSig_derivativePhi(
                 phi = min.InvDisp,
-                lCreads = disp_local_creads[, disp_idx],
-                lTreads = disp_local_treads[, disp_idx],
-                mu = muEst_local[, disp_idx],
-                weight = weightPhi) <= 0){
+                lCreads = local_creads[, local_idx],
+                lTreads = local_treads[, local_idx],
+                mu = local_muEst[, local_idx],
+                weight = local_weights) <= 0){
 
                 # Describe
                 phiCommonEst = min.InvDisp
@@ -348,19 +327,19 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                 # Describe
                 phiCommonEst = stats::uniroot(methylSig_derivativePhi,
                     c(min.InvDisp, max.InvDisp),
-                    disp_local_creads[, disp_idx],
-                    disp_local_treads[, disp_idx],
-                    muEst_local[, disp_idx],
-                    weightPhi)$root
+                    local_creads[, local_idx],
+                    local_treads[, local_idx],
+                    local_muEst[, local_idx],
+                    local_weights)$root
             }
 
             ### Common group means calculation
             # This returns a numeric vector (group1 and then group2) with the mu estimate
             muEstC = sapply(list(group1_idx, group2_idx, c(group1_idx, group2_idx)), function(group_idx){
-                if(sum(meth_local_creads[, group_idx]) == 0) {
+                if(sum(local_creads[, group_idx]) == 0) {
                     # If there are no local C reads, methylation is 0
                     return(0)
-                } else if (sum(meth_local_treads[, group_idx]) == 0) {
+                } else if (sum(local_treads[, group_idx]) == 0) {
                     # If there are no local T reads, methylation is 1
                     return(1)
                 } else {
@@ -368,10 +347,10 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                     return(
                         stats::uniroot(methylSig_derivativeMu ,
                             c(minMu, maxMu),
-                            meth_local_creads[, group_idx],
-                            meth_local_treads[, group_idx],
+                            local_creads[, group_idx],
+                            local_treads[, group_idx],
                             phiCommonEst,
-                            weightMu)$root
+                            local_weights)$root
                     )
                 }
             })
@@ -381,21 +360,21 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                 methylSig_logLik(
                     mu = muEstC[1],
                     phi = phiCommonEst,
-                    lCreads = meth_local_creads[, group1_idx],
-                    lTreads = meth_local_treads[, group1_idx],
-                    weight = weightMu) +
+                    lCreads = local_creads[, group1_idx],
+                    lTreads = local_treads[, group1_idx],
+                    weight = local_weights) +
                 methylSig_logLik(
                     mu = muEstC[2],
                     phi = phiCommonEst,
-                    lCreads = meth_local_creads[, group2_idx],
-                    lTreads = meth_local_treads[, group2_idx],
-                    weight = weightMu) -
+                    lCreads = local_creads[, group2_idx],
+                    lTreads = local_treads[, group2_idx],
+                    weight = local_weights) -
                 methylSig_logLik(
                     mu = muEstC[3],
                     phi = phiCommonEst,
-                    lCreads = meth_local_creads[, c(group1_idx, group2_idx)],
-                    lTreads = meth_local_treads[, c(group1_idx, group2_idx)],
-                    weight = weightMu)
+                    lCreads = local_creads[, c(group1_idx, group2_idx)],
+                    lTreads = local_treads[, c(group1_idx, group2_idx)],
+                    weight = local_weights)
 
             locus = GenomicRanges::granges(locus)
             ### Add results to mcols(locus)
