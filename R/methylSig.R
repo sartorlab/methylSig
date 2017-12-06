@@ -282,8 +282,8 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         # Each is a vector of input values to the weight function
         # We need to scale the loci in the window onto the interval [-1, 1] because
         # that is the domain of the weightFuncction.
-        disp_loci_norm = (start(disp_loci) - start(locus)) / width(disp_win_gr)
-        meth_loci_norm = (start(meth_loci) - start(locus)) / width(meth_win_gr)
+        disp_loci_norm = (start(disp_loci) - start(locus)) / (winsize.disp + 1)
+        meth_loci_norm = (start(meth_loci) - start(locus)) / (winsize.meth + 1)
 
         # Calculate the weights
         # Each is a vector of values of the weight function.
