@@ -240,7 +240,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     )
 
     # Go through each index for a valid locus
-    results = GRangesList(mclapply(valid_idx[1:10], function(idx){
+    results = GRangesList(mclapply(valid_idx, function(idx){
 
         # Pull out the BSseq object for just the locus of interest
         locus = meth[idx]
