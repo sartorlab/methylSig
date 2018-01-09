@@ -207,13 +207,14 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     maxMu = 1
 
     # Get the group labels, THIS ASSUMES CORRECT REFERENCE LEVEL SET
-    group2 = levels(pData(meth)[, comparison])[2]
-    group1 = levels(pData(meth)[, comparison])[1]
+    pdata = pData(meth)
+    group2 = levels(pdata[, comparison])[2]
+    group1 = levels(pdata[, comparison])[1]
 
     # Determine which rows of pData belong to which group
     # / which columns of Cov and M matrices belong to which group
-    group2_idx = which(pData(meth)[,comparison] == group2)
-    group1_idx = which(pData(meth)[,comparison] == group1)
+    group2_idx = which(pdata[,comparison] == group2)
+    group1_idx = which(pdata[,comparison] == group1)
 
     # Determine which sample column indexes to use for dispersion calculation
     if(dispersion == 'both') {
@@ -240,49 +241,59 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     )
 
     # Go through each index for a valid locus
-    results = GRangesList(mclapply(valid_idx, function(idx){
+    results = do.call(c, mclapply(valid_idx, function(idx){
 
         # Pull out the BSseq object for just the locus of interest
         locus = meth[idx]
 
-        # Setup GRanges where we expand from each CpG by the winsize
-        # This is a GRanges object with only 1 range
-        local_win_gr = GenomicRanges::flank(GenomicRanges::granges(locus), width = local.winsize, start = TRUE, both = TRUE)
+        if(local.winsize != 0) {
+            # Use local information
 
-        # If not using local information, then adjust the result of GenomicRanges::flank(). I think
-        # there is a bug where if the width is set to 0, it actually subtracts 1 from then end.
-        # NOTE: Consider reporting this as a bug to Bioc
-        if(local.winsize == 0){
-            end(local_win_gr) = end(local_win_gr) + 1
+            # Setup GRanges where we expand from each CpG by the winsize
+            # This is a GRanges object with only 1 range
+            local_win_gr = GenomicRanges::flank(GenomicRanges::granges(locus), width = local.winsize, start = TRUE, both = TRUE)
+
+            # If not using local information, then adjust the result of GenomicRanges::flank(). I think
+            # there is a bug where if the width is set to 0, it actually subtracts 1 from then end.
+            # NOTE: Consider reporting this as a bug to Bioc
+            if(local.winsize == 0){
+                end(local_win_gr) = end(local_win_gr) + 1
+            }
+
+            # Look for overlaps in the original meth for each of the above two
+            # NOTE: You can use meth (BSseq) and it will access the GRanges for GenomicRanges::findOverlaps()
+            local_overlaps = GenomicRanges::findOverlaps(query = meth, subject = local_win_gr, ignore.strand = TRUE)
+
+            query_idx = S4Vectors::queryHits(local_overlaps)
+
+            # Normalize the locations of the loci in the window to be in the domain of
+            # the weight function [-1, 1]
+            # locus is GRanges with a single range
+            # local_loci and meth_loci are GRanges with number of ranges equal to overlaps
+            # based on the window size
+            local_loci = meth[query_idx]
+
+            # Each is a vector of input values to the weight function
+            # We need to scale the loci in the window onto the interval [-1, 1] because
+            # that is the domain of the weightFuncction.
+            local_loci_norm = (start(local_loci) - start(locus)) / (local.winsize + 1)
+
+            # Calculate the weights
+            # Each is a vector of values of the weight function.
+            local_weights = weightFunc(local_loci_norm)
+        } else {
+            # Do not use local information
+            query_idx = idx
+            local_weights = 1
         }
-
-        # Look for overlaps in the original meth for each of the above two
-        # NOTE: You can use meth (BSseq) and it will access the GRanges for GenomicRanges::findOverlaps()
-        local_overlaps = GenomicRanges::findOverlaps(query = meth, subject = local_win_gr, ignore.strand = TRUE)
-
-        # Normalize the locations of the loci in the window to be in the domain of
-        # the weight function [-1, 1]
-        # locus is GRanges with a single range
-        # local_loci and meth_loci are GRanges with number of ranges equal to overlaps
-        # based on the window size
-        local_loci = meth[S4Vectors::queryHits(local_overlaps)]
-
-        # Each is a vector of input values to the weight function
-        # We need to scale the loci in the window onto the interval [-1, 1] because
-        # that is the domain of the weightFuncction.
-        local_loci_norm = (start(local_loci) - start(locus)) / (local.winsize + 1)
-
-        # Calculate the weights
-        # Each is a vector of values of the weight function.
-        local_weights = weightFunc(local_loci_norm)
 
         # Collect Cov and M matrices for all the loci in the window
         # These are delayed matrices. Rows are loci and columns are samples
-        local_cov = as.matrix(all_cov[S4Vectors::queryHits(local_overlaps), ])
-        local_meth = as.matrix(all_meth[S4Vectors::queryHits(local_overlaps), ])
+        local_cov = as.matrix(all_cov[query_idx, ])
+        local_meth = as.matrix(all_meth[query_idx, ])
 
         # Collect the correct rows of muEst
-        local_muEst = as.matrix(muEst[S4Vectors::queryHits(local_overlaps), ])
+        local_muEst = as.matrix(muEst[query_idx, ])
 
         # Convert to old methylSig notion of C reads (methylated) and T reads (unmethylated)
         # Then we can reuse the derivative and log likelihood functions Yongseok implemented.
@@ -375,27 +386,33 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                     weight = local_weights)
 
             locus = GenomicRanges::granges(locus)
-            ### Add results to mcols(locus)
-            mcols(locus)$phiCommonEst = phiCommonEst
-            mcols(locus)$logLikRatio = logLikRatio
-            mcols(locus)$muEstC_group1 = muEstC[1]*100
-            mcols(locus)$muEstC_group2 = muEstC[2]*100
-            mcols(locus)$muEstC_group12 = muEstC[3]*100
-            mcols(locus)$df = df + 2
+
+            locus_data = data.frame(
+                phiCommonEst = phiCommonEst,
+                logLikRatio = logLikRatio,
+                muEstC_group1 = muEstC[1]*100,
+                muEstC_group2 = muEstC[2]*100,
+                muEstC_group12 = muEstC[3]*100,
+                df = df + 2,
+                stringsAsFactors = F
+            )
         } else {
             # Not enough degrees of freedom, return NAs
-            mcols(locus)$phiCommonEst = NA
-            mcols(locus)$logLikRatio = NA
-            mcols(locus)$muEstC_group1 = NA
-            mcols(locus)$muEstC_group2 = NA
-            mcols(locus)$muEstC_group12 = NA
-            mcols(locus)$df = NA
+            locus_data = data.frame(
+                phiCommonEst = NA,
+                logLikRatio = NA,
+                muEstC_group1 = NA,
+                muEstC_group2 = NA,
+                muEstC_group12 = NA,
+                df = NA,
+                stringsAsFactors = F
+            )
         }
+        ### Add results to mcols(locus)
+        mcols(locus) = locus_data
 
         return(locus)
     }, mc.cores = num.cores))
-
-    results = unlist(results)
 
     if(T.approx) {
          results$pvalue = stats::pt(-sqrt(pmax(results$logLikRatio, 0)), results$df) * 2
@@ -410,10 +427,6 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
 
     return(results)
 }
-
-
-
-
 
 # Not called by ny other function
 methylSigDf <- function(meth, groups=c("Treatment"=1,"Control"=0), min.per.group=c(3,3)) {
