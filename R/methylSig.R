@@ -218,11 +218,9 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     # Go through each index for a valid locus
     results = do.call(rbind, mclapply(valid_idx, function(idx){
 
-        # Pull out the BSseq object for just the locus of interest
-        locus = meth_gr[idx]
-
         if(local.winsize != 0) {
             # Use local information
+            locus = meth_gr[idx]
 
             # Setup GRanges where we expand from each CpG by the winsize
             # This is a GRanges object with only 1 range
