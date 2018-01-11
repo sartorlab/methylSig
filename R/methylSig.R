@@ -375,24 +375,22 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                     lTreads = local_treads[, c(group1_idx, group2_idx), drop = FALSE],
                     weight = local_weights)
 
-            locus_data = data.frame(
+            locus_data = c(
                 phiCommonEst = phiCommonEst,
                 logLikRatio = logLikRatio,
                 muEstC_group1 = muEstC[1]*100,
                 muEstC_group2 = muEstC[2]*100,
                 muEstC_group12 = muEstC[3]*100,
-                df = df + 2,
-                stringsAsFactors = F)
+                df = df + 2)
         } else {
             # Not enough degrees of freedom, return NAs
-            locus_data = data.frame(
+            locus_data = c(
                 phiCommonEst = NA,
                 logLikRatio = NA,
                 muEstC_group1 = NA,
                 muEstC_group2 = NA,
                 muEstC_group12 = NA,
-                df = NA,
-                stringsAsFactors = F)
+                df = NA)
         }
 
         return(locus_data)
