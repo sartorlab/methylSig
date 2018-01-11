@@ -232,11 +232,13 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     results = do.call(rbind, mclapply(seq_along(valid_idx), function(idx){
 
         if(local.winsize != 0) {
-            # Get the locus location
-            locus = meth_gr[idx]
+            # NOTE: It is much faster to work with subsets of the result of start()
+            # than it is to work with subsets of GRanges.
 
             # Get the indices which are within the local.winsize, but also limit to 5 CpGs on either side
-            query_idx = intersect(which(distance(locus, meth_gr) < local.winsize), max(1, idx - 5):min(num_loci, idx + 5))
+            query_idx = intersect(
+                which(abs(start(meth_gr)[idx] - start(meth_gr)) < local.winsize),
+                max(1, idx - 5):min(num_loci, idx + 5))
 
             if(length(query_idx) == 1) {
                 # Do not use local information
@@ -251,17 +253,10 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
                 # Collect the correct rows of muEst
                 local_muEst = matrix(muEst[query_idx, ], nrow = 1)
             } else {
-                # Normalize the locations of the loci in the window to be in the domain of
-                # the weight function [-1, 1]
-                # locus is GRanges with a single range
-                # local_loci and meth_loci are GRanges with number of ranges equal to overlaps
-                # based on the window size
-                local_loci = meth_gr[query_idx]
-
                 # Each is a vector of input values to the weight function
                 # We need to scale the loci in the window onto the interval [-1, 1] because
                 # that is the domain of the weightFuncction.
-                local_loci_norm = (start(local_loci) - start(locus)) / (local.winsize + 1)
+                local_loci_norm = (start(meth_gr)[query_idx] - start(meth_gr)[idx]) / (local.winsize + 1)
 
                 # Calculate the weights
                 # Each is a vector of values of the weight function.
