@@ -169,6 +169,8 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
          min.per.group=c(3,3), weightFunc=methylSig_weightFunc, T.approx = TRUE,
          num.cores = 1) {
 
+    #####################################
+    # Set some constants
     if(!local.info) {
         local.winsize = 0
     }
@@ -180,6 +182,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     minMu = 0
     maxMu = 1
 
+    #####################################
     # Get the group labels, THIS ASSUMES CORRECT REFERENCE LEVEL SET
     pdata = pData(meth)
     group2 = levels(pdata[, comparison])[2]
@@ -201,8 +204,8 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         stop('"dispersion" should be one of "both", the name of group2, or the name of group1')
     }
 
-    meth_gr = GenomicRanges::granges(meth)
-
+    #####################################
+    # Determine which sites are valid to test according to min.per.group
     all_cov = as.matrix(bsseq::getCoverage(meth, type = 'Cov'))
     all_meth = as.matrix(bsseq::getCoverage(meth, type = 'M'))
 
@@ -215,22 +218,25 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         base::rowSums(all_cov[, group2_idx] > 0) >= min.per.group[2] & base::rowSums(all_cov[, group1_idx] > 0) >= min.per.group[1]
     )
 
-    # Go through each index for a valid locus
-    results = do.call(rbind, mclapply(valid_idx, function(idx){
+    #####################################
+    # Resize all_cov, all_meth, and muEst to valid_idx
+    all_cov = all_cov[valid_idx,]
+    all_meth = all_meth[valid_idx,]
+    muEst = muEst[valid_idx,]
+    meth_gr = granges(meth)[valid_idx,]
+
+    num_loci = length(valid_idx)
+
+    #####################################
+    # Go through each valid locus
+    results = do.call(rbind, mclapply(seq_along(valid_idx), function(idx){
 
         if(local.winsize != 0) {
-            # Use local information
+            # Get the locus location
             locus = meth_gr[idx]
 
-            # Setup GRanges where we expand from each CpG by the winsize
-            # This is a GRanges object with only 1 range
-            local_win_gr = GenomicRanges::flank(locus, width = local.winsize, start = TRUE, both = TRUE)
-
-            # Look for overlaps in the original meth for each of the above two
-            # NOTE: You can use meth (BSseq) and it will access the GRanges for GenomicRanges::findOverlaps()
-            local_overlaps = GenomicRanges::findOverlaps(query = meth_gr, subject = local_win_gr, ignore.strand = TRUE)
-
-            query_idx = S4Vectors::queryHits(local_overlaps)
+            # Get the indices which are within the local.winsize, but also limit to 5 CpGs on either side
+            query_idx = intersect(which(distance(locus, meth_gr) < local.winsize), max(1, idx - 5):min(num_loci, idx + 5))
 
             if(length(query_idx) == 1) {
                 # Do not use local information
@@ -396,7 +402,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         return(locus_data)
     }, mc.cores = num.cores))
 
-    results_gr = GenomicRanges::granges(meth)[valid_idx]
+    results_gr = meth_gr
     mcols(results_gr) = results
 
     if(T.approx) {
