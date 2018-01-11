@@ -135,31 +135,33 @@ methylSig_logLik  <- function(mu, phi, lCreads, lTreads, weight) {
 #'
 #' The function calculates differential methylation statistics between two groups of samples. The function uses Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. Users who wish to tile their data and test for differentially methylated regions (DMRs) instead DMCs should first use the \code{\link{methylSigTile}} function before using this function.
 #'
-#' @param meth A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.
+#' @param meth A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.
 #' @param comparison The name of the column in \code{pData(meth)} to use for the comparisons.
-#' @param dispersion A value indicating which group or groups are used to estimate the variance (dispersion). If groups are defined as c(Treatment=1,Control=0), dispersion can take values "Treatment", "Control", 1, 0 or "both". Default is "both".
-#' @param local.info A as.logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.
-#' @param local.winsize A number to specify the window size in basepairs for local dispersion estimation. The dispersion (variance) parameter of the groups at the particular location LOC is calculated using information from LOC - local.winsize to LOC + local.winsize. This argument is only activated when local.info=TRUE. Default is 200.
-#' @param min.per.group A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylated region.  If it is a single number, both groups will use it as the minimum requried number of samples. Default is c(3,3).
-#' @param weightFunc A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as function(u) = (1-u^2)^3. Function value and range of parameter for weight function should be from 0 to 1.
-#' @param T.approx A as.logical value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (T.approx = FALSE) is recommended when the sample size is large.  Default is TRUE.
-#' @param num.cores An integer denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores).
+#' @param dispersion One of \code{both}, or either group name. Indicates which set of samples to use to estimate the dispersion parameter. Default is \code{both}.
+#' @param local.info A \logical{logical} value indicating whether to use local information to improve mean and dispersion parameter estimations. Default is \code{FALSE}.
+#' @param local.winsize An \code{integer} to specify the distance upstream and downstream of a location to include local information for the mean and dispersion parameter estimations. Default is \code{200}.
+#' @param min.per.group A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.
+#' @param weightFunc A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. Function value and range of parameter for weight function should be from 0 to 1.
+#' @param T.approx A \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{T.approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.
+#' @param num.cores An integer denoting how many cores should be used for differential methylation calculations.
 #'
-#' @return \code{methylSigDiff-class} object containing the differential methylation statistics and locations. p.adjust with method="BH" option is used for P-value correction.
+#' @return \code{GRanges} object containing the differential methylation statistics and locations. \code{p.adjust} with \code{method="BH"} option is used for p-value correction.
 #'
 #' @seealso \code{\link{methylSigPlot}}, \code{\link{methylSigReadData}}
 #'
 #' @examples
-#' data(sampleData)
+#' data(data, package = 'methylSig')
 #'
-#' myDiffSig = methylSigCalc (meth)
-#'
-#' ### calculate differential methylation statistics using
-#' ### treatment group 0 to evaluate dispersion parameter.
-#' ### Also use local information to improve variance estimation.
-#'
-#' myDiffSig = methylSigCalc (meth, dispersion=0, local.info=TRUE,
-#'                            min.per.group=4)
+#' result = methylSigCalc(
+#'     meth = data,
+#'     comparison = 'DR_vs_DS',
+#'     dispersion = 'both',
+#'     local.info = FALSE,
+#'     local.winsize = 200,
+#'     min.per.group = c(3,3),
+#'     weightFunc = methylSig_weightFunc,
+#'     T.approx = TRUE,
+#'     num.cores = 1)
 #'
 #' @keywords differentialMethylation
 #'
@@ -170,7 +172,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
          num.cores = 1) {
 
     #####################################
-    # Set some constants
+    # Constants
     if(!local.info) {
         local.winsize = 0
     }
@@ -183,7 +185,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     maxMu = 1
 
     #####################################
-    # Get the group labels, THIS ASSUMES CORRECT REFERENCE LEVEL SET
+    # Get the group labels, NOTE: THIS ASSUMES CORRECT REFERENCE LEVEL SET
     pdata = pData(meth)
     group2 = levels(pdata[, comparison])[2]
     group1 = levels(pdata[, comparison])[1]
@@ -195,11 +197,11 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
 
     # Determine which sample column indexes to use for dispersion calculation
     if(dispersion == 'both') {
-        local_idx = c(group2_idx, group1_idx)
+        disp_groups_idx = c(group2_idx, group1_idx)
     } else if (dispersion == group2) {
-        local_idx = group2_idx
+        disp_groups_idx = group2_idx
     } else if (dispersion == group1) {
-        local_idx = group1_idx
+        disp_groups_idx = group1_idx
     } else {
         stop('"dispersion" should be one of "both", the name of group2, or the name of group1')
     }
@@ -209,6 +211,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
     all_cov = as.matrix(bsseq::getCoverage(meth, type = 'Cov'))
     all_meth = as.matrix(bsseq::getCoverage(meth, type = 'M'))
 
+    # Estimate mu per locus within each group. The same value is used for all samples within the same group.
     muEst = matrix(0, ncol = ncol(meth), nrow = nrow(meth))
     muEst[, group2_idx] = base::rowSums(all_meth[, group2_idx]) / (base::rowSums(all_cov[, group2_idx]) + 1e-100)
     muEst[, group1_idx] = base::rowSums(all_meth[, group1_idx]) / (base::rowSums(all_cov[, group1_idx]) + 1e-100)
@@ -220,6 +223,8 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
 
     #####################################
     # Resize all_cov, all_meth, and muEst to valid_idx
+    # Extract the granges of the meth BSseq object
+    # These are all used within the mclapply below
     all_cov = all_cov[valid_idx,]
     all_meth = all_meth[valid_idx,]
     muEst = muEst[valid_idx,]
@@ -229,59 +234,59 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
 
     #####################################
     # Go through each valid locus
-    results = do.call(rbind, mclapply(seq_along(valid_idx), function(idx){
+    results = do.call(rbind, mclapply(seq_along(valid_idx), function(locus_idx){
 
         if(local.winsize != 0) {
             # NOTE: It is much faster to work with subsets of the result of start()
             # than it is to work with subsets of GRanges.
 
             # Get the indices which are within the local.winsize, but also limit to 5 CpGs on either side
-            query_idx = intersect(
-                which(abs(start(meth_gr)[idx] - start(meth_gr)) < local.winsize),
-                max(1, idx - 5):min(num_loci, idx + 5))
+            local_loci_idx = intersect(
+                which(abs(start(meth_gr)[locus_idx] - start(meth_gr)) < local.winsize),
+                max(1, locus_idx - 5):min(num_loci, locus_idx + 5))
 
-            if(length(query_idx) == 1) {
+            if(length(local_loci_idx) == 1) {
                 # Do not use local information
-                query_idx = idx
+                local_loci_idx = locus_idx
                 local_weights = 1
 
                 # Collect Cov and M matrices for all the loci in the window
-                # These are delayed matrices. Rows are loci and columns are samples
-                local_cov = matrix(all_cov[query_idx, ], nrow = 1)
-                local_meth = matrix(all_meth[query_idx, ], nrow = 1)
+                # Rows are loci and columns are samples
+                local_cov = matrix(all_cov[local_loci_idx, ], nrow = 1)
+                local_meth = matrix(all_meth[local_loci_idx, ], nrow = 1)
 
                 # Collect the correct rows of muEst
-                local_muEst = matrix(muEst[query_idx, ], nrow = 1)
+                local_muEst = matrix(muEst[local_loci_idx, ], nrow = 1)
             } else {
-                # Each is a vector of input values to the weight function
                 # We need to scale the loci in the window onto the interval [-1, 1] because
-                # that is the domain of the weightFuncction.
-                local_loci_norm = (start(meth_gr)[query_idx] - start(meth_gr)[idx]) / (local.winsize + 1)
+                # that is the domain of the weightFunc.
+                # This is a vector of the distances of the local loci to the loci of interest (domain)
+                local_loci_norm = (start(meth_gr)[local_loci_idx] - start(meth_gr)[locus_idx]) / (local.winsize + 1)
 
                 # Calculate the weights
-                # Each is a vector of values of the weight function.
+                # Each is a vector of values of the weight function (range)
                 local_weights = weightFunc(local_loci_norm)
 
                 # Collect Cov and M matrices for all the loci in the window
-                # These are delayed matrices. Rows are loci and columns are samples
-                local_cov = all_cov[query_idx, ]
-                local_meth = all_meth[query_idx, ]
+                # Rows are loci and columns are samples
+                local_cov = all_cov[local_loci_idx, ]
+                local_meth = all_meth[local_loci_idx, ]
 
                 # Collect the correct rows of muEst
-                local_muEst = muEst[query_idx, ]
+                local_muEst = muEst[local_loci_idx, ]
             }
         } else {
             # Do not use local information
-            query_idx = idx
+            local_loci_idx = locus_idx
             local_weights = 1
 
             # Collect Cov and M matrices for all the loci in the window
-            # These are delayed matrices. Rows are loci and columns are samples
-            local_cov = matrix(all_cov[query_idx, ], nrow = 1)
-            local_meth = matrix(all_meth[query_idx, ], nrow = 1)
+            # Rows are loci and columns are samples
+            local_cov = matrix(all_cov[local_loci_idx, ], nrow = 1)
+            local_meth = matrix(all_meth[local_loci_idx, ], nrow = 1)
 
             # Collect the correct rows of muEst
-            local_muEst = matrix(muEst[query_idx, ], nrow = 1)
+            local_muEst = matrix(muEst[local_loci_idx, ], nrow = 1)
         }
 
         # Convert to old methylSig notion of C reads (methylated) and T reads (unmethylated)
@@ -296,7 +301,7 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
         } else {
             df_subtract = 1
         }
-        df = pmax(rowSums(local_cov[, local_idx, drop = FALSE] > 0) - df_subtract, 0)
+        df = pmax(rowSums(local_cov[, disp_groups_idx, drop = FALSE] > 0) - df_subtract, 0)
         # Compute the degrees of freedom to be used in the test for differential methylation
         df = sum(df * local_weights)
 
@@ -305,30 +310,27 @@ methylSigCalc = function(meth, comparison = NA, dispersion="both",
             # This returns a singleton numeric
             if(methylSig_derivativePhi(
                 phi = max.InvDisp,
-                lCreads = local_creads[, local_idx, drop = FALSE],
-                lTreads = local_treads[, local_idx, drop = FALSE],
-                mu = local_muEst[, local_idx, drop = FALSE],
+                lCreads = local_creads[, disp_groups_idx, drop = FALSE],
+                lTreads = local_treads[, disp_groups_idx, drop = FALSE],
+                mu = local_muEst[, disp_groups_idx, drop = FALSE],
                 weight = local_weights) >= 0) {
 
-                # Describe
                 phiCommonEst = max.InvDisp
             } else if(methylSig_derivativePhi(
                 phi = min.InvDisp,
-                lCreads = local_creads[, local_idx, drop = FALSE],
-                lTreads = local_treads[, local_idx, drop = FALSE],
-                mu = local_muEst[, local_idx, drop = FALSE],
+                lCreads = local_creads[, disp_groups_idx, drop = FALSE],
+                lTreads = local_treads[, disp_groups_idx, drop = FALSE],
+                mu = local_muEst[, disp_groups_idx, drop = FALSE],
                 weight = local_weights) <= 0){
 
-                # Describe
                 phiCommonEst = min.InvDisp
             } else {
-                # Describe
                 phiCommonEst = stats::uniroot(
                     f = methylSig_derivativePhi,
                     interval = c(min.InvDisp, max.InvDisp),
-                    local_creads[, local_idx, drop = FALSE],
-                    local_treads[, local_idx, drop = FALSE],
-                    local_muEst[, local_idx, drop = FALSE],
+                    local_creads[, disp_groups_idx, drop = FALSE],
+                    local_treads[, disp_groups_idx, drop = FALSE],
+                    local_muEst[, disp_groups_idx, drop = FALSE],
                     local_weights)$root
             }
 

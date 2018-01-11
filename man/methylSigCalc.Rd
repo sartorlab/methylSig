@@ -5,35 +5,30 @@
 \title{Calculates differential methylation statistics using a Beta-binomial approach.}
 \usage{
 methylSigCalc(meth, comparison = NA, dispersion = "both",
-  local.disp = FALSE, winsize.disp = 200, local.meth = FALSE,
-  winsize.meth = 200, min.per.group = c(3, 3),
+  local.info = FALSE, local.winsize = 200, min.per.group = c(3, 3),
   weightFunc = methylSig_weightFunc, T.approx = TRUE, num.cores = 1)
 }
 \arguments{
-\item{meth}{A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using `methylSigReadData'.}
+\item{meth}{A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.}
 
 \item{comparison}{The name of the column in \code{pData(meth)} to use for the comparisons.}
 
-\item{dispersion}{A value indicating which group or groups are used to estimate the variance (dispersion). If groups are defined as c(Treatment=1,Control=0), dispersion can take values "Treatment", "Control", 1, 0 or "both". Default is "both".}
+\item{dispersion}{One of \code{both}, or either group name. Indicates which set of samples to use to estimate the dispersion parameter. Default is \code{both}.}
 
-\item{local.disp}{A logical value indicating whether to use local information to improve dispersion parameter estimation. Default is FALSE.}
+\item{local.info}{A \logical{logical} value indicating whether to use local information to improve mean and dispersion parameter estimations. Default is \code{FALSE}.}
 
-\item{winsize.disp}{A number to specify the window size in basepairs for local dispersion estimation. The dispersion (variance) parameter of the groups at the particular location LOC is calculated using information from LOC - winsize.disp to LOC + winsize.disp. This argument is only activated when local.disp=TRUE. Default is 200.}
+\item{local.winsize}{An \code{integer} to specify the distance upstream and downstream of a location to include local information for the mean and dispersion parameter estimations. Default is \code{200}.}
 
-\item{local.meth}{A logical value indicating whether to use local information to improve methylation level estimation. Default is FALSE.}
+\item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
 
-\item{winsize.meth}{a number to specify the window size in basepairs for local methylation level estimation. The group methylation level at the particular location LOC is calculated using information from LOC - winsize.meth to LOC + winsize.meth. This argument is only activated when local.meth=TRUE. Default is 200.}
+\item{weightFunc}{A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. Function value and range of parameter for weight function should be from 0 to 1.}
 
-\item{min.per.group}{A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylated region.  If it is a single number, both groups will use it as the minimum requried number of samples. Default is c(3,3).}
+\item{T.approx}{A \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{T.approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.}
 
-\item{weightFunc}{A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as function(u) = (1-u^2)^3. Function value and range of parameter for weight function should be from 0 to 1.}
-
-\item{T.approx}{A logical value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (T.approx = FALSE) is recommended when the sample size is large.  Default is TRUE.}
-
-\item{num.cores}{An integer denoting how many cores should be used for differential methylation calculations (only can be used in machines with multiple cores).}
+\item{num.cores}{An integer denoting how many cores should be used for differential methylation calculations.}
 }
 \value{
-\code{methylSigDiff-class} object containing the differential methylation statistics and locations. p.adjust with method="BH" option is used for P-value correction.
+\code{GRanges} object containing the differential methylation statistics and locations. \code{p.adjust} with \code{method="BH"} option is used for p-value correction.
 }
 \description{
 The function calculates differential methylation statistics between two groups of samples. This is the main function of the methylSig package, and the method most users should use to test for DMCs or DMRs. The function uses a Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group.
@@ -42,16 +37,18 @@ The function calculates differential methylation statistics between two groups o
 The function calculates differential methylation statistics between two groups of samples. The function uses Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. Users who wish to tile their data and test for differentially methylated regions (DMRs) instead DMCs should first use the \code{\link{methylSigTile}} function before using this function.
 }
 \examples{
-data(sampleData)
+data(data, package = 'methylSig')
 
-myDiffSig = methylSigCalc (meth)
-
-### calculate differential methylation statistics using
-### treatment group 0 to evaluate dispersion parameter.
-### Also use local information to improve variance estimation.
-
-myDiffSig = methylSigCalc (meth, dispersion=0, local.disp=TRUE,
-                           min.per.group=4)
+result = methylSigCalc(
+    meth = data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
 
 }
 \seealso{
