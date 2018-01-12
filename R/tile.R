@@ -44,12 +44,16 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
 
     overlaps = findOverlaps(meth, tiles, ignore.strand = TRUE)
 
-    # Prepare for reconstructioon of BSseq object
-    tiles = tiles[unique(subjectHits(overlaps))]
-    tiled_cov = do.call(rbind, by(all_cov, subjectHits(overlaps), colSums))
-    tiled_meth = do.call(rbind, by(all_meth, subjectHits(overlaps), colSums))
+    if(length(overlaps) > 0) {
+        # Prepare for reconstructioon of BSseq object
+        tiles = tiles[unique(subjectHits(overlaps))]
+        tiled_cov = do.call(rbind, by(all_cov, subjectHits(overlaps), colSums))
+        tiled_meth = do.call(rbind, by(all_meth, subjectHits(overlaps), colSums))
 
-    tiled_bsseq = BSseq(M = tiled_meth, Cov = tiled_cov, gr = tiles, pData = pData(meth))
+        tiled_bsseq = BSseq(M = tiled_meth, Cov = tiled_cov, gr = tiles, pData = pData(meth))
 
-    return(tiled_bsseq)
+        return(tiled_bsseq)
+    } else {
+        stop("No regions in 'meth' intersected with regions in 'tiles'.")
+    }
 }

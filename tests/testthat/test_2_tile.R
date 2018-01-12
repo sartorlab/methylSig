@@ -1,82 +1,90 @@
 context('Test methylSigTile')
 
 ################################################################################
-# Test with error message
 
-files = c(
-  system.file('extdata', 'test_1.txt', package='methylSig'),
-  system.file('extdata', 'test_2.txt', package='methylSig'))
+tiles_df = read.table(system.file('extdata','test_tiles.txt', package='methylSig'), header = T, sep = '\t', as.is = T)
 
-data_error_tiled = methylSigReadData(
-  fileList = files,
-  sample.ids = c('test_1','test_2'),
-  assembly = 'hg19',
-  pipeline = 'bismark and methylKit',
-  header = TRUE,
-  context = 'CpG',
-  resolution = "region",
-  treatment = c(1,0),
-  destranded = TRUE,
-  maxCount = 500,
-  minCount = 10,
-  filterSNPs = FALSE,
-  num.cores = 1,
-  quiet = TRUE)
+tiles_gr = makeGRangesFromDataFrame(tiles_df)
 
-test_that('Already tiled data throws error', {
-  expect_error(methylSigTile(data_error_tiled), 'Object has already been tiled')
-})
+files = c(system.file('extdata', 'test_1.txt', package='methylSig'),
+    system.file('extdata', 'test_2.txt', package='methylSig'))
 
-################################################################################
-# Test window tiling with default settings (except header)
+sample_names = gsub('.txt', '', basename(files))
 
-data_default = methylSigReadData(
-  fileList = files,
-  sample.ids = c('test_1','test_2'),
-  assembly = 'hg19',
-  pipeline = 'bismark and methylKit',
-  header = FALSE,
-  context = 'CpG',
-  resolution = "base",
-  treatment = c(1,0),
-  destranded = TRUE,
-  maxCount = 500,
-  minCount = 10,
-  filterSNPs = FALSE,
-  num.cores = 1,
-  quiet = TRUE)
+pData = data.frame(
+    Sample_Names = sample_names,
+    Group = relevel(factor(c(1,0)), ref = '0'),
+    Note = c("Hello", "Goodbye"),
+    row.names = sample_names,
+    stringsAsFactors = FALSE)
 
-tiled_windows = methylSigTile(meth = data_default, win.size = 25)
+data = methylSigReadData(
+    fileList = files,
+    pData = pData,
+    assembly = 'hg19',
+    destranded = TRUE,
+    maxCount = 500,
+    minCount = 10,
+    filterSNPs = TRUE,
+    num.cores = 1,
+    fileType = 'cytosineReport')
 
-test_that('Test tiling by window produces 25bp windows except for 1', {
-  expect_equal( length(which(names(table(tiled_windows@data.end - tiled_windows@data.start + 1)) != '25')), expected = 1)
-})
-
-test_that('Test tiling does not exceed chromosome bound',{
-  # While methylSig is genome ignorant, we can avoid exceeding chromosome
-  # bounds by extending tiles only to max(meth@data.end)
-  expect_equal( tiled_windows@data.end[length(tiled_windows@data.end)] > 48129895, expected = FALSE)
-})
-
-test_that('Test that tiling aggregates properly', {
-  expect_equal( tiled_windows@data.coverage[which(tiled_windows@data.start == 43053285), 1], expected = 96)
-  expect_equal( tiled_windows@data.coverage[which(tiled_windows@data.start == 43053285), 2], expected = 274)
-})
+tiles_gr_seqinfo = tiles_gr
+seqinfo(tiles_gr_seqinfo) = seqinfo(data)
 
 ################################################################################
-# Test annotation tiling with default parameters
 
-cgi_file = system.file('extdata', 'test_annotation.txt', package='methylSig')
-cgis = read.table(cgi_file, header=F, sep='\t', stringsAsFactors=F)
-colnames(cgis) = c('chr','start','end','name')
+truth1_meth = matrix(c(34,10,0,300,87,434), nrow = 3, ncol = 2, byrow = TRUE)
+truth1_cov = matrix(c(34,10,0,300,96,458), nrow = 3, ncol = 2, byrow = TRUE)
 
-tiled_cgis = methylSigTile(meth = data_default, tiles = cgis)
+test_that('Test tileGenome tiling', {
+    tiled_data1 = methylSigTile(
+        meth = data,
+        tiles = NULL,
+        win.size = 200)
 
-test_that('Test tiling by test_annotation aggregates properly',{
-  expect_equal( tiled_cgis@data.coverage[which(tiled_cgis@data.start == 43045070), 1], expected = 44)
-  expect_equal( tiled_cgis@data.coverage[which(tiled_cgis@data.start == 43045070), 2], expected = 0)
-  expect_equal( tiled_cgis@data.coverage[which(tiled_cgis@data.start == 43052350), 1], expected = 116)
-  expect_equal( tiled_cgis@data.coverage[which(tiled_cgis@data.start == 43052350), 2], expected = 207)
-  expect_equal( tiled_cgis@data.coverage[which(tiled_cgis@data.start == 43053316), 1], expected = 0)
-  expect_equal( tiled_cgis@data.coverage[which(tiled_cgis@data.start == 43053316), 2], expected = 176)
+    expect_true(all(truth1_meth == as.matrix(bsseq::getCoverage(tiled_data1, type='M'))))
+    expect_true(all(truth1_cov == as.matrix(bsseq::getCoverage(tiled_data1, type='Cov'))))
+})
+
+truth2_meth = matrix(c(34,10,87,734), nrow = 2, ncol = 2, byrow = TRUE)
+truth2_cov = matrix(c(34,10,96,758), nrow = 2, ncol = 2, byrow = TRUE)
+
+test_that('Test data.frame tiling', {
+    tiled_data2 = methylSigTile(
+        meth = data,
+        tiles = tiles_df,
+        win.size = 200)
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data2, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data2, type='Cov'))))
+})
+
+test_that('Test GRanges tiling warning', {
+    expect_warning(
+        methylSigTile(
+            meth = data,
+            tiles = tiles_gr,
+            win.size = 200),
+        'genome of the GRanges')
+})
+
+test_that('Test GRanges tiling', {
+    tiled_data3 = suppressWarnings(methylSigTile(
+        meth = data,
+        tiles = tiles_gr,
+        win.size = 200))
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data3, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data3, type='Cov'))))
+})
+
+test_that('Test GRanges with seqinfo tiling', {
+    tiled_data4 = methylSigTile(
+        meth = data,
+        tiles = tiles_gr_seqinfo,
+        win.size = 200)
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data4, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data4, type='Cov'))))
 })
