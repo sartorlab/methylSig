@@ -15,9 +15,9 @@ methylSigCalc(meth, comparison = NA, dispersion = "both",
 
 \item{dispersion}{One of \code{both}, or either group name. Indicates which set of samples to use to estimate the dispersion parameter. Default is \code{both}.}
 
-\item{local.info}{A \logical{logical} value indicating whether to use local information to improve mean and dispersion parameter estimations. Default is \code{FALSE}.}
+\item{local.info}{A \code{logical} value indicating whether to use local information to improve mean and dispersion parameter estimations. Default is \code{FALSE}.}
 
-\item{local.winsize}{An \code{integer} to specify the distance upstream and downstream of a location to include local information for the mean and dispersion parameter estimations. Default is \code{200}.}
+\item{local.winsize}{An \code{integer} to specify the distance upstream and downstream of a location to include local information for the mean and dispersion parameter estimations. NOTE: An additional constraint is placed whereby a maximum of 5 loci upstream and downstream of the locus of interest are used. Default is \code{200}.}
 
 \item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
 

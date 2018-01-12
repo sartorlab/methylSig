@@ -32,9 +32,15 @@
 #'        fileType = 'cytosineReport')
 #'
 #' @export
-methylSigReadData = function(fileList, pData, assembly = NA,
-    destranded = TRUE, maxCount = 500, minCount = 10, filterSNPs = FALSE,
-    num.cores = 1, fileType = c("cov", "cytosineReport")) {
+methylSigReadData = function(
+    fileList,
+    pData,
+    assembly = NA,
+    destranded = TRUE,
+    maxCount = 500, minCount = 10,
+    filterSNPs = FALSE,
+    num.cores = 1,
+    fileType = c("cov", "cytosineReport")) {
 
     # NOTE: The cytosine report is 1-based, and GRanges is also 1-based. The result,
     # of bsseq::read.bismark() is 1-based. We are 1-based y'all!
