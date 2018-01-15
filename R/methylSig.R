@@ -4,64 +4,96 @@
 #'
 #' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{methylKit::calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{methylKit::calculateDiffMeth} function.
 #'
-#' @param meth A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.
-#' @param groups A vector of two numbers specify two groups to compare. See \code{treatment} argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.
-#' @param min.per.group A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylation region. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.
+#' @param meth A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.
+#' @param comparison The name of the column in \code{pData(meth)} to use for the comparisons.
+#' @param min.per.group A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.
 #'
-#' @return A \code{methylSigDiff-class} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
+#' @return \code{GRanges} object containing the differential methylation statistics and locations. \code{p.adjust} with \code{method="BH"} option is used for p-value correction.
 #'
 #' @section Warning: This function does not take into account the variability among samples in each group being compared.
 #'
 #' @seealso \code{\link{methylSigCalc}}
 #'
 #' @examples
-#' data(sampleData)
-#' myDiff = binomialDiffCalc(meth)
+#' data(data, package = 'methylSig')
+#'
+#' myDiff = binomialDiffCalc(meth = data, comparison = 'DR_vs_DS')
 #'
 #' @keywords differentialMethylation
 #'
 #' @export
 binomialDiffCalc <- function(
     meth,
-    groups=c("Treatment"=1,"Control"=0),
+    comparison,
     min.per.group=c(3,3)) {
-
-    treatment = slot(meth, "treatment")
-
-    group1 = which(treatment == groups[1])
-    group2 = which(treatment == groups[2])
 
     if(length(min.per.group) == 1) {
         min.per.group = c(min.per.group,min.per.group)
     }
 
-    vlist = rowSums(meth@data.coverage[,group1]>0,na.rm = TRUE) >= min.per.group[1] &
-                   rowSums(meth@data.coverage[,group2]>0, na.rm=TRUE) >= min.per.group[2]
-    treads1 = rowSums(meth@data.numTs[vlist,group1], na.rm = TRUE)
-    treads2 = rowSums(meth@data.numTs[vlist,group2], na.rm = TRUE)
-    creads1 = rowSums(meth@data.numCs[vlist,group1], na.rm = TRUE)
-    creads2 = rowSums(meth@data.numCs[vlist,group2], na.rm = TRUE)
+    #####################################
+    # Get the group labels, NOTE: THIS ASSUMES CORRECT REFERENCE LEVEL SET
+    pdata = pData(meth)
+    group2 = levels(pdata[, comparison])[2]
+    group1 = levels(pdata[, comparison])[1]
 
-    logLikRatio <- 2*(creads1*log(creads1/(treads1+creads1)+1e-100)
-                      + treads1*log(treads1/(treads1+creads1)+1e-100)
-                      + creads2*log(creads2/(treads2+creads2)+1e-100)
-                      + treads2*log(treads2/(treads2+creads2)+1e-100)
-                      - (creads1 + creads2)*log((creads1+creads2)/(creads1 + creads2 + treads1 + treads2)+1e-100)
-                      - (treads1 + treads2)*log((treads1+treads2)/(creads1 + creads2 + treads1 + treads2)+1e-100)
+    # Determine which rows of pData belong to which group
+    # / which columns of Cov and M matrices belong to which group
+    group2_idx = which(pdata[,comparison] == group2)
+    group1_idx = which(pdata[,comparison] == group1)
+
+    #####################################
+    # Determine which sites are valid to test according to min.per.group
+    all_cov = as.matrix(bsseq::getCoverage(meth, type = 'Cov'))
+    all_meth = as.matrix(bsseq::getCoverage(meth, type = 'M'))
+
+    # Determine which loci satisfy min.per.group
+    valid_idx = which(
+        base::rowSums(all_cov[, group2_idx] > 0) >= min.per.group[2] & base::rowSums(all_cov[, group1_idx] > 0) >= min.per.group[1]
+    )
+
+    #####################################
+    # Resize all_cov and all_meth to valid_idx
+    all_cov = all_cov[valid_idx,]
+    all_meth = all_meth[valid_idx,]
+
+    # Setup required quantities for the logLikRatio calculation
+    treads = rowSums(all_cov - all_meth, na.rm = TRUE)
+    treads1 = rowSums(all_cov[,group1_idx] - all_meth[,group1_idx], na.rm = TRUE)
+    treads2 = rowSums(all_cov[,group2_idx] - all_meth[,group2_idx], na.rm = TRUE)
+    creads = rowSums(all_meth, na.rm = TRUE)
+    creads1 = rowSums(all_meth[,group1_idx], na.rm = TRUE)
+    creads2 = rowSums(all_meth[,group2_idx], na.rm = TRUE)
+    cov = rowSums(all_cov, na.rm = TRUE)
+    cov1 = rowSums(all_cov[,group1_idx], na.rm=TRUE)
+    cov2 = rowSums(all_cov[,group2_idx], na.rm=TRUE)
+
+    logLikRatio = 2 * (creads1 * log(creads1 / cov1 + 1e-100)
+                      + treads1 * log(treads1 / cov1 + 1e-100)
+                      + creads2 * log(creads2 / cov2 + 1e-100)
+                      + treads2 * log(treads2 / cov2 + 1e-100)
+                      - creads * log(creads / cov + 1e-100)
+                      - treads * log(treads / cov + 1e-100)
                      )
 
     pvalue = pchisq(logLikRatio, 1, lower.tail=FALSE)
+    fdr = p.adjust(pvalue, method = 'BH')
 
-    results=cbind(pvalue,p.adjust(pvalue,method ="BH"),(creads1/(creads1+treads1)-creads2/(creads2+treads2))*100,logLikRatio,
-                  creads1/(creads1+treads1)*100, creads2/(creads2+treads2)*100)
-    colnames(results) = c("pvalue","qvalue", "meth.diff","logLikRatio", paste("mu", groups,sep=""))
-    methylSig.newDiff(meth@data.ids[vlist], meth@data.chr[vlist], meth@data.start[vlist],meth@data.end[vlist],
-                              meth@data.strand[vlist], results, sample.ids=meth@sample.ids[c(group1,group2)],
-                              sample.filenames=meth@sample.filenames[c(group1,group2)],
-                              treatment=meth@treatment[c(group1,group2)], destranded=meth@destranded,
-                              resolution=meth@resolution,
-                              options=paste("min.per.group=c(",min.per.group[1],",",min.per.group[2],") & Total: ", NROW(results), sep=""),
-                              data.options = meth@options)
+    results = data.frame(
+        'logLikRatio' = logLikRatio,
+        'meth.diff' = ((creads2 / cov2) - (creads1 / cov1))*100,
+        'pvalue' = pvalue,
+        'fdr' = fdr,
+        'mu1' = creads1 / cov1,
+        'mu2' = creads2 / cov2,
+        stringsAsFactors = FALSE
+    )
+
+    # Extract the granges of the meth BSseq object and attach the data.frame
+    meth_gr = granges(meth)[valid_idx,]
+    mcols(meth_gr) = results
+
+    return(meth_gr)
 }
 
 # Called by methylSigCalc
@@ -184,6 +216,10 @@ methylSigCalc = function(
     # Constants
     if(!local.info) {
         local.winsize = 0
+    }
+
+    if(length(min.per.group) == 1) {
+        min.per.group = c(min.per.group,min.per.group)
     }
 
     min.disp = 1e-6

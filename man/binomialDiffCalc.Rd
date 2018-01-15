@@ -4,18 +4,17 @@
 \alias{binomialDiffCalc}
 \title{Differential methylation analysis using binomial model}
 \usage{
-binomialDiffCalc(meth, groups = c(Treatment = 1, Control = 0),
-  min.per.group = c(3, 3))
+binomialDiffCalc(meth, comparison, min.per.group = c(3, 3))
 }
 \arguments{
-\item{meth}{A \code{methylSigData-class} object to calculate differential methylation statistics. It can be obtained using \code{\link{methylSigReadData}}.}
+\item{meth}{A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.}
 
-\item{groups}{A vector of two numbers specify two groups to compare. See \code{treatment} argument of \code{\link{methylSigReadData}} function. Default is \code{c(Treatment=1,Control=0)}.}
+\item{comparison}{The name of the column in \code{pData(meth)} to use for the comparisons.}
 
-\item{min.per.group}{A vector with two numbers that specify the minimum numbers of samples required to be qualify as defferentially methylation region. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
+\item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
 }
 \value{
-A \code{methylSigDiff-class} object that contains the differential methylation statistics and chromosomal locations. \code{p.adjust} with \code{method="BH"} option is used for P-value correction.
+\code{GRanges} object containing the differential methylation statistics and locations. \code{p.adjust} with \code{method="BH"} option is used for p-value correction.
 }
 \description{
 This function calculates differential methylation statistics using a binomial-based approach. See `Warning' message below.
@@ -28,8 +27,9 @@ This function uses a binomial-based model to calculate differential methylation 
 }
 
 \examples{
-data(sampleData)
-myDiff = binomialDiffCalc(meth)
+data(data, package = 'methylSig')
+
+myDiff = binomialDiffCalc(meth = data, comparison = 'DR_vs_DS')
 
 }
 \seealso{
