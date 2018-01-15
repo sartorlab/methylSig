@@ -422,5 +422,7 @@ methylSigCalc = function(
     results_gr$meth.diff[abs(results_gr$meth.diff) < 0.01] = 0
     results_gr$meth.diff = as.numeric(results_gr$meth.diff)
 
+    results_gr$fdr = p.adjust(results_gr$pvalue, method = 'BH')
+
     return(results_gr)
 }
