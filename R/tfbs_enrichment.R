@@ -22,25 +22,14 @@
 #'
 #' @examples
 #'
-#' data(data, package = 'methylSig')
+#' data(msig_dmcs, package = 'methylSig')
 #'
 #' tfbsPooled = system.file('annotation','tfbsPooled.bed', package = 'methylSig')
 #' tfbs = rtracklayer::import(tfbsPooled, genome = 'hg19')
 #'
-#' myDiff = methylSigCalc(
-#'     meth = data,
-#'     comparison = 'DR_vs_DS',
-#'     dispersion = 'both',
-#'     local.info = FALSE,
-#'     local.winsize = 200,
-#'     min.per.group = c(3,3),
-#'     weightFunc = methylSig_weightFunc,
-#'     T.approx = TRUE,
-#'     num.cores = 1)
+#' dmcList = msig_dmcs$fdr < 0.05 & abs(msig_dmcs$meth.diff) > 25
 #'
-#' dmcList = myDiff$fdr < 0.05 & abs(myDiff$meth.diff) > 25
-#'
-#' methylSig.tfbsEnrichTest(myDiff = myDiff, dmcList = dmcList, tfbsInfo = tfbs)
+#' methylSig.tfbsEnrichTest(myDiff = msig_dmcs, dmcList = dmcList, tfbsInfo = tfbs)
 #'
 #' @export
 methylSig.tfbsEnrichTest <- function(myDiff, dmcList, tfbsInfo) {

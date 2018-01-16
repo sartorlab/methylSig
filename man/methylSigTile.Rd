@@ -20,6 +20,6 @@ A \code{BSseq-class} object.
 This function summarizes methylation data within tiles or user-specified regions. For all CpGs within an intersecting genomic region, the coverage and methylation reads are summed. This is used prior to the \code{\link{methylSigCalc}} function when the user prefers to conduct a tiled analysis instead of a base specific analysis for differential methylation. Tiling may provide higher power to detect significant differences, especially for experiments with low coverage.
 }
 \examples{
-data(sampleData)
-methTile = methylSigTile(meth)
+data(data, package = 'methylSig')
+methTile = methylSigTile(data)
 }
