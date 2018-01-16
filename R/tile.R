@@ -9,8 +9,8 @@
 #' @return A \code{BSseq-class} object.
 #'
 #' @examples
-#' data(sampleData)
-#' methTile = methylSigTile(meth)
+#' data(data, package = 'methylSig')
+#' methTile = methylSigTile(data)
 #' @export
 methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
     if(!is(meth, 'BSseq')) {
