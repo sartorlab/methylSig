@@ -28,7 +28,18 @@ methylSigCalc(meth, comparison = NA, dispersion = "both",
 \item{num.cores}{An integer denoting how many cores should be used for differential methylation calculations.}
 }
 \value{
-\code{GRanges} object containing the differential methylation statistics and locations. \code{p.adjust} with \code{method="BH"} option is used for p-value correction.
+A \code{GRanges} object containing the following \code{mcols}:
+\describe{
+  \item{phiCommonEst}{ The dispersion estimate. }
+  \item{logLikRatio}{ The log likelihood ratio. }
+  \item{df}{ Degrees of freedom used when \code{T.approx = TRUE}. }
+  \item{muEstC_group1}{ Methylation estimate for group1. Groups correspond to the levels in the column used for the comparison in \code{pdata(meth)}. }
+  \item{muEstC_group2}{ Methylation estimate for group2. }
+  \item{meth.diff}{ The difference \code{muEstC_group2 - muEstC_group1}. }
+  \item{hyper_direction}{ The group for which the CpG/region is hyper-methylated. Groups correspond to the levels in the column used for the comparison in \code{pdata(meth)}. }
+  \item{pvalue}{ The p-value from the t-test (\code{T.approx = TRUE}) or the Chi-Square test (\code{T.approx = FALSE}). }
+  \item{fdr}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
+}
 }
 \description{
 The function calculates differential methylation statistics between two groups of samples. This is the main function of the methylSig package, and the method most users should use to test for DMCs or DMRs. The function uses a Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group.
