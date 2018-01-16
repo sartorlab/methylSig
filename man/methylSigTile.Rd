@@ -22,4 +22,5 @@ This function summarizes methylation data within tiles or user-specified regions
 \examples{
 data(data, package = 'methylSig')
 methTile = methylSigTile(data)
+
 }

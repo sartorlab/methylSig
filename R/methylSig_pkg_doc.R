@@ -7,6 +7,7 @@
 #'
 #' @importFrom parallel mclapply
 #' @importFrom boot corr
+#' @import annotatr
 #' @import bsseq
 #' @import DelayedArray
 #' @import GenomicRanges

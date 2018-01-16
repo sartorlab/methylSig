@@ -16,39 +16,52 @@
 #' @source \url{ftp://ftp.1000genomes.ebi.ac.uk//vol1/ftp/release/20130502/ALL.wgs.phase3_shapeit2_mvncall_integrated_v5a.20130502.sites.vcf.gz}
 NULL
 
-#' Example methylSigData and methylSigDiff objects
+#' Example methylation data
 #'
-#' \code{meth} is a \code{\link{methylSigData}} object containing 8 samples total.
-#' There are 4 AML (acute myeloid leukemia) samples and 4 NBM (normal bone marrow)
-#' samples. Data are in hg18 coordinates.
-#' \code{mySigDiffboth} is a \code{\link{methylSigDiff}} object storing the result
-#' of the site-wise differential methylation test using \code{\link{methylSigCalc}}.
+#' A \code{BSseq-class} object containing 6 samples total, with three in each group. Genome is hg19.
 #'
 #' @docType data
 #' @keywords datasets
-#' @name sampleData
-#' @usage data(sampleData)
+#' @name data
+#' @usage data(data, package = 'methylSig')
 NULL
 
-#' Example methylSigData object
+#' Example tiled methylation data
 #'
-#' \code{meth} is a \code{\link{methylSigData}} object containing 8 samples total.
-#' There are 4 AML (acute myeloid leukemia) samples and 4 NBM (normal bone marrow)
-#' samples. Data are in hg18 coordinates.
+#' A tiled version of the \code{BSseq-class} object called \code{data}. Tiles are 1000bp. Genome is hg19.
 #'
 #' @docType data
 #' @keywords datasets
-#' @name meth
-#' @usage data(sampleData)
+#' @name tiled_data
+#' @usage data(data, package = 'methylSig')
 NULL
 
-#' Example methylSigDiff object
+#' Example CpG-level methylSigCalc results
 #'
-#' \code{mySigDiffboth} is a \code{\link{methylSigDiff}} object storing the result
-#' of the site-wise differential methylation test using \code{\link{methylSigCalc}}.
+#' A \code{GRanges-class} object containing the results of \code{methylSigCalc} on \code{data}.
 #'
 #' @docType data
 #' @keywords datasets
-#' @name myDiffSigboth
-#' @usage data(sampleData)
+#' @name msig_cpgs
+#' @usage data(data, package = 'methylSig')
+NULL
+
+#' Example tile-level methylSigCalc results
+#'
+#' A \code{GRanges-class} object containing the results of \code{methylSigCalc} on \code{tiled_data}.
+#'
+#' @docType data
+#' @keywords datasets
+#' @name msig_tiles
+#' @usage data(data, package = 'methylSig')
+NULL
+
+#' Example TFBS sites
+#'
+#' A \code{GRanges-class} object representing transcription factor binding sites. For use in \code{methylSig.tfbsEnrichTest}. Genome is hg19.
+#'
+#' @docType data
+#' @keywords datasets
+#' @name tfbs
+#' @usage data(data, package = 'methylSig')
 NULL

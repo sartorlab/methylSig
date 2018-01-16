@@ -33,14 +33,10 @@ This function tests for enriched transcription binding sites among differentiall
 Likelihood ratio test is used based on the binomial distribution.
 }
 \examples{
+data(data, package = 'methylSig')
 
-data(msig_dmcs, package = 'methylSig')
+dmcList = msig_cpgs$fdr < 0.05 & abs(msig_cpgs$meth.diff) > 25
 
-tfbsPooled = system.file('annotation','tfbsPooled.bed', package = 'methylSig')
-tfbs = rtracklayer::import(tfbsPooled, genome = 'hg19')
-
-dmcList = msig_dmcs$fdr < 0.05 & abs(msig_dmcs$meth.diff) > 25
-
-methylSig.tfbsEnrichTest(myDiff = msig_dmcs, dmcList = dmcList, tfbsInfo = tfbs)
+methylSig.tfbsEnrichTest(myDiff = msig_cpgs, dmcList = dmcList, tfbsInfo = tfbs)
 
 }

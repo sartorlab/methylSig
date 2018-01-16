@@ -7,16 +7,23 @@
 #     echo ${file_base}
 #     grep chr21 ${file} | head -200000 | gzip > ${file_base}_chr21_cytosine_report.txt.gz
 # done
+#
+# for file in `ls *cytosine_report*`
+# do
+#     file_base=`basename ${file} '_chr21_cytosine_report.txt.gz'`
+#     echo ${file_base}
+#     gunzip -c ${file} | awk -v OFS='\t' '$4 + $5 > 5 {print $0}' | gzip > ${file_base}.txt.gz
+# done
 
 devtools::load_all()
 
 # Get data
 files = list.files(
-    path = '~/ActiveProjects/EpiCore/pipeline_testing/test_errbs_1.2.3/00-methCall',
-    pattern = 'txt.gz', full.names = TRUE)
+    path = 'inst/extdata',
+    pattern = 'MDAMB', full.names = TRUE)
 
 sample.ids = basename(files)
-sample.ids = gsub('_chr21_cytosine_report.txt.gz', '', sample.ids)
+sample.ids = gsub('.txt.gz', '', sample.ids)
 
 pData = data.frame(
     Sample_Names = sample.ids,
@@ -35,4 +42,31 @@ data = methylSigReadData(
     num.cores = 4,
     fileType = 'cytosineReport')
 
-save(data, file = 'data/data.RData', compress = 'xz')
+tiled_data = methylSigTile(meth = data, tiles = NULL, win.size = 1000)
+
+msig_cpgs = methylSigCalc(
+    meth = data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
+
+msig_tiles = methylSigCalc(
+    meth = tiled_data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
+
+tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
+tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
+
+save(data, tiled_data, msig_cpgs, msig_tiles, tfbs, file = 'data/data.RData', compress = 'xz')
