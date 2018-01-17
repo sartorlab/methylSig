@@ -41,7 +41,7 @@ Annotations from \code{annotatr} are embedded in the \code{myDiff} \code{GRanges
 data(data, package = 'methylSig')
 
 # Use the genome of msig_cpgs and build annotations for CpG features
-genome = genome(msig_cpgs)
+genome = GenomeInfoDb::genome(msig_cpgs)
 annots = annotatr::build_annotations(genome = genome, annotations = paste(genome, c('cpgs'), sep='_'))
 
 # Decide what counts as differentially methylated
