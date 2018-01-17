@@ -2,7 +2,7 @@ Package: methylSig
 Type: Package
 Title: a whole genome DNA methylation analysis pipeline
 Version: 0.5.0
-Date: 2016-06-10
+Date: 2018-01-17
 Author: Yongseok Park
 Maintainer: Who to complain to <yongpark@pitt.edu>
 Description: MethylSig is a method for testing for differentially methylated
@@ -17,7 +17,9 @@ Description: MethylSig is a method for testing for differentially methylated
 License: GPL-3
 BugReports: https://github.com/sartorlab/methylSig/issues
 Depends:
-    R (>= 3.0),
+    R (>= 3.4)
+Imports:
+    annotatr (>= 1.4.1),
     bsseq,
     methods,
     boot,
