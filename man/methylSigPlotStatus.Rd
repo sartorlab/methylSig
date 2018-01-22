@@ -10,21 +10,21 @@ methylSigPlotStatus(myAnnots, annotation_order = NULL, status_order = NULL,
   y_label = "Proportion")
 }
 \arguments{
-\item{myAnnots}{A \code{link{methylSigData-class}} object.}
+\item{myAnnots}{A \code{GRanges} object resulting from running \code{methylSigAnnotation} on the result of \code{methylSigCalc}.}
 
-\item{annotation_order}{Chromosome in character that matches in methylation data (meth).}
+\item{annotation_order}{A character vector which orders and subsets the annotations for the plot.}
 
-\item{status_order}{A vector of two numbers (from, to) to specify the region to visualize on chromosome `chr'.}
+\item{status_order}{A character vector which orders and subsets the DM status.}
 
-\item{position}{A vector of two numbers to specify two groups to show in the plot.}
+\item{position}{One of \code{fill}, \code{stack}, \code{dodge}. See \code{ggplot2} documentation for details.}
 
-\item{plot_title}{CpG island information to annotate. If missing, no CpG island information will be shown.}
+\item{plot_title}{The plot label.}
 
-\item{legend_title}{refGene information to annotate. If missing, no refGene island information will be shown.}
+\item{legend_title}{The legend label.}
 
-\item{x_label}{Differential methylation analysis results from `methylSigCalc'. If missing, no ``-log10[pvalues]'' will be shown.}
+\item{x_label}{The x-axis label.}
 
-\item{y_label}{Transcription factor binding site informaiton from `getTFBSInfo' function. If missing, no tfbs will be shown.}
+\item{y_label}{The y-axis label.}
 }
 \value{
 A \code{ggplot2} object which can be viewed by calling it, or saved with \code{ggplot2::ggsave}.

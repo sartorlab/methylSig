@@ -2,14 +2,14 @@
 #'
 #' Generates a bar plot showing the distribution of differential methylation status of loci in selected annotations.
 #'
-#' @param myAnnots A \code{link{methylSigData-class}} object.
-#' @param annotation_order Chromosome in character that matches in methylation data (meth).
-#' @param status_order A vector of two numbers (from, to) to specify the region to visualize on chromosome `chr'.
-#' @param position A vector of two numbers to specify two groups to show in the plot.
-#' @param plot_title CpG island information to annotate. If missing, no CpG island information will be shown.
-#' @param legend_title refGene information to annotate. If missing, no refGene island information will be shown.
-#' @param x_label Differential methylation analysis results from `methylSigCalc'. If missing, no ``-log10[pvalues]'' will be shown.
-#' @param y_label Transcription factor binding site informaiton from `getTFBSInfo' function. If missing, no tfbs will be shown.
+#' @param myAnnots A \code{GRanges} object resulting from running \code{methylSigAnnotation} on the result of \code{methylSigCalc}.
+#' @param annotation_order A character vector which orders and subsets the annotations for the plot.
+#' @param status_order A character vector which orders and subsets the DM status.
+#' @param position One of \code{fill}, \code{stack}, \code{dodge}. See \code{ggplot2} documentation for details.
+#' @param plot_title The plot label.
+#' @param legend_title The legend label.
+#' @param x_label The x-axis label.
+#' @param y_label The y-axis label.
 #'
 #' @return A \code{ggplot2} object which can be viewed by calling it, or saved with \code{ggplot2::ggsave}.
 #'
@@ -60,15 +60,18 @@ methylSigPlotStatus = function(myAnnots, annotation_order = NULL, status_order =
 #'
 #'   This function offers a unique two-tiered visualization of the methylation data depending on the zoom level. For narrow regions (<1mbp) where at most 500 CpG sites have data reads, users can visualize sample-specific coverage levels and percent methylation at each site, together with group averages, significance levels and a number of genomic annotations.
 #'
-#' @param myAnnots A \code{link{methylSigData-class}} object.
-#' @param annotation_order Chromosome in character that matches in methylation data (meth).
-#' @param status_order Chromosome in character that matches in methylation data (meth).
+#' @param myAnnots A \code{GRanges} object resulting from running \code{methylSigAnnotation} on the result of \code{methylSigCalc}.
+#' @param annotation_order A character vector which orders and subsets the annotations for the plot.
+#' @param status_order A character vector which orders and subsets the DM status.
 #' @param bin_width A vector of two numbers (from, to) to specify the region to visualize on chromosome `chr'.
-#' @param plot_title A vector of two numbers to specify two groups to show in the plot.
-#' @param x_label refGene information to annotate. If missing, no refGene island information will be shown.
-#' @param y_label Differential methylation analysis results from `methylSigCalc'. If missing, no ``-log10[pvalues]'' will be shown.
-#' @param legend_facet_label Transcription factor binding site informaiton from `getTFBSInfo' function. If missing, no tfbs will be shown.
-#' @param legend_cum_label If noGroupEst = TRUE, group estimates will not be drawn in the plot. Default is FALSE
+#' @param plot_title The plot label.
+#' @param legend_title The legend label.
+#' @param x_label The x-axis label.
+#' @param y_label The y-axis label.
+#' @param legend_facet_label Label explaining the meaning of the gray bars in the resulting histogram.
+#' @param legend_cum_label Label explaining the meaning of the red outlined bars in the resulting histogram.
+#'
+#' @return A \code{ggplot2} object which can be viewed by calling it, or saved with \code{ggplot2::ggsave}.
 #'
 #' @examples
 #' # Annotate the msig_cpgs results
@@ -88,7 +91,7 @@ methylSigPlotStatus = function(myAnnots, annotation_order = NULL, status_order =
 #' cpg_order = c('hg19_cpg_islands','hg19_cpg_shores','hg19_cpg_shelves','hg19_cpg_inter')
 #' status_order = c('hyper','hypo','none')
 #'
-#' methylSigPlotDiff(myAnnots = myDiff_annotated, annotation_order = cpg_order, status_order = status_order, 
+#' methylSigPlotDiff(myAnnots = myDiff_annotated, annotation_order = cpg_order, status_order = status_order,
 #'     bin_width = 10, plot_title = 'Meth. Diff. in CpG Annots.', x_label = 'DM Status', y_label = 'Proportion',
 #'     legend_facet_label = 'Meth. Diff. in Annotation', legend_cum_label = 'Meth. Diff. Overall')
 #'

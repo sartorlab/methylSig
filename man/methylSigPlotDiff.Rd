@@ -11,23 +11,28 @@ methylSigPlotDiff(myAnnots, annotation_order = NULL, status_order = NULL,
   legend_cum_label = "Meth. Diff. Overall")
 }
 \arguments{
-\item{myAnnots}{A \code{link{methylSigData-class}} object.}
+\item{myAnnots}{A \code{GRanges} object resulting from running \code{methylSigAnnotation} on the result of \code{methylSigCalc}.}
 
-\item{annotation_order}{Chromosome in character that matches in methylation data (meth).}
+\item{annotation_order}{A character vector which orders and subsets the annotations for the plot.}
 
-\item{status_order}{Chromosome in character that matches in methylation data (meth).}
+\item{status_order}{A character vector which orders and subsets the DM status.}
 
 \item{bin_width}{A vector of two numbers (from, to) to specify the region to visualize on chromosome `chr'.}
 
-\item{plot_title}{A vector of two numbers to specify two groups to show in the plot.}
+\item{plot_title}{The plot label.}
 
-\item{x_label}{refGene information to annotate. If missing, no refGene island information will be shown.}
+\item{x_label}{The x-axis label.}
 
-\item{y_label}{Differential methylation analysis results from `methylSigCalc'. If missing, no ``-log10[pvalues]'' will be shown.}
+\item{y_label}{The y-axis label.}
 
-\item{legend_facet_label}{Transcription factor binding site informaiton from `getTFBSInfo' function. If missing, no tfbs will be shown.}
+\item{legend_facet_label}{Label explaining the meaning of the gray bars in the resulting histogram.}
 
-\item{legend_cum_label}{If noGroupEst = TRUE, group estimates will not be drawn in the plot. Default is FALSE}
+\item{legend_cum_label}{Label explaining the meaning of the red outlined bars in the resulting histogram.}
+
+\item{legend_title}{The legend label.}
+}
+\value{
+A \code{ggplot2} object which can be viewed by calling it, or saved with \code{ggplot2::ggsave}.
 }
 \description{
 Generates data visualization plot of methylation data for a specified genomic interval.
@@ -53,7 +58,7 @@ myDiff_annotated = methylSigAnnotation(myDiff = msig_cpgs, dmcList = dmcList, an
 cpg_order = c('hg19_cpg_islands','hg19_cpg_shores','hg19_cpg_shelves','hg19_cpg_inter')
 status_order = c('hyper','hypo','none')
 
-methylSigPlotDiff(myAnnots = myDiff_annotated, annotation_order = cpg_order, status_order = status_order, 
+methylSigPlotDiff(myAnnots = myDiff_annotated, annotation_order = cpg_order, status_order = status_order,
     bin_width = 10, plot_title = 'Meth. Diff. in CpG Annots.', x_label = 'DM Status', y_label = 'Proportion',
     legend_facet_label = 'Meth. Diff. in Annotation', legend_cum_label = 'Meth. Diff. Overall')
 
