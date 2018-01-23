@@ -40,21 +40,12 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
         tiles = granges(tiles)
     }
 
-    all_cov = as.matrix(bsseq::getCoverage(meth, type = 'Cov'))
-    all_meth = as.matrix(bsseq::getCoverage(meth, type = 'M'))
+	tiled_M = bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'M')
+	tiled_M[is.na(tiled_M)] = 0
+	tiled_Cov = bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'Cov')
+	tiled_Cov[is.na(tiled_Cov)] = 0
 
-    overlaps = findOverlaps(meth, tiles, ignore.strand = TRUE)
+	tiled_bsseq = BSseq(gr = tiles, M = tiled_M, Cov = tiled_Cov, rmZeroCov = TRUE)
 
-    if(length(overlaps) > 0) {
-        # Prepare for reconstructioon of BSseq object
-        tiles = tiles[unique(subjectHits(overlaps))]
-        tiled_cov = do.call(rbind, by(all_cov, subjectHits(overlaps), colSums))
-        tiled_meth = do.call(rbind, by(all_meth, subjectHits(overlaps), colSums))
-
-        tiled_bsseq = BSseq(M = tiled_meth, Cov = tiled_cov, gr = tiles, pData = pData(meth))
-
-        return(tiled_bsseq)
-    } else {
-        stop("No regions in 'meth' intersected with regions in 'tiles'.")
-    }
+    return(tiled_bsseq)
 }
