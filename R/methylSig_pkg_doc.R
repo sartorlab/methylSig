@@ -5,14 +5,15 @@
 #' @author Yongseok Park \email{yongpark@@pitt.edu}, Raymond Cavalcante \email{rcavalca@@umich.edu}, and Maureen A. Sartor
 #' @references \url{http://www.github.com/sartorlab/methylSig}{MethylSig}
 #'
-#' @importFrom parallel mclapply
-#' @importFrom boot corr
 #' @import annotatr
+#' @importFrom boot corr
 #' @import bsseq
+#' @import DSS
 #' @import DelayedArray
-#' @import GenomicRanges
 #' @import GenomeInfoDb
+#' @import GenomicRanges
 #' @import methods
+#' @importFrom parallel mclapply
 #' @import S4Vectors
 #'
 #' @docType package

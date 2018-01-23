@@ -23,6 +23,8 @@ Imports:
     annotatr,
     boot,
     bsseq,
+    DelayedArray,
+    DSS,
     GenomeInfoDb,
     GenomicRanges,
     methods,
