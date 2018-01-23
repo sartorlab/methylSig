@@ -12,6 +12,7 @@
 #' @import DelayedArray
 #' @import GenomicRanges
 #' @import methods
+#' @import S4Vectors
 #'
 #' @docType package
 #' @name methylSig-package

@@ -17,19 +17,33 @@
 #' @seealso \code{\link{methylSigCalc}}
 #'
 #' @examples
-#' files = c(system.file('extdata', 'test_1.txt', package='methylSig'),
-#'    system.file('extdata', 'test_2.txt', package='methylSig'))
+#' files = c(
+#'     system.file('extdata', 'MDAMB_231_1DR.txt.gz', package='methylSig'),
+#'     system.file('extdata', 'MDAMB_231_1DS.txt.gz', package='methylSig'),
+#'     system.file('extdata', 'MDAMB_231_2DR.txt.gz', package='methylSig'),
+#'     system.file('extdata', 'MDAMB_231_2DS.txt.gz', package='methylSig'),
+#'     system.file('extdata', 'MDAMB_231_3DR.txt.gz', package='methylSig'),
+#'     system.file('extdata', 'MDAMB_231_3DS.txt.gz', package='methylSig'))
 #'
-#' test = methylSigReadData(
-#'        fileList = files,
-#'        sample.ids = c('test_1', 'test_2'),
-#'        assembly = 'hg19',
-#'        destranded = TRUE,
-#'        maxCount = 500,
-#'        minCount = 10,
-#'        filterSNPs = TRUE,
-#'        num.cores = 1,
-#'        fileType = 'cytosineReport')
+#' sample.ids = basename(files)
+#' sample.ids = gsub('.txt.gz', '', sample.ids)
+#'
+#' pData = data.frame(
+#'     Sample_Names = sample.ids,
+#'     DR_vs_DS = relevel(factor(c('DR','DS','DR','DS','DR','DS')), ref = 'DS'),
+#'     row.names = sample.ids,
+#'     stringsAsFactors = FALSE)
+#'
+#' data = methylSigReadData(
+#'     fileList = files,
+#'     pData = pData,
+#'     assembly = 'hg19',
+#'     destranded = TRUE,
+#'     maxCount = 500,
+#'     minCount = 10,
+#'     filterSNPs = TRUE,
+#'     num.cores = 4,
+#'     fileType = 'cytosineReport')
 #'
 #' @export
 methylSigReadData = function(

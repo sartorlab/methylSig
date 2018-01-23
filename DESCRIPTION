@@ -25,7 +25,8 @@ Imports:
     bsseq,
     GenomicRanges,
     methods,
-    parallel
+    parallel,
+    S4Vectors
 Suggests:
     BiocStyle,
     gplots,
