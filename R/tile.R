@@ -3,7 +3,7 @@
 #' This function summarizes methylation data within tiles or user-specified regions. For all CpGs within an intersecting genomic region, the coverage and methylation reads are summed. This is used prior to the \code{\link{methylSigCalc}} function when the user prefers to conduct a tiled analysis instead of a base specific analysis for differential methylation. Tiling may provide higher power to detect significant differences, especially for experiments with low coverage.
 #'
 #' @param meth A \code{BSseq-class} object, as from \code{methylSigReadData}.
-#' @param tiles One of \code{NULL}, a \code{data.frame}, or a \code{GRanges} object. Those CpG sites not belonging any tile will be removed from tiled data.
+#' @param tiles One of \code{NULL}, a \code{data.frame}, or a \code{GRanges} object. If not \code{NULL}, the regions should be non-overlapping. Those CpG sites not belonging to any tile will be removed from tiled data.
 #' @param win.size An \code{integer} indicating the desired window size in bps. Default is 200. Used only when \code{tiles = NULL}.
 #'
 #' @return A \code{BSseq-class} object.

@@ -9,7 +9,7 @@ methylSigTile(meth, tiles = NULL, win.size = 200)
 \arguments{
 \item{meth}{A \code{BSseq-class} object, as from \code{methylSigReadData}.}
 
-\item{tiles}{One of \code{NULL}, a \code{data.frame}, or a \code{GRanges} object. Those CpG sites not belonging any tile will be removed from tiled data.}
+\item{tiles}{One of \code{NULL}, a \code{data.frame}, or a \code{GRanges} object. If not \code{NULL}, the regions should be non-overlapping. Those CpG sites not belonging to any tile will be removed from tiled data.}
 
 \item{win.size}{An \code{integer} indicating the desired window size in bps. Default is 200. Used only when \code{tiles = NULL}.}
 }

@@ -11,6 +11,7 @@
 #' @import bsseq
 #' @import DelayedArray
 #' @import GenomicRanges
+#' @import GenomeInfoDb
 #' @import methods
 #' @import S4Vectors
 #'

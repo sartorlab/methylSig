@@ -23,6 +23,7 @@ Imports:
     annotatr,
     boot,
     bsseq,
+    GenomeInfoDb,
     GenomicRanges,
     methods,
     parallel,
