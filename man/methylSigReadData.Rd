@@ -11,7 +11,7 @@ methylSigReadData(fileList, pData, assembly = NA, destranded = TRUE,
 \arguments{
 \item{fileList}{Files to be read. These can be \code{cov} or \code{cytosine_reports} from the Bismark Methylation Extractor. See \code{fileType} for details.}
 
-\item{pData}{A \code{data.frame} containing phenotype information for the samples in \code{fileList}.}
+\item{pData}{A \code{data.frame} containing phenotype information for the samples in \code{fileList}. The \code{row.names} attribute of the \code{data.frame} should match the \code{Sample_Names}. See example below.}
 
 \item{assembly}{The genome assembly used for alignment. e.g. \code{hg19}, \code{mm10}, etc.}
 

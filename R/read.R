@@ -3,7 +3,7 @@
 #' This function reads files created by the Bismark Methylation Extractor, and outputs a \code{BSseq} object.
 #'
 #' @param fileList Files to be read. These can be \code{cov} or \code{cytosine_reports} from the Bismark Methylation Extractor. See \code{fileType} for details.
-#' @param pData A \code{data.frame} containing phenotype information for the samples in \code{fileList}.
+#' @param pData A \code{data.frame} containing phenotype information for the samples in \code{fileList}. The \code{row.names} attribute of the \code{data.frame} should match the \code{Sample_Names}. See example below.
 #' @param assembly The genome assembly used for alignment. e.g. \code{hg19}, \code{mm10}, etc.
 #' @param destranded A logical value indicating whether to destrand the reverse to forward strand. If TRUE, the reads from both will be combined. Default is TRUE.
 #' @param maxCount A number indicating the maximum coverage count to be included.
