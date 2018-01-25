@@ -2,9 +2,15 @@ context('Test methylSigTile')
 
 ################################################################################
 
-tiles_df = read.table(system.file('extdata','test_tiles.txt', package='methylSig'), header = T, sep = '\t', as.is = T)
+# Tiles on the same chromosomes as data
+tiles_df_samechr = read.table(system.file('extdata','test_tiles.txt', package='methylSig'), header = T, sep = '\t', as.is = T)
+tiles_gr_samechr_noseqinfo = GenomicRanges::makeGRangesFromDataFrame(tiles_df_samechr)
+tiles_gr_samechr_fullseqinfo = GenomicRanges::makeGRangesFromDataFrame(tiles_df_samechr, seqinfo = GenomeInfoDb::Seqinfo(genome='hg19'))
 
-tiles_gr = makeGRangesFromDataFrame(tiles_df)
+# Tiles with some tiles on different chromosomes as data
+tiles_df_extrachr = read.table(system.file('extdata','test_tiles2.txt', package='methylSig'), header = T, sep = '\t', as.is = T)
+tiles_gr_extrachr_noseqinfo = GenomicRanges::makeGRangesFromDataFrame(tiles_df_extrachr)
+tiles_gr_extrachr_fullseqinfo = GenomicRanges::makeGRangesFromDataFrame(tiles_df_extrachr, seqinfo = GenomeInfoDb::Seqinfo(genome='hg19'))
 
 files = c(system.file('extdata', 'test_1.txt', package='methylSig'),
     system.file('extdata', 'test_2.txt', package='methylSig'))
@@ -29,62 +35,96 @@ data = methylSigReadData(
     num.cores = 1,
     fileType = 'cytosineReport')
 
-tiles_gr_seqinfo = tiles_gr
-seqinfo(tiles_gr_seqinfo) = seqinfo(data)
-
 ################################################################################
 
 truth1_meth = matrix(c(34,10,0,300,87,434), nrow = 3, ncol = 2, byrow = TRUE)
 truth1_cov = matrix(c(34,10,0,300,96,458), nrow = 3, ncol = 2, byrow = TRUE)
 
 test_that('Test tileGenome tiling', {
-    tiled_data1 = methylSigTile(
+    tiled_data = methylSigTile(
         meth = data,
         tiles = NULL,
         win.size = 200)
 
-    expect_true(all(truth1_meth == as.matrix(bsseq::getCoverage(tiled_data1, type='M'))))
-    expect_true(all(truth1_cov == as.matrix(bsseq::getCoverage(tiled_data1, type='Cov'))))
+    expect_true(all(truth1_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
+    expect_true(all(truth1_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
+    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
 })
 
 truth2_meth = matrix(c(34,10,87,734), nrow = 2, ncol = 2, byrow = TRUE)
 truth2_cov = matrix(c(34,10,96,758), nrow = 2, ncol = 2, byrow = TRUE)
 
-test_that('Test data.frame tiling', {
-    tiled_data2 = methylSigTile(
+test_that('Test data.frame tiling with matching chromosomes', {
+    tiled_data = methylSigTile(
         meth = data,
-        tiles = tiles_df,
+        tiles = tiles_df_samechr,
         win.size = 200)
 
-    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data2, type='M'))))
-    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data2, type='Cov'))))
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
+    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
+})
+
+test_that('Test GRanges tiling with matching chromosomes and no seqinfo', {
+    tiled_data = methylSigTile(
+        meth = data,
+        tiles = tiles_gr_samechr_noseqinfo,
+        win.size = 200)
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
+    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
+})
+
+test_that('Test GRanges tiling with matching chromosomes and full seqinfo', {
+    tiled_data = methylSigTile(
+        meth = data,
+        tiles = tiles_gr_samechr_fullseqinfo,
+        win.size = 200)
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
+    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
+})
+
+test_that('Test data.frame tiling with extra chromosomes', {
+    tiled_data = methylSigTile(
+        meth = data,
+        tiles = tiles_df_extrachr,
+        win.size = 200)
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
+    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
+})
+
+test_that('Test GRanges tiling with extra chromosomes and no seqinfo', {
+    tiled_data = methylSigTile(
+        meth = data,
+        tiles = tiles_gr_extrachr_noseqinfo,
+        win.size = 200)
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
+    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
+})
+
+test_that('Test GRanges tiling with extra chromosomes and full seqinfo', {
+    tiled_data = methylSigTile(
+        meth = data,
+        tiles = tiles_gr_extrachr_fullseqinfo,
+        win.size = 200)
+
+    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
+    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
+    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
 })
 
 test_that('Test GRanges tiling warning', {
-    expect_warning(
+    expect_message(
         methylSigTile(
             meth = data,
-            tiles = tiles_gr,
+            tiles = tiles_gr_samechr_noseqinfo,
             win.size = 200),
         'genome of the GRanges')
-})
-
-test_that('Test GRanges tiling', {
-    tiled_data3 = suppressWarnings(methylSigTile(
-        meth = data,
-        tiles = tiles_gr,
-        win.size = 200))
-
-    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data3, type='M'))))
-    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data3, type='Cov'))))
-})
-
-test_that('Test GRanges with seqinfo tiling', {
-    tiled_data4 = methylSigTile(
-        meth = data,
-        tiles = tiles_gr_seqinfo,
-        win.size = 200)
-
-    expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data4, type='M'))))
-    expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data4, type='Cov'))))
 })

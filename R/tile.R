@@ -18,34 +18,39 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
         stop("'meth' must be a BSseq object.")
     }
 
-    if(mean(width(meth)) != 1) {
+    if(mean(BiocGenerics::width(meth)) != 1) {
         stop("It appears that 'meth' is not CpG resolution. Tiling can only be done on CpG resolution data.")
     }
 
     # Check for tiles possibilities. Coerce correct seqinfo, and trim().
     if(is.null(tiles)) {
-        tiles = tileGenome(seqlengths(meth), tilewidth = win.size, cut.last.tile.in.chrom = TRUE)
-        seqinfo(tiles) = seqinfo(meth)
+        tiles = GenomicRanges::tileGenome(GenomeInfoDb::seqlengths(meth), tilewidth = win.size, cut.last.tile.in.chrom = TRUE)
+        GenomeInfoDb::seqinfo(tiles) = GenomeInfoDb::seqinfo(meth)
     } else if (is(tiles, 'data.frame')) {
-        tiles = makeGRangesFromDataFrame(tiles, seqinfo = seqinfo(meth), keep.extra.columns = FALSE)
-        tiles = trim(tiles)
+        tiles = GenomicRanges::makeGRangesFromDataFrame(tiles, keep.extra.columns = FALSE)
+
+        tiles = GenomeInfoDb::keepSeqlevels(x = tiles, value = GenomeInfoDb::seqlevels(meth), pruning.mode = 'coarse')
+        GenomeInfoDb::seqinfo(tiles) = GenomeInfoDb::seqinfo(meth)
     } else if (is(tiles, 'GRanges')) {
-        if(all(is.na(genome(tiles)))) {
-            warning("The genome of the GRanges 'tiles' is NA. Coercing to that of 'meth'.")
-            seqinfo(tiles) = seqinfo(meth)
-        } else if (all(genome(tiles) != genome(meth))) {
+        if(any(is.na(GenomeInfoDb::genome(tiles)))) {
+            message("The genome of the GRanges 'tiles' is NA. Coercing to that of 'meth'.")
+
+            tiles = GenomeInfoDb::keepSeqlevels(x = tiles, value = GenomeInfoDb::seqlevels(meth), pruning.mode = 'coarse')
+            GenomeInfoDb::seqinfo(tiles) = GenomeInfoDb::seqinfo(meth)
+        } else if (unique(GenomeInfoDb::genome(tiles)) != unique(GenomeInfoDb::genome(meth))) {
             stop("The genome of the GRanges 'tiles' is assigned, but does not match that of 'meth'.")
         }
-        tiles = trim(tiles)
-        tiles = granges(tiles)
+
+        tiles = IRanges::trim(tiles)
+        tiles = GenomicRanges::granges(tiles)
     }
 
-	tiled_M = bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'M')
+	tiled_M = as.matrix(bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'M'))
 	tiled_M[is.na(tiled_M)] = 0
-	tiled_Cov = bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'Cov')
+	tiled_Cov = as.matrix(bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'Cov'))
 	tiled_Cov[is.na(tiled_Cov)] = 0
 
-	tiled_bsseq = BSseq(gr = tiles, M = tiled_M, Cov = tiled_Cov, rmZeroCov = TRUE)
+	tiled_bsseq = bsseq::BSseq(gr = tiles, M = tiled_M, Cov = tiled_Cov, rmZeroCov = TRUE)
 
     return(tiled_bsseq)
 }
