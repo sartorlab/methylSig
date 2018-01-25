@@ -6,6 +6,7 @@
 #' @references \url{http://www.github.com/sartorlab/methylSig}{MethylSig}
 #'
 #' @import annotatr
+#' @import BiocGenerics
 #' @importFrom boot corr
 #' @import bsseq
 #' @import DSS

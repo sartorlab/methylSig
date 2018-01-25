@@ -144,7 +144,7 @@ methylSigCalc = function(
 
     #####################################
     # Get the group labels, NOTE: THIS ASSUMES CORRECT REFERENCE LEVEL SET
-    pdata = pData(meth)
+    pdata = bsseq::pData(meth)
     group2 = levels(pdata[, comparison])[2]
     group1 = levels(pdata[, comparison])[1]
 
@@ -186,7 +186,7 @@ methylSigCalc = function(
     all_cov = all_cov[valid_idx,]
     all_meth = all_meth[valid_idx,]
     muEst = muEst[valid_idx,]
-    meth_gr = granges(meth)[valid_idx,]
+    meth_gr = GenomicRanges::granges(meth)[valid_idx,]
 
     num_loci = length(valid_idx)
 
@@ -200,7 +200,7 @@ methylSigCalc = function(
 
             # Get the indices which are within the local.winsize, but also limit to 5 CpGs on either side
             local_loci_idx = intersect(
-                which(abs(start(meth_gr)[locus_idx] - start(meth_gr)) < local.winsize),
+                which(abs(BiocGenerics::start(meth_gr)[locus_idx] - BiocGenerics::start(meth_gr)) < local.winsize),
                 max(1, locus_idx - 5):min(num_loci, locus_idx + 5))
 
             if(length(local_loci_idx) == 1) {
@@ -219,7 +219,7 @@ methylSigCalc = function(
                 # We need to scale the loci in the window onto the interval [-1, 1] because
                 # that is the domain of the weightFunc.
                 # This is a vector of the distances of the local loci to the loci of interest (domain)
-                local_loci_norm = (start(meth_gr)[local_loci_idx] - start(meth_gr)[locus_idx]) / (local.winsize + 1)
+                local_loci_norm = (BiocGenerics::start(meth_gr)[local_loci_idx] - BiocGenerics::start(meth_gr)[locus_idx]) / (local.winsize + 1)
 
                 # Calculate the weights
                 # Each is a vector of values of the weight function (range)
@@ -358,7 +358,7 @@ methylSigCalc = function(
     }, mc.cores = num.cores))
 
     results_gr = meth_gr
-    mcols(results_gr) = results
+    S4Vectors::mcols(results_gr) = results
 
     if(T.approx) {
          results_gr$pvalue = stats::pt(-sqrt(pmax(results_gr$logLikRatio, 0)), results_gr$df) * 2
@@ -375,7 +375,7 @@ methylSigCalc = function(
 
     results_gr$hyper_direction = ifelse(results_gr$meth.diff > 0, group2, group1)
 
-    mcols(results_gr) = mcols(results_gr)[, c('phiCommonEst', 'logLikRatio', 'df', 'muEstC_group1', 'muEstC_group2', 'meth.diff', 'hyper_direction', 'pvalue', 'fdr')]
+    S4Vectors::mcols(results_gr) = S4Vectors::mcols(results_gr)[, c('phiCommonEst', 'logLikRatio', 'df', 'muEstC_group1', 'muEstC_group2', 'meth.diff', 'hyper_direction', 'pvalue', 'fdr')]
 
     return(results_gr)
 }
