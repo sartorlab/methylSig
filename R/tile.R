@@ -24,7 +24,7 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
 
     # Check for tiles possibilities. Coerce correct seqinfo, and trim().
     if(is.null(tiles)) {
-        tiles = tileGenome(seqlengths(meth), tilewidth = 1000, cut.last.tile.in.chrom = TRUE)
+        tiles = tileGenome(seqlengths(meth), tilewidth = win.size, cut.last.tile.in.chrom = TRUE)
         seqinfo(tiles) = seqinfo(meth)
     } else if (is(tiles, 'data.frame')) {
         tiles = makeGRangesFromDataFrame(tiles, seqinfo = seqinfo(meth), keep.extra.columns = FALSE)
