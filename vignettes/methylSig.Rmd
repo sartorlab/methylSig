@@ -16,8 +16,6 @@ DNA methylation plays critical roles in gene regulation and cellular specificati
 
 `methylSig` is a method for testing for differential methylated cytosines (DMCs) or regions (DMRs) in whole-genome bisulfite sequencing (bis-seq) or reduced representation bisulfite sequencing (RRBS) experiments. `methylSig` uses a beta binomial model to test for significant differences between groups of samples. Several options exist for either site-specific or sliding window tests, combining strands, and for variance estimation. It allows annotating the resulting regions to multiple genome features, and visualizing the results for chosen genomic regions.
 
-This document provides a step by step guide for the `methylSig` package.
-
 # Installation
 
 `methylSig` is available on GitHub at <http://www.github.com/sartorlab/methylSig>, and the easiest way to install it is as follows:
@@ -28,394 +26,252 @@ devtools::install_github('sartorlab/methylSig')
 
 # Basic usage
 
-## Methylation score files
+## Reading data
 
-`methylSig` expects input data to be formatted as follows:
+As of version `0.5.0`, `methylSig` is able to read `bismark_methylation_extractor` outputs directly using the `bsseq` Bioconductor package. The `methylSigReadData()` function is a wrapper for `bsseq::read_bismark()` that adds some userful features:
 
-```{r, echo=FALSE}
-library(methylSig)
-print(read.table(system.file("extdata", "AML_1.txt", package = "methylSig"),header=T,nrows=6), row.names=F)
-```
+1. Users can set a `minCount` and `maxCount` for the coverage of sites.
+2. Users analyzing data aligned to `hg19` can filter out C > T or G > A SNPs.
 
-Such CpG methylation score files can be obtained using `bismark` with the `--bedGraph` `--cytosine_report` flags in the `bismark_methylation_extractor`. The following `awk` command can be used on each cytosine report to obtain the correct format. Note, in `$4 + $5 > 10`, the 10 refers to the desired minimum coverage at each CpG site.
-
-```{awk, eval=FALSE}
-awk -v OFS="\t" '$4 + $5 > 10 {print $1"."$2, $1, $2, $3, $4 + $5, $4, $5}' in.file > out.file
-```
-
-If there are many samples to convert, in the directory containing the `CpG_report.txt` outputs from `bismark`, do:
-
-```{bash, eval=FALSE}
-for reportFile in `find . -name '*CpG_report.txt'`
-do
-  msigFile=./`basename $reportFile .txt`_for_methylSig.txt
-  echo 'Formatting ' $reportFile ' into ' $msigFile
-  awk -v OFS="\t" '$4 + $5 > 10 {print $1"."$2, $1, $2, $3, $4 + $5, $4, $5}' $reportFile > $msigFile
-done
-```
-
-The CpG methylation score file must contain at least seven columns. Among these, second to seventh column must be, in order, chromosome, base, strand, coverage, percentage of Cs and percentage of Ts. Column names are not important. Strand format is F/R or +/-, where F/+ represents forward and R/- represents reverse strand.
-
-## Reading methylation score files
-
-`methylSig` package provides the `methylSigReadData()`function to read CpG methylation score files and convert these files into a `methylSigData` object for further analysis and annotation. The parameters and default options are:
-
-```{r, eval=FALSE}
-methylSigReadData(fileList, sample.ids, assembly = NA, pipeline = NA,
-  header = TRUE, context = NA, resolution = "base", treatment,
-  destranded = TRUE, maxCount = 500, minCount = 10, filterSNPs = FALSE,
-  num.cores = 1, quiet = FALSE)
-}
-```
-
-Using data built into `methylSig` a typical read call might look like:
+The following code uses data contained in the package to demonstrate how to read methylation data:
 
 ```{r}
-fileList = c(system.file("extdata", "AML_1.txt", package = "methylSig"),
-             system.file("extdata", "AML_2.txt", package = "methylSig"),
-             system.file("extdata", "AML_3.txt", package = "methylSig"),
-             system.file("extdata", "AML_4.txt", package = "methylSig"),
-             system.file("extdata", "NBM_1.txt", package = "methylSig"),
-             system.file("extdata", "NBM_2.txt", package = "methylSig"),
-             system.file("extdata", "NBM_3.txt", package = "methylSig"),
-             system.file("extdata", "NBM_4.txt", package = "methylSig"))
+# The following bismark cytosine reports are included in inst/extdata
+files = c(
+    system.file('extdata', 'MDAMB_231_1DR.txt.gz', package='methylSig'),
+    system.file('extdata', 'MDAMB_231_1DS.txt.gz', package='methylSig'),
+    system.file('extdata', 'MDAMB_231_2DR.txt.gz', package='methylSig'),
+    system.file('extdata', 'MDAMB_231_2DS.txt.gz', package='methylSig'),
+    system.file('extdata', 'MDAMB_231_3DR.txt.gz', package='methylSig'),
+    system.file('extdata', 'MDAMB_231_3DS.txt.gz', package='methylSig'))
 
+sample.ids = basename(files)
+sample.ids = gsub('.txt.gz', '', sample.ids)
 
-sample.id = c("AML1", "AML2", "AML3", "AML4", "NBM1", "NBM2", "NBM3", "NBM4")
+# Build a pData matrix with columns for the samples, group memberships, and phenotype data
+pData = data.frame(
+    Sample_Names = sample.ids,
+    DR_vs_DS = relevel(factor(c('DR','DS','DR','DS','DR','DS')), ref = 'DS'),
+    row.names = sample.ids,
+    stringsAsFactors = FALSE)
 
-treatment = c(1,1,1,1,0,0,0,0)
-#### Read Data ####
-meth <- methylSigReadData(fileList, sample.ids = sample.id, assembly = "hg18",
-           treatment = treatment, context = "CpG", destranded=TRUE)
+data = methylSigReadData(
+    fileList = files,
+    pData = pData,
+    assembly = 'hg19',
+    destranded = TRUE,
+    maxCount = 500,
+    minCount = 10,
+    filterSNPs = TRUE,
+    num.cores = 4,
+    fileType = 'cytosineReport')
+
+print(data)
 ```
-
-It is possible for the user to filter out CpG sites based on the read coverage. CpG sites with very large read coverage may be due to PCR bias and hence including CpG sites with very high coverage may distort the statistics of data analysis. The `methylSigReadData()` function provides `minCount` and `maxCount` arguments for defining lower and upper limits for coverage. The default values are 10 and 500 respectively. It is also possible to exclude C > T SNPs determined by the 1000 Genomes Project with the `filterSNPs` option. This is not done by default.
-
-There are many arguments for the `methylSigReadData()` function.  Among these `fileList`, `sample.ids` and `treatment` are required. Some options have default values, for example, `destranded=TRUE`, `num.cores=1`, and `quiet=FALSE`. Other arguments such as `assembly`, `context` and `pipeline` are optional and for information purposes only. The data type of `treatment` is a numeric vector. Each number represents a group. Multiple groups can be stored in one `methylSigData` object.
-
-The arguemnt `num.cores` is used for multi-thread reading.
 
 ## Differential methylation analysis
 
 The main function of this package is the differential methylation analysis function `methySigCalc()`.  It calculates differential methylation statistics between two groups of samples. It uses a beta-binomial approach to calculate differential methylation statistics, accounting for coverage and variation among samples within each group.
 
-```{r, eval=FALSE}
-methylSigCalc(meth, groups = c(Treatment = 1, Control = 0),
-  dispersion = "both", local.disp = FALSE, winsize.disp = 200,
-  local.meth = FALSE, winsize.meth = 200, min.per.group = c(3, 3),
-  weightFunc = methylSig_weightFunc, T.approx = TRUE, num.cores = 1)
-}
-```
 ## Site specific analysis
 
 The default is to do site specific analysis and to use both groups to estimate variances.
 
 ```{r}
-myDiffSigboth = methylSigCalc(meth, groups=c(1,0), min.per.group=3)
+### Test on CpGs
+result = methylSigCalc(
+    meth = data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
+
+print(result)
 ```
 
-The differentially methylated cytosines (DMCs) can be defined based on qvalues, pvalues and the methylation rate difference between two tested groups.
+The output includes the estimated dispersion (`phiCommonEst`), the log-likelihood ratio (`logLikRatio`), the degrees of freedom (`df`), the group methylation estimates (`muEstC_group1` and `muEstC_group2` where group 1 is the reference factor in the comparison column of the `pData` matrix), the methylation difference (`meth.diff = muEstC_group2 - muEstC_group1`), the group for which the site is hyper-methylated (`hyper_direction`, note, this is regardless of significance), the `pvalue`, and `fdr`.
+
+## Tiled analysis
+
+`methylSig` also provides `methylSigTile()` to tile data within continuous non-overlapping windows. Users can tile the genome according to a window size, give a `data.frame` with genomic regions, or give a `GRanges` object. Examples are below.
+
+### Windowed analysis
 
 ```{r}
-myDiffSigbothDMCs = myDiffSigboth[myDiffSigboth[,"qvalue"] <= 0.05
-                                  & abs(myDiffSigboth[,"meth.diff"])>=25, ]
+### Test on 10000bp windows
+windowed_data = methylSigTile(data, tiles = NULL, win.size = 10000)
+
+tiled_result = methylSigCalc(
+    meth = windowed_data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
+
+print(tiled_result)
 ```
 
-## Tiled data analysis
+### Region analysis
 
-`methylSig` package also provides `methylSigTile()` function to tile data within continuous non-overlapping windows or annotations such as CpG islands. The default window size is 25bp, and to tile over annotations, you must first read in a BED3 file as a `data.frame`. After tiling data, the `methylSigCalc()` function can be used to calculate differential methylation statistics.
+As mentioned, users can provide a `data.frame` in the `tiles` parameter, so long as it has column names acceptable to `makeGRangesFromDataFrame`, i.e. `chr`, `start`, and `end`.
+
+Finally, users can provide tiling regions as a `GRanges` object. If we wanted to test for differential methylation in CpG islands, we could use the `annotatr` package to create the CpG island regions.
 
 ```{r}
-### Tiled window analysis
-methTile = methylSigTile(meth,win.size = 25)
-myDiffSigbothTile = methylSigCalc(methTile, groups=c(1,0), min.per.group=3)
+### Test on CpG islands
+library(annotatr)
+
+cpg_islands = annotatr::build_annotations(genome = 'hg19', annotations = 'hg19_cpg_islands')
+
+cpg_island_data = methylSigTile(data, tiles = cpg_islands)
+
+cpg_island_result = methylSigCalc(
+    meth = cpg_island_data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
+
+print(cpg_island_result)
 ```
 
 ## Variance from one group
 
-Using the `dispersion` argument, it is possible to estimate variances from one group rather than from both groups. The following code calculates differential methylation statistics based on estimating variances from group 0 only.
+Using the `dispersion` argument, it is possible to estimate variances from one group rather than from both groups.
 
 ```{r}
-### Variance from sample treatment group "0" only
-myDiffSignorm = methylSigCalc(meth, groups=c(1,0), dispersion=0, min.per.group=3)
-myDiffSignormTile = methylSigCalc(methTile, groups=c(1,0),
-                                    dispersion=0, min.per.group=3)
+### Variance on the DS group only
+ds_var_result = methylSigCalc(
+    meth = data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'DS',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
+
+print(ds_var_result)
 ```
 
 ## Using local information
 
-It is also possible to use information from nearby CpG sites to improve the variance and methylation level estimates. The default `winsize.disp` and `winsize.meth` are 200 bps.  The `winsize.disp` argument only takes into effect when `local.disp` is set to `TRUE`. Similarly `winsize.meth` argument only takes into effect when `local.meth` is set to `TRUE'.
+It is also possible to use information from nearby CpG sites to improve the variance and methylation level estimates. The default `local.winsize` is 200 bps.  The `local.winsize` is only used when `local.info = TRUE`.
 
 ```{r}
-### Variance from both groups and using local information for variance
-myDiffSigBothLoc = methylSigCalc(meth, groups=c(1,0),
-          min.per.group=3, local.disp=TRUE, winsize.disp=200)
+### Variance from both groups and using local information
+local_result = methylSigCalc(
+    meth = data,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = TRUE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
 
-### Variance from sample treatment group "0" only and using local information for variance
-myDiffSignormLoc = methylSigCalc(meth, groups=c(1,0), dispersion=0,
-          min.per.group=3, local.disp=TRUE, winsize.disp=200)
-
-### Variance from both groups and using local information for methylation level
-myDiffSigBothMLoc = methylSigCalc(meth, groups=c(1,0),
-          min.per.group=3, local.meth=TRUE, winsize.meth=200)
-
-### Variance from both groups and using local information for methylation level and variance
-myDiffSigBothMDLoc = methylSigCalc(meth, groups=c(1,0),
-          min.per.group=3, local.disp=TRUE, winsize.disp=200,
-          local.meth=TRUE, winsize.meth=200)
+print(local_result)
 ```
 
-## Multi-thread computation
-
-`methylSig` provides multicore programming to substantially reduce data analysis time. In the functions `methylSigReadData` and `methylSigCalc`, multi-core programming will be initiated using `num.cores` argument.  Note that this option depends on R package `parallel` and hence is not available in the Windows platform. The following example illustrates the use of 2 cores.
-
-```{r, eval=FALSE}
-#### Read Data using 2 cores
-meth <- methylSigReadData(fileList, sample.ids = sample.id, assembly = "hg18",
-           treatment = treatment, context = "CpG", destranded=TRUE,
-           num.cores=2, quiet=TRUE)
-
-#### Differential methylation analysis using 2 cores
-myDiffSigboth = methylSigCalc(meth, groups=c(1,0), min.per.group=3, num.cores=2)
-```
 # Annotation
 
-## CpG islands
+## Annotating differentially methylated CpGs
 
-There are two functions, `cpgAnnotation()` and `cpgAnnotationPlot()`, in the `methylSig` package for CpG island annotation. The CpG island information file can be download the UCSC genome browser. The appropriate genome assembly should be used.
+Once differential methylation has been determined with `methylSigCalc()`, it may be of interest understand where differential methylation occurs in terms of genes and CpG features (islands, shores, shelves). `methylSig` uses the `annotatr` package to accomplish this.
 
-In Linux, the user may use the following command to download the annotation file for hg19. Please use appropriate directories for hg18, mm9 or mm10.
+```{r}
+# Build annotations for genic and CpG features
+annots = annotatr::build_annotations(genome = 'hg19', annotations = c('hg19_basicgenes','hg19_cpgs'))
 
-```{sh, eval=FALSE}
-wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/cpgIslandExt.txt.gz
-gunzip *.gz
+# Determine what CpGs should be considered significant
+dmcList = result$fdr < 0.05 & abs(result$meth.diff) > 25
+
+annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annotations = annots)
 ```
 
-Here we use the CpG island annotation file provided in the `methylSig` package to annotate our example. Note that this is a reduced annotation file and is not appropriate for a full real data analysis.
+The result is a `GRanges` object with the same columns as the `result` with the addition of columns giving the differential methylation status (`dm_status`), a unique locus id (`locus_id`), and information about the annotation which is itself a `GRanges` object (`annot`). It is important to note that regions tested for differential methylation may occur on multiple rows, depending on the number of features it is annotated to. The `locus_id` column helps to quickly see when this is the case.
 
-```{r, fig.align='center', fig.cap='CpG annotation plots', fig.height=4, fig.width=4}
-library("graphics")
-cpgInfo = getCpGInfo(system.file("annotation", "cpgi.hg18.bed.txt",
-                                  package = "methylSig"))
-
-myDiffDMCs = myDiffSigboth[myDiffSigboth[,"qvalue"] < 0.05
-                               & abs(myDiffSigboth[,"meth.diff"])>25,]
-cpgAnn = cpgAnnotation(cpgInfo,myDiffSigboth)
-cpgAnnDmc = cpgAnnotation(cpgInfo, myDiffDMCs)
-cpgAnnotationPlot(cpgAnn,main="ALL")
-cpgAnnotationPlot(cpgAnnDmc,main="DMCs")
+```{r}
+print(annotated_result)
 ```
 
-## RefGene annotation
+It is more illuminating to view this object as a coerced `data.frame`, wherein the information about the annotations are displayed.
 
-Again, there are two functions, `refGeneAnnotation()` and `refGeneAnnotationPlot()`, in `methylSig` package for annotation using RefGene models. The refGene information file can be download from websites such UCSC genome browser. The appropriate genome assembly (the same genome assembly of the provided data) should be used.
-
-In a linux server, the user may use the following command to download the annotation file for hg19. Please use appropriate directories for hg18, mm9 or mm10.
-
-```{sh, eval=FALSE}
-wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/refGene.txt.gz
-gunzip *.gz
+```{r}
+print(head(as.data.frame(annotated_result)))
 ```
 
-We use refGene annotation file provided in the `methylSig` package to annotate in our example. Note that this is a reduced annotation file and is not appropriate for the a full real data analysis.
+### Plotting annotations
 
-```{r, fig.align='center', fig.cap='refGene annotation plots', fig.height=4, fig.width=4}
-refGeneInfo = getRefgeneInfo(system.file("annotation", "refGene.txt",
-                                   package = "methylSig"))
+We can use the resulting annotations to plot some summary information. First, we can plot the methylation differences across CpG annotations crossed with differential methylation status.
 
-refGeneAnn = refGeneAnnotation(refGeneInfo, myDiffSigboth)
-refGeneAnnDmc = refGeneAnnotation(refGeneInfo, myDiffDMCs)
-refGeneAnnotationPlot(refGeneAnn,main="ALL",
-                 priority=c("promoter","cds", "noncoding", "5'utr", "3'utr"))
-refGeneAnnotationPlot(refGeneAnnDmc, main="DMC",
-                 priority=c("promoter","cds", "noncoding", "5'utr", "3'utr"))
+```{r, fig.align='center', fig.cap='Methylation differences in CpG annotations', fig.height=6, fig.width=6, fig.show = 'hold', warning = FALSE, message = FALSE}
+# Set the order vectors
+cpg_order = c('hg19_cpg_islands','hg19_cpg_shores','hg19_cpg_shelves','hg19_cpg_inter')
+dm_order = c('DR','DS','No DM')
+
+diff_plot = methylSigPlotDiff(myAnnots = annotated_result, annotation_order = cpg_order, status_order = dm_order,
+    bin_width = 10, plot_title = 'Meth. Diff. in CpG Annots.', x_label = 'DM Status', y_label = 'Proportion',
+    legend_facet_label = 'Meth. Diff. in Annotation', legend_cum_label = 'Meth. Diff. Overall')
+
+print(diff_plot)
+```
+
+Next, we can plot the distribution of differential methylation status across the CpG annotations.
+
+```{r, fig.align='center', fig.cap='Methylation status in CpG annotations', fig.height=6, fig.width=6, fig.show = 'hold', warning = FALSE, message = FALSE}
+# Set the order vectors
+cpg_order = c('hg19_cpg_islands','hg19_cpg_shores','hg19_cpg_shelves','hg19_cpg_inter')
+dm_order = c('DR','DS','No DM')
+
+status_plot = methylSigPlotStatus(myAnnots = annotated_result, annotation_order = cpg_order, status_order = dm_order,
+    position = 'fill', plot_title = 'DM Status in CpG Annots.', legend_title = 'Annotations',
+    x_label = 'DM Status', y_label = 'Proportion')
+
+print(status_plot)
 ```
 
 ## Transcription factor (TF) enrichment test
 
-The functions `getTFBSInfo()` and  `methylSig.tfbsEnrichTest()` are provided for reading the TFBS information file and implementing transcription factor enrichment test.
+Changes in DNA methylation have been shown to alter transcription factor binding. The `methylSig` package has implemented `methylSig.tfbsEnrichTest()` to test a set of transcription factor binding sites (TFBSs) are enriched for differentially methylated CpGs.
 
-UCSC genome browser provides TFBS conserved track for hg18 and hg19. The following linux server shell command can be used to download these files:
-
-```{sh, eval=FALSE}
-wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/tfbsConsSites.txt.gz
-wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/tfbsConsFactors.txt.gz
-gunzip *.gz
-```
-
-Here, `tfbsConsSites.txt` is tracking information and can be used directory in function `getTFBSInfo()`. The explanation of variable names is listed in file `tfbsConsFactors.txt`.
-
-Another TFBS track is from ENCODE for hg18, hg19 and mm9. However, the `methylSig` package cannot use this type of track directly. We provide ENCODE TFBS track files that suitable for `methylSig` package at <http://sartorlab.ccmb.med.umich.edu/software>.
-
-```{r, fig.align='center', fig.width=5, fig.height=5, fig.cap='TFBS Enrichment'}
-tfbsInfo = getTFBSInfo(system.file("annotation", "tfbsUniform.txt",
-                                   package = "methylSig"))
-DMCIndex = (myDiffSigboth[,"qvalue"] < 0.05
-                 & abs(myDiffSigboth[,"meth.diff"]) > 25)
-pvalue = methylSig.tfbsEnrichTest(myDiffSigboth, DMCIndex, tfbsInfo)
-```
-
-To identify which TFs have significant level of hypermethylation or hypomethylation across their binding sites, which could indicate whether the TF is having a weaker or stronger regulatory effect, respectively,  we first tile all reads from regions to which a particular TF is predicted to bind. We then apply our beta-binomial model to the data for each TF to identify TFs with hyper- or hypo-methylated binding sites.
-
-To achieve this, we provide function `methylSigTileTFBS()` to tile all data corresponding to the same TF.
+We demonstrate this funciton on a set of TFBSs from ENCODE. The `rtracklayer::import()` function makes reading in `BED` files simple.
 
 ```{r}
-methTileTFs = methylSigTileTFBS(meth, tfbsInfo)
-myDiffTFs = methylSigCalc(methTileTFs, groups=c(1,0))
+# Read in TFBS
+tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
+tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
+
+print(tfbs)
 ```
+
+This file mixes TFBSs from a number of TFs and keeps track of them in the name column (4th) of the `BED`. Next, we indicate what is considered a differentially methylated CpG and perform the test.
+
+```{r}
+# Significance threshold
+dmcList = result$fdr < 0.05 & abs(result$meth.diff) > 25
+
+# Perform the test
+tfbs_enrichment = methylSig.tfbsEnrichTest(myDiff = result, dmcList = dmcList, tfbsInfo = tfbs)
+
+# Take a look at the first few rows
+print(head(tfbs_enrichment))
+```
+
 ## Data visualization
 
-MethylSig offers a unique two-tiered visualization of the methylation data depending on the zoom level.  When the chromosome range is large (>1 million bp), the visualization function does not show individual sample data.
-
-```{r, fig.width=6, fig.height=6, fig.cap='Data visualization over a large range'}
-methylSigPlot(meth, "chr21", c(43000000, 43500000), groups=c(1,0),
-    cpgInfo=cpgInfo,refGeneInfo=refGeneInfo,
-    myDiff=myDiffSigboth,tfbsInfo=tfbsInfo,tfbsDense=F,sigQ=0.05)
-```
-
-For narrow regions where at most 500 CpG sites have data reads, users can visualize sample-specific coverage levels and \% methylation at each site, together with group averages, significance levels and a number of genomic annotations.
-
-```{r, fig.align='center', fig.width=6, fig.height=6, fig.cap='Data visualization over a narrow range'}
-methylSigPlot(meth, "chr21", c(43800000, 43900000), groups=c(1,0),
-    cpgInfo=cpgInfo, refGeneInfo=refGeneInfo,
-    myDiff=myDiffSigboth,tfbsInfo=tfbsInfo,tfbsDense=F,sigQ=0.05)
-```
-
-# Data classes
-
-## `methylSigData` object
-
-### S4 data structure
-
-The `methylSig` package uses S4 object. The contents of `methylSigData` can be shown using the `show()` function in R or just type the object itself.
-
-```{r}
-show(meth)
-```
-
-Here, NA means there was no data at this base location on the related sample.
-
-### Subsetting
-
-Data can be subset using matrix style operations. Row represents base location and each column is a sample. Below is an example to obtain data for samples 1 to 4:
-
-```{r}
-meth1_4 = meth[,1:4]
-```
-
-This example returns the first 100 methylation reads in the data:
-```{r}
-methSub1_100 = meth[1:100,]
-```
-
-Two arguments can be used together. This example returns the first 100 methylation reads for samples 1 and 2.
-```{r}
-methSubData = meth[1:100,1:2]
-methSubData
-```
-
-### Getting values
-
-If the second argument is a string that matches one of the column names in the `methylSigData` object, it gives the values of that column. Valid column names are `chr`, `start`, `end`, `strand`, `coverage1`, ..., `numCs1`, ..., and `numTs1`.
-
-```{r}
-coverage1 = meth[,"coverage1"]
-startTop200 = meth[1:200,"start"]
-```
-
-## `methylSigDiff` object
-
-### S4 data structure
-
-The contents of `methylSigDiff` are:
-
-```{r}
-myDiffSigboth
-```
-
-### Subsetting
-
-This object can also subset by row to obtain results from part of CpG sites or regions. However, the qvalues will not be readjusted.
-
-```{r}
-myDiff100 = myDiffSigboth[1:100,]
-```
-
-### Getting values
-
-Similar to the `methSigData` object, if the second argument is a string that is the same as one of the column names, it will return the results for that column. The valid variable names are `chr`, `start`, `end`, `strand`, `pvalue`, `qvalue`, `meth.diff`, `logLikRatio`, `theta`,  `df`, `mu1`, and `mu0`. Here, for group methylation mean estimates `mu1` and `mu0`, 1 and 0 come from the `groups` argument in the `methylSigCalc()` function. So if one has run the `methylSigCalc()` function with `groups=c(4,0)`, then `mu4` and `mu0` will appear in the results.
-
-```{r}
-qvalues = myDiffSigboth[,"qvalue"]
-```
-
-### How to subtract DMCs or DMRs
-
-This `methylSigDiff` object is very flexible to use by combining functions of subsetting and getting values. For example, the following code can obtain differentially methylated cytosines or regions defined as qvalue < 0.05 and difference of methylation rate > 25%.
-
-```{r}
-myDiffq05D25 = myDiffSigboth[myDiffSigboth[,"qvalue"] < 0.05
-                           & abs(myDiffSigboth[,"meth.diff"]) > 25,]
-```
-
-Here `abs()` is the absolute value function in R.
-
-If you want to use pvalues instead of qvalues, then you can use
-```{r}
-myDiffp05D25 = myDiffSigboth[myDiffSigboth[,"pvalue"] < 0.05
-                           & abs(myDiffSigboth[,"meth.diff"]) > 25,]
-```
-
 ## Summarizing data
-
-You can easily use other R functions to summarize or draw plots.
-
-```{r}
-methRaw = methylSigReadData(fileList, sample.ids = sample.id,assembly = "hg18",
-             treatment = treatment, context = "CpG", minCount = 5,
-             maxCount=500, destranded=F, quiet=T)
-
-summary(methRaw[,"numCs1"]/methRaw[,"coverage1"])
-summary(methRaw[,"coverage1"])
-```
-
-```{r, fig.height=4, fig.width=4, fig.cap='Methylation rate for sample 1'}
-hist(methRaw[,"numCs1"]/methRaw[,"coverage1"],
-                 main="Histogram of methylation rate for sample 1",
-                 xlab="methylation rate")
-```
-
-```{r, fig.height=4, fig.width=4, fig.cap='Coverage for sample 1'}
-hist(methRaw[,"coverage1"], main="Histogram of coverage for sample 1",
-                 xlab="coverage")
-```
-
-## Generating heatmaps
-
-Here we provide an example to generate a correlation heatmap.
-
-```{r, fig.cap='Heatmap based on methylation rate at all CpG sites', fig.height=6, fig.width=6}
-library(gplots)
-
-x = meth[,"numCs"]/meth[, "coverage"]
-colnames(x) = meth@sample.ids
-rownames(x) =rep(NA, NROW(x))
-
-corrALL = cor(x, use="pairwise.complete.obs")
-heatmap.2(1-corrALL, na.rm=T, breaks=100,
-          hclustfun = function(x) hclust(x,method="ward.D"),
-          col="bluered",trace="none", symm=T, keysize=1,density.info="none")
-```
-
-Here is another example to generate a correlation heatmap based on differentially methylated cytosines.
-
-```{r, fig.cap='Heatmap based on methylation rate at differentially methylated sites', fig.height=6, fig.width=6}
-myDiffDMC = myDiffSigboth[myDiffSigboth[,"qvalue"] < 0.05
-                          & abs(myDiffSigboth[,"meth.diff"]) >=25,]
-listInMeth = match(myDiffDMC@data.ids, meth@data.ids)
-y = x[listInMeth,]
-corrDMC = cor(y, use="pairwise.complete.obs")
-heatmap.2(1-corrDMC, na.rm=T, breaks=100,
-          hclustfun = function(x) hclust(x,method="ward.D"),
-          col="bluered",trace="none", symm=T, keysize=1,density.info="none")
-```
