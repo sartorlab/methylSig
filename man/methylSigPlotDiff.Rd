@@ -56,7 +56,7 @@ myDiff_annotated = methylSigAnnotation(myDiff = msig_cpgs, dmcList = dmcList, an
 
 # Set the order vectors
 cpg_order = c('hg19_cpg_islands','hg19_cpg_shores','hg19_cpg_shelves','hg19_cpg_inter')
-status_order = c('hyper','hypo','none')
+status_order = c('DR','DS','No DM')
 
 methylSigPlotDiff(myAnnots = myDiff_annotated, annotation_order = cpg_order, status_order = status_order,
     bin_width = 10, plot_title = 'Meth. Diff. in CpG Annots.', x_label = 'DM Status', y_label = 'Proportion',
