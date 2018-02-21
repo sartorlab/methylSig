@@ -6,7 +6,7 @@
 \usage{
 methylSigReadData(fileList, pData, assembly = NA, destranded = TRUE,
   maxCount = 500, minCount = 10, filterSNPs = FALSE, num.cores = 1,
-  fileType = c("cov", "cytosineReport"))
+  fileType = c("cov", "cytosineReport"), verbose = TRUE)
 }
 \arguments{
 \item{fileList}{Files to be read. These can be \code{cov} or \code{cytosine_reports} from the Bismark Methylation Extractor. See \code{fileType} for details.}
@@ -26,6 +26,8 @@ methylSigReadData(fileList, pData, assembly = NA, destranded = TRUE,
 \item{num.cores}{Number of cores to be used in reading files. Default is 1.}
 
 \item{fileType}{The format of the input file. Either \code{cov} or \code{cytosineReport}. One of the outputs of the Bismark Methylation Extractor.}
+
+\item{verbose}{A logical value indicating whether \code{bsseq::read.bismark} shoud print progress. Default TRUE.}
 }
 \value{
 A \code{methylSigData-class} object.

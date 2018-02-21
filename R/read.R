@@ -11,6 +11,7 @@
 #' @param filterSNPs A logical value indicating whether or not to filter out C > T SNPs based on the 1000 Genomes Project. NOTE: Only supported when \code{assembly = 'hg19'}.
 #' @param num.cores Number of cores to be used in reading files. Default is 1.
 #' @param fileType The format of the input file. Either \code{cov} or \code{cytosineReport}. One of the outputs of the Bismark Methylation Extractor.
+#' @param verbose A logical value indicating whether \code{bsseq::read.bismark} shoud print progress. Default TRUE.
 #'
 #' @return A \code{methylSigData-class} object.
 #'
@@ -54,7 +55,8 @@ methylSigReadData = function(
     maxCount = 500, minCount = 10,
     filterSNPs = FALSE,
     num.cores = 1,
-    fileType = c("cov", "cytosineReport")) {
+    fileType = c("cov", "cytosineReport"),
+    verbose = TRUE) {
 
     # NOTE: The cytosine report is 1-based, and GRanges is also 1-based. The result,
     # of bsseq::read.bismark() is 1-based. We are 1-based y'all!
@@ -69,7 +71,7 @@ methylSigReadData = function(
         strandCollapse = destranded,
         fileType = fileType,
         mc.cores = num.cores,
-        verbose = TRUE)
+        verbose = verbose)
 
     # Filter C > T (+) or G > A (-) SNPs
     # SNPs are 1-based
