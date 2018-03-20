@@ -11,7 +11,7 @@ methylSigCalc(meth, comparison = NA, dispersion = "both",
 \arguments{
 \item{meth}{A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.}
 
-\item{comparison}{The name of the column in \code{pData(meth)} to use for the comparisons.}
+\item{comparison}{The name of the column in \code{pData(meth)} to use for the comparisons, with the correct reference level set.}
 
 \item{dispersion}{One of \code{both}, or either group name. Indicates which set of samples to use to estimate the dispersion parameter. Default is \code{both}.}
 
@@ -19,7 +19,7 @@ methylSigCalc(meth, comparison = NA, dispersion = "both",
 
 \item{local.winsize}{An \code{integer} to specify the distance upstream and downstream of a location to include local information for the mean and dispersion parameter estimations. NOTE: An additional constraint is placed whereby a maximum of 5 loci upstream and downstream of the locus of interest are used. Default is \code{200}.}
 
-\item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
+\item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}. NOTE: The ordering of this parameter with respect to the groups should be \code{c(control_group, experiment_group)}.}
 
 \item{weightFunc}{A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. Function value and range of parameter for weight function should be from 0 to 1.}
 
