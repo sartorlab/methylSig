@@ -19,7 +19,7 @@ methylSigCalc(meth, comparison = NA, dispersion = "both",
 
 \item{local.winsize}{An \code{integer} to specify the distance upstream and downstream of a location to include local information for the mean and dispersion parameter estimations. NOTE: An additional constraint is placed whereby a maximum of 5 loci upstream and downstream of the locus of interest are used. Default is \code{200}.}
 
-\item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}. NOTE: The ordering of this parameter with respect to the groups should be \code{c(control_group, experiment_group)}.}
+\item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}. NOTE: The ordering of this parameter with respect to the groups should be \code{c(reference, other)}, where \code{reference} refers to the reference level in the \code{pData(meth)[, comparison]} factor.}
 
 \item{weightFunc}{A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. Function value and range of parameter for weight function should be from 0 to 1.}
 
