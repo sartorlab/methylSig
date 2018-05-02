@@ -5,7 +5,7 @@
 #' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{methylKit::calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust()} with \code{method=``BH''} are used to calculate significance levels. It is significantly faster than \code{methylKit::calculateDiffMeth} function.
 #'
 #' @param meth A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.
-#' @param comparison The name of the column in \code{pData(meth)} to use for the comparisons.
+#' @param comparison The name of the column in \code{pData(meth)} to use for the comparisons, with the correct reference level set.
 #' @param min.per.group A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.
 #'
 #' @return \code{GRanges} object containing the differential methylation statistics and locations. \code{p.adjust} with \code{method="BH"} option is used for p-value correction.
@@ -76,22 +76,50 @@ binomialDiffCalc <- function(
                       - treads * log(treads / cov + 1e-100)
                      )
 
+    mu1 = (creads1 / cov1)*100
+    mu2 = (creads2 / cov2)*100
+    meth.diff = mu2 - mu1
+
+    hyper.direction = ifelse(meth.diff >= 0, group2, group1)
+
     pvalue = pchisq(logLikRatio, 1, lower.tail=FALSE)
     fdr = p.adjust(pvalue, method = 'BH')
 
     results = data.frame(
         'logLikRatio' = logLikRatio,
-        'meth.diff' = ((creads2 / cov2) - (creads1 / cov1))*100,
+        'mu2' = mu2,
+        'mu1' = mu1,
+        'meth.diff' = meth.diff,
+        'hyper.direction' = hyper.direction,
         'pvalue' = pvalue,
         'fdr' = fdr,
-        'mu1' = creads1 / cov1,
-        'mu2' = creads2 / cov2,
         stringsAsFactors = FALSE
     )
 
-    # Extract the granges of the meth BSseq object and attach the data.frame
-    meth_gr = granges(meth)[valid_idx,]
-    mcols(meth_gr) = results
 
-    return(meth_gr)
+
+    # Extract the granges of the meth BSseq object and attach the data.frame
+    results_gr = GenomicRanges::granges(meth)[valid_idx, ]
+    GenomicRanges::mcols(results_gr) = results
+
+    colnames(GenomicRanges::mcols(results_gr)) = c(
+        'logLikRatio',
+        paste('meth', group2, sep='.'),
+        paste('meth', group1, sep='.'),
+        'meth.diff',
+        'hyper.direction',
+        'pvalue',
+        'fdr'
+    )
+
+    # Add metadata
+    results_metadata = list(
+        method = 'binomialDiffCalc',
+        comparison = comparison,
+        min.per.group = min.per.group
+    )
+
+    S4Vectors::metadata(results_gr) = results_metadata
+
+    return(results_gr)
 }

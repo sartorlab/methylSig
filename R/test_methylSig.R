@@ -373,9 +373,46 @@ methylSigCalc = function(
 
     results_gr$fdr = p.adjust(results_gr$pvalue, method = 'BH')
 
-    results_gr$hyper_direction = ifelse(results_gr$meth.diff > 0, group2, group1)
+    results_gr$hyper_direction = ifelse(results_gr$meth.diff >= 0, group2, group1)
 
-    S4Vectors::mcols(results_gr) = S4Vectors::mcols(results_gr)[, c('phiCommonEst', 'logLikRatio', 'df', 'muEstC_group1', 'muEstC_group2', 'meth.diff', 'hyper_direction', 'pvalue', 'fdr')]
+    col_order = c(
+        'phiCommonEst',
+        'logLikRatio',
+        'df',
+        'muEstC_group2',
+        'muEstC_group1',
+        'meth.diff',
+        'hyper_direction',
+        'pvalue',
+        'fdr'
+    )
+
+    S4Vectors::mcols(results_gr) = S4Vectors::mcols(results_gr)[, col_order]
+
+    colnames(GenomicRanges::mcols(results_gr)) = c(
+        'variance.est',
+        'logLikRatio',
+        'df',
+        paste('meth', group2, sep='.'),
+        paste('meth', group1, sep='.'),
+        'meth.diff',
+        'hyper.direction',
+        'pvalue',
+        'fdr'
+    )
+
+    results_metadata = list(
+        method = 'methylSigCalc',
+        comparison = comparison,
+        dispersion = dispersion,
+        local.info = local.info,
+        local.winsize = local.winsize,
+        min.per.group = min.per.group,
+        weightFunc = weightFunc,
+        T.approx = T.approx
+    )
+
+    S4Vectors::metadata(results_gr) = results_metadata
 
     return(results_gr)
 }

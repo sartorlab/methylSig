@@ -128,5 +128,19 @@ methylSigReadData = function(
 
     bs = sort(bs, ignore.strand = TRUE)
 
+    bs_metadata = list(
+        files = fileList,
+        destranded = destranded,
+        maxCount = maxCount,
+        minCount = minCount,
+        filterSNPs = filterSNPs,
+        fileType = fileType,
+        tile = FALSE,
+        tiles = NULL,
+        win.size = NULL
+    )
+
+    S4Vectors::metadata(bs) = bs_metadata
+
     return(bs)
 }

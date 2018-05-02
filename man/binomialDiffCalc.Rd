@@ -9,7 +9,7 @@ binomialDiffCalc(meth, comparison, min.per.group = c(3, 3))
 \arguments{
 \item{meth}{A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.}
 
-\item{comparison}{The name of the column in \code{pData(meth)} to use for the comparisons.}
+\item{comparison}{The name of the column in \code{pData(meth)} to use for the comparisons, with the correct reference level set.}
 
 \item{min.per.group}{A vector with two numbers specifying the minimum number of samples required to perform the test for differential methylation. If it is a single number, both groups will use it as the minimum requried number of samples. Default is \code{c(3,3)}.}
 }

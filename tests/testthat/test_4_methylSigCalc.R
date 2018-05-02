@@ -3,7 +3,7 @@ context('Test methylSigCalc')
 data(data, package = 'methylSig')
 
 test_that('Test CpG no local both dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = data,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
@@ -14,11 +14,12 @@ test_that('Test CpG no local both dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test CpG no local DR dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = data,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
@@ -29,11 +30,12 @@ test_that('Test CpG no local DR dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test CpG no local DS dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = data,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
@@ -44,11 +46,12 @@ test_that('Test CpG no local DS dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test CpG local both dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = data,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
@@ -59,11 +62,12 @@ test_that('Test CpG local both dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test CpG local DR dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = data,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
@@ -74,11 +78,12 @@ test_that('Test CpG local DR dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test CpG local DS dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = data,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
@@ -89,11 +94,12 @@ test_that('Test CpG local DS dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test tiled no local both dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = tiled_data,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
@@ -104,11 +110,12 @@ test_that('Test tiled no local both dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test tiled no local DR dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = tiled_data,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
@@ -119,11 +126,12 @@ test_that('Test tiled no local DR dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test tiled no local DS dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = tiled_data,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
@@ -134,11 +142,12 @@ test_that('Test tiled no local DS dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test tiled local both dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = tiled_data,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
@@ -149,11 +158,12 @@ test_that('Test tiled local both dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test tiled local DR dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = tiled_data,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
@@ -164,11 +174,12 @@ test_that('Test tiled local DR dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })
 
 test_that('Test tiled local DS dispersion', {
-    result = methylSigCalc(
+    result_calc = methylSigCalc(
         meth = tiled_data,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
@@ -179,5 +190,6 @@ test_that('Test tiled local DS dispersion', {
         T.approx = TRUE,
         num.cores = 1)
 
-    expect_true(is(result, 'GRanges'))
+    expect_true(is(result_calc, 'GRanges'))
+    expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
 })

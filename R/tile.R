@@ -56,5 +56,10 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
 
 	tiled_bsseq = bsseq::BSseq(gr = tiles, M = tiled_M, Cov = tiled_Cov, pData = bsseq::pData(meth), rmZeroCov = TRUE)
 
+    S4Vectors::metadata(tiled_bsseq) = S4Vectors::metadata(meth)
+    S4Vectors::metadata(tiled_bsseq)$tile = TRUE
+    S4Vectors::metadata(tiled_bsseq)$tiles = ifelse(is.null(tiles), 'windows', 'custom')
+    S4Vectors::metadata(tiled_bsseq)$win.size = win.size
+
     return(tiled_bsseq)
 }

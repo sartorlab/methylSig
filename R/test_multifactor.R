@@ -120,12 +120,13 @@ methylSigDSS = function(
     test_result = DSS::DMLtest.multiFactor(DMLfit = dss_fit, Contrast = contrast)
 
     # Create the GRanges return object and harmonize column names with methylSigCalc()
-    dss_result = dss_fit$gr
-    GenomicRanges::mcols(dss_result) = test_result[,c('stat','pvals','fdrs')]
-    colnames(GenomicRanges::mcols(dss_result)) = c('stat','pvalue','fdr')
+    results_gr = dss_fit$gr
+    GenomicRanges::mcols(results_gr) = test_result[,c('stat','pvals','fdrs')]
+    colnames(GenomicRanges::mcols(results_gr)) = c('stat','pvalue','fdr')
 
     # Retain metadata from dss_fit, design, formula, and contrast
-    dss_result_metadata = list(
+    results_gr_metadata = list(
+        method = 'methylSigDSS',
         design = design,
         formula = formula,
         contrast = contrast,
@@ -133,12 +134,12 @@ methylSigDSS = function(
         var_beta_fit = dss_fit$fit$var.beta,
         X = dss_fit$X
     )
-    S4Vectors::metadata(dss_result) = dss_result_metadata
+    S4Vectors::metadata(results_gr) = results_gr_metadata
 
     ############################################################################
     # Recover group mean methylation
 
-    # Construct methylation means matrix to add as mcols to dss_result
+    # Construct methylation means matrix to add as mcols to results_gr
     all_meth = as.matrix(bsseq::getCoverage(meth, type = 'M'))
     all_cov = as.matrix(bsseq::getCoverage(meth, type = 'Cov'))
     perc_meth = (all_meth / all_cov)*100
@@ -181,22 +182,34 @@ methylSigDSS = function(
     })
 
     means_df = Reduce(cbind, row_means)
-    colnames(means_df) = paste('mean_meth', colnames(means_df), sep= '.')
+    colnames(means_df) = paste('meth', colnames(means_df), sep= '.')
 
     #####################################
 
     # Add meth difference based on group.term
 
     means_df = cbind(
-        meth.diff = means_df[, paste('mean_meth', group2, sep='.')] - means_df[, paste('mean_meth', group1, sep='.')],
+        meth.diff = means_df[, paste('meth', group2, sep='.')] - means_df[, paste('meth', group1, sep='.')],
         means_df)
 
     #####################################
 
-    # Add the mean methylations to the dss_result
-    GenomicRanges::mcols(dss_result) = cbind(GenomicRanges::mcols(dss_result), means_df)
+    # Add the mean methylations to the results_gr
+    GenomicRanges::mcols(results_gr) = cbind(means_df, GenomicRanges::mcols(results_gr))
+    results_gr$hyper.direction = ifelse(results_gr$meth.diff >= 0, group2, group1)
+
+    col_order = c(
+        'stat',
+        setdiff(colnames(means_df), 'meth.diff'),
+        'meth.diff',
+        'hyper.direction',
+        'pvalue',
+        'fdr'
+    )
+
+    GenomicRanges::mcols(results_gr) = GenomicRanges::mcols(results_gr)[, col_order]
 
     ############################################################################
 
-    return(dss_result)
+    return(results_gr)
 }
