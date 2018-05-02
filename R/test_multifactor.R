@@ -141,7 +141,7 @@ methylSigDSS = function(
     # Construct methylation means matrix to add as mcols to dss_result
     all_meth = as.matrix(bsseq::getCoverage(meth, type = 'M'))
     all_cov = as.matrix(bsseq::getCoverage(meth, type = 'Cov'))
-    perc_meth = all_meth / all_cov
+    perc_meth = (all_meth / all_cov)*100
     if(length(na_idx) > 0) {
         perc_meth = perc_meth[-na_idx, ]
     }
