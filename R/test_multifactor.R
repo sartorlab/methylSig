@@ -73,8 +73,10 @@ methylSigDSS = function(
     # TO DO: Add support for interaction terms
     formula_components = unlist(strsplit(formula, '[+]'))
     formula_components = gsub(' ', '', formula_components)
+    formula_components = gsub('~1', '', formula_components)
     formula_components = gsub('~', '', formula_components)
     formula_components = formula_components[formula_components != '0']
+    formula_components = formula_components[formula_components != '']
 
     ############################################################################
     # Filter according to min.per.group parameter
