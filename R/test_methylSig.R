@@ -1,4 +1,5 @@
 # Called by methylSigCalc
+#' @export
 methylSig_weightFunc <- function(u) (1-u^2)^3
 
 # Called by methylSigCalc
