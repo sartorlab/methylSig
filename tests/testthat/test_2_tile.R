@@ -50,6 +50,7 @@ test_that('Test tileGenome tiling', {
     expect_true(all(truth1_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
     expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
+    expect_true(all(S4Vectors::metadata(tiled_data)$cpgs.per.tile == c(1,1,1)))
 })
 
 truth2_meth = matrix(c(34,10,87,734), nrow = 2, ncol = 2, byrow = TRUE)

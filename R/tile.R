@@ -47,7 +47,8 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
 
     # Subset tiles based on findOverlaps to save some work downstream
     overlaps = GenomicRanges::findOverlaps(query = tiles, subject = meth)
-    tiles = tiles[unique(S4Vectors::queryHits(overlaps))]
+    tile_idx = S4Vectors::queryHits(overlaps)
+    tiles = tiles[unique(tile_idx)]
 
 	tiled_M = as.matrix(bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'M'))
 	tiled_M[is.na(tiled_M)] = 0
@@ -60,6 +61,7 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
     S4Vectors::metadata(tiled_bsseq)$tile = TRUE
     S4Vectors::metadata(tiled_bsseq)$tiles = ifelse(is.null(tiles), 'windows', 'custom')
     S4Vectors::metadata(tiled_bsseq)$win.size = win.size
+    S4Vectors::metadata(tiled_bsseq)$cpgs.per.tile = as.numeric(table(tile_idx))
 
     return(tiled_bsseq)
 }
