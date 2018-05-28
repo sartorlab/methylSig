@@ -82,8 +82,8 @@ methylSigReadData = function(
             message('Filtering SNPs')
             data('CT_SNPs_hg19', envir=environment())
 
-            overlaps = findOverlaps(granges(bs), CT_SNPs_hg19, ignore.strand = T)
-            snp_invalid_list = queryHits(overlaps)
+            overlaps = GenomicRanges::findOverlaps(GenomicRanges::granges(bs), CT_SNPs_hg19, ignore.strand = T)
+            snp_invalid_list = S4Vectors::queryHits(overlaps)
 
             bs = bs[-snp_invalid_list]
         } else {
@@ -103,28 +103,31 @@ methylSigReadData = function(
     }
 
     # Rebuild the BSseq object after altering the Cov and M counts
-    bs = bsseq::BSseq(gr = granges(bs), M = m, Cov = cov, pData = pData, rmZeroCov = TRUE)
+    bs = bsseq::BSseq(gr = GenomicRanges::granges(bs), M = m, Cov = cov, pData = pData, rmZeroCov = TRUE)
 
     # Add the seqinfo information
     genome_seqinfo = tryCatch({
         GenomeInfoDb::Seqinfo(genome = assembly)
     }, error = function(e){
+
         # If the genome isn't supported:
         # Get the max within each chrom and add 100bp so the last tile isn't weird
-        grl = split(granges(bs), seqnames(bs))
+        grl = split(GenomicRanges::granges(bs), GenomeInfoDb::seqnames(bs))
         lengths = sapply(grl, function(gr){
             max(end(gr)) + 100
         })
 
         g_info = GenomeInfoDb::Seqinfo(
-            seqnames = seqnames(seqinfo(bs)),
+            seqnames = GenomeInfoDb::seqlevelsInUse(bs),
             seqlengths = lengths,
             isCircular = NA,
             genome = assembly
         )
+
         return(g_info)
     })
-    seqinfo(bs) = genome_seqinfo[seqnames(seqinfo(bs))]
+    genome_seqinfo = genome_seqinfo[GenomeInfoDb::seqlevelsInUse(bs)]
+    GenomeInfoDb::seqinfo(bs) = genome_seqinfo
 
     bs = sort(bs, ignore.strand = TRUE)
 
