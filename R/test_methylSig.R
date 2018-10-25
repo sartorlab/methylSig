@@ -92,7 +92,7 @@ methylSig_logLik  <- function(mu, phi, lCreads, lTreads, weight) {
 #'   \item{muEstC_group1}{ Methylation estimate for group1. Groups correspond to the levels in the column used for the comparison in \code{pdata(meth)}. }
 #'   \item{muEstC_group2}{ Methylation estimate for group2. }
 #'   \item{meth.diff}{ The difference \code{muEstC_group2 - muEstC_group1}. }
-#'   \item{hyper_direction}{ The group for which the CpG/region is hyper-methylated. Groups correspond to the levels in the column used for the comparison in \code{pdata(meth)}. }
+#'   \item{hyper.direction}{ The group for which the CpG/region is hyper-methylated. Groups correspond to the levels in the column used for the comparison in \code{pdata(meth)}. }
 #'   \item{pvalue}{ The p-value from the t-test (\code{T.approx = TRUE}) or the Chi-Square test (\code{T.approx = FALSE}). }
 #'   \item{fdr}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 #' }
@@ -374,7 +374,7 @@ methylSigCalc = function(
 
     results_gr$fdr = p.adjust(results_gr$pvalue, method = 'BH')
 
-    results_gr$hyper_direction = ifelse(results_gr$meth.diff >= 0, group2, group1)
+    results_gr$hyper.direction = ifelse(results_gr$meth.diff >= 0, group2, group1)
 
     col_order = c(
         'phiCommonEst',
@@ -383,7 +383,7 @@ methylSigCalc = function(
         'muEstC_group2',
         'muEstC_group1',
         'meth.diff',
-        'hyper_direction',
+        'hyper.direction',
         'pvalue',
         'fdr'
     )

@@ -38,8 +38,8 @@
 #'
 #' @export
 methylSigAnnotation <- function(myDiff, dmcList, annotations) {
-    # Create a dm_status column based on dmcList and myDiff$hyper_direction
-    myDiff$dm_status = myDiff$hyper_direction
+    # Create a dm_status column based on dmcList and myDiff$hyper.direction
+    myDiff$dm_status = myDiff$hyper.direction
     myDiff$dm_status[!dmcList] = 'No DM'
 
     # Create a locus_id to enable users to quickly see when a tested locus is annotated to multiple things

@@ -4,8 +4,8 @@
 \alias{methylSigDSS}
 \title{Calculates differential methylation statistics under general experimental design}
 \usage{
-methylSigDSS(meth, design, formula, contrast, group.term, min.per.group = c(3,
-  3))
+methylSigDSS(meth, design, formula, contrast, group.term,
+  min.per.group = c(3, 3))
 }
 \arguments{
 \item{meth}{A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.}

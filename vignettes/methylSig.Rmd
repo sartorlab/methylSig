@@ -32,7 +32,7 @@ devtools::install_github('sartorlab/methylSig')
 
 ## Reading data
 
-As of version `0.5.0`, `methylSig` is able to read `bismark_methylation_extractor` outputs directly using the `bsseq` Bioconductor package. The `methylSigReadData()` function is a wrapper for `bsseq::read_bismark()` that adds some userful features:
+As of version 0.5.0, `methylSig` is able to read `bismark_methylation_extractor` outputs directly using the `bsseq` Bioconductor package. The `methylSigReadData()` function is a wrapper for `bsseq::read_bismark()` that adds some userful features:
 
 1. Users can set a `minCount` and `maxCount` for the coverage of sites.
 2. Users analyzing data aligned to `hg19` can filter out C > T or G > A SNPs.
@@ -97,7 +97,7 @@ result = methylSigCalc(
 print(result)
 ```
 
-The output includes the estimated dispersion (`phiCommonEst`), the log-likelihood ratio (`logLikRatio`), the degrees of freedom (`df`), the group methylation estimates (`muEstC_group1` and `muEstC_group2` where group 1 is the reference factor in the comparison column of the `pData` matrix), the methylation difference (`meth.diff = muEstC_group2 - muEstC_group1`), the group for which the site is hyper-methylated (`hyper_direction`, note, this is regardless of significance), the `pvalue`, and `fdr`.
+The output includes the estimated dispersion (`phiCommonEst`), the log-likelihood ratio (`logLikRatio`), the degrees of freedom (`df`), the group methylation estimates (`muEstC_group1` and `muEstC_group2` where group 1 is the reference factor in the comparison column of the `pData` matrix), the methylation difference (`meth.diff = muEstC_group2 - muEstC_group1`), the group for which the site is hyper-methylated (`hyper.direction`, note, this is regardless of significance), the `pvalue`, and `fdr`.
 
 ## Tiled analysis
 
@@ -219,36 +219,6 @@ It is more illuminating to view this object as a coerced `data.frame`, wherein t
 print(head(as.data.frame(annotated_result)))
 ```
 
-### Plotting annotations
-
-We can use the resulting annotations to plot some summary information. First, we can plot the methylation differences across CpG annotations crossed with differential methylation status.
-
-```{r, fig.align='center', fig.cap='Methylation differences in CpG annotations', fig.height=6, fig.width=6, fig.show = 'hold', warning = FALSE, message = FALSE}
-# Set the order vectors
-cpg_order = c('hg19_cpg_islands','hg19_cpg_shores','hg19_cpg_shelves','hg19_cpg_inter')
-dm_order = c('DR','DS','No DM')
-
-diff_plot = methylSigPlotDiff(myAnnots = annotated_result, annotation_order = cpg_order, status_order = dm_order,
-    bin_width = 10, plot_title = 'Meth. Diff. in CpG Annots.', x_label = 'DM Status', y_label = 'Proportion',
-    legend_facet_label = 'Meth. Diff. in Annotation', legend_cum_label = 'Meth. Diff. Overall')
-
-print(diff_plot)
-```
-
-Next, we can plot the distribution of differential methylation status across the CpG annotations.
-
-```{r, fig.align='center', fig.cap='Methylation status in CpG annotations', fig.height=6, fig.width=6, fig.show = 'hold', warning = FALSE, message = FALSE}
-# Set the order vectors
-cpg_order = c('hg19_cpg_islands','hg19_cpg_shores','hg19_cpg_shelves','hg19_cpg_inter')
-dm_order = c('DR','DS','No DM')
-
-status_plot = methylSigPlotStatus(myAnnots = annotated_result, annotation_order = cpg_order, status_order = dm_order,
-    position = 'fill', plot_title = 'DM Status in CpG Annots.', legend_title = 'Annotations',
-    x_label = 'DM Status', y_label = 'Proportion')
-
-print(status_plot)
-```
-
 ## Transcription factor (TF) enrichment test
 
 Changes in DNA methylation have been shown to alter transcription factor binding. The `methylSig` package has implemented `methylSig.tfbsEnrichTest()` to test a set of transcription factor binding sites (TFBSs) are enriched for differentially methylated CpGs.
@@ -276,6 +246,8 @@ tfbs_enrichment = methylSig.tfbsEnrichTest(myDiff = result, dmcList = dmcList, t
 print(head(tfbs_enrichment))
 ```
 
+<!--
 ## Data visualization
 
 ## Summarizing data
+-->
