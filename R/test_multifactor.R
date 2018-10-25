@@ -12,7 +12,7 @@
 #'   \item{stat}{ The dispersion estimate. }
 #'   \item{pvalue}{ The log likelihood ratio. }
 #'   \item{fdr}{ Degrees of freedom used when \code{T.approx = TRUE}. }
-#'   \item{mean_methylation_columns}{ Mean methylation for each factor in each column of design, when there are fewer than 5 factors in the factor. }
+#'   \item{mean methylation columns}{ Mean methylation for each factor in each column of design, when there are fewer than 5 factors in the factor. }
 #' }
 #'
 #' @seealso \code{\link{methylSigReadData}}

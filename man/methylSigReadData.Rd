@@ -30,7 +30,7 @@ methylSigReadData(fileList, pData, assembly = NA, destranded = TRUE,
 \item{verbose}{A logical value indicating whether \code{bsseq::read.bismark} shoud print progress. Default TRUE.}
 }
 \value{
-A \code{methylSigData-class} object.
+A \code{BSseq-class} object.
 }
 \description{
 This function reads files created by the Bismark Methylation Extractor, and outputs a \code{BSseq} object.

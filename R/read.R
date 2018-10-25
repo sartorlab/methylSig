@@ -13,7 +13,7 @@
 #' @param fileType The format of the input file. Either \code{cov} or \code{cytosineReport}. One of the outputs of the Bismark Methylation Extractor.
 #' @param verbose A logical value indicating whether \code{bsseq::read.bismark} shoud print progress. Default TRUE.
 #'
-#' @return A \code{methylSigData-class} object.
+#' @return A \code{BSseq-class} object.
 #'
 #' @seealso \code{\link{methylSigCalc}}
 #'
