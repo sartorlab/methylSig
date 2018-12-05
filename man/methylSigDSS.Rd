@@ -46,17 +46,6 @@ result1 = methylSigDSS(
     group.term = 'group',
     min.per.group=c(3,3))
 
-# Example with no intercept and corresponding change in contrast
-# NOTE: result2 is the same as result1
-contrast2 = matrix(c(-1,1), ncol = 1)
-result2 = methylSigDSS(
-    meth = meth,
-    design = design1,
-    formula = '~ 0 + group',
-    contrast = contrast2,
-    group.term = 'group',
-    min.per.group=c(3,3))
-
 # Example with subject pairing
 design2 = data.frame(
     group = bsseq::pData(meth)$DR_vs_DS,

@@ -69,4 +69,6 @@ msig_tiles = methylSigCalc(
 tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
 tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
 
-save(meth, tiled_meth, msig_cpgs, msig_tiles, tfbs, file = 'data/sample_data.RData', compress = 'xz')
+cpg_annots = annotatr::build_annotations(genome = 'hg19', annotations = 'hg19_cpg_islands')
+
+save(meth, tiled_meth, msig_cpgs, msig_tiles, tfbs, cpg_annots, file = 'data/sample_data.RData', compress = 'xz')

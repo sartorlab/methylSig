@@ -39,13 +39,14 @@ Annotations from \code{annotatr} are embedded in the \code{myDiff} \code{GRanges
 \examples{
 # Annotate the msig_cpgs results
 utils::data(sample_data, package = 'methylSig')
+# This includes the cpg_annots object to save time
 
-# Use the genome of msig_cpgs and build annotations for CpG features
-annots = annotatr::build_annotations(genome = 'hg19', annotations = 'hg19_cpg_islands')
+# Use the genome of msig_cpgs and build annotations for CpG features built with
+# cpg_annots = annotatr::build_annotations(genome = 'hg19', annotations = 'hg19_cpg_islands')
 
 # Decide what counts as differentially methylated
 dmcList = msig_cpgs$fdr < 0.05 & abs(msig_cpgs$meth.diff) > 25
 
-myDiff_annotated = methylSigAnnotation(myDiff = msig_cpgs, dmcList = dmcList, annotations = annots)
+myDiff_annotated = methylSigAnnotation(myDiff = msig_cpgs, dmcList = dmcList, annotations = cpg_annots)
 
 }
