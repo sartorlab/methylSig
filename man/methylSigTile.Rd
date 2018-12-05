@@ -21,6 +21,6 @@ This function summarizes methylation data within tiles or user-specified regions
 }
 \examples{
 utils::data(sample_data, package = 'methylSig')
-methTile = methylSigTile(meth)
+methTile = methylSigTile(meth, tiles = NULL, win.size = 200)
 
 }

@@ -28,8 +28,7 @@
 #' utils::data(sample_data, package = 'methylSig')
 #'
 #' # Use the genome of msig_cpgs and build annotations for CpG features
-#' genome = GenomeInfoDb::genome(msig_cpgs)
-#' annots = annotatr::build_annotations(genome = genome, annotations = paste(genome, c('cpgs'), sep='_'))
+#' annots = annotatr::build_annotations(genome = 'hg19', annotations = 'hg19_cpg_islands')
 #'
 #' # Decide what counts as differentially methylated
 #' dmcList = msig_cpgs$fdr < 0.05 & abs(msig_cpgs$meth.diff) > 25

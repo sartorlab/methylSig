@@ -10,7 +10,7 @@
 #'
 #' @examples
 #' utils::data(sample_data, package = 'methylSig')
-#' methTile = methylSigTile(meth)
+#' methTile = methylSigTile(meth, tiles = NULL, win.size = 200)
 #'
 #' @export
 methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
@@ -22,26 +22,30 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
         stop("It appears that 'meth' is not CpG resolution. Tiling can only be done on CpG resolution data.")
     }
 
-    # Check for tiles possibilities. Coerce correct seqinfo, and trim().
+    # Check for tiles possibilities
     if(is.null(tiles)) {
-        tiles = GenomicRanges::tileGenome(GenomeInfoDb::seqlengths(meth), tilewidth = win.size, cut.last.tile.in.chrom = TRUE)
-        GenomeInfoDb::seqinfo(tiles) = GenomeInfoDb::seqinfo(meth)
+        # Need to find the last element on each chromosome, add 1000, and use it
+        # as the first argument in GenomicRanges::tileGenome()
+        seqinfo_df = data.frame(
+            seqnames = seqnames(meth),
+            end = end(meth)
+        )
+        seqinfo_list = split(seqinfo_df, seqinfo_df$seqnames)
+        seqinfo_list = lapply(seqinfo_list, function(chr){
+            max_df = data.frame(
+                seqnames = unique(chr$seqnames),
+                end = max(chr$end)
+            )
+        })
+        seqinfo_df = Reduce(rbind, seqinfo_list)
+
+        seqinfo_vect = seqinfo_df$end + 1000
+        names(seqinfo_vect) = seqinfo_df$seqnames
+
+        tiles = GenomicRanges::tileGenome(seqinfo_vect, tilewidth = win.size, cut.last.tile.in.chrom = TRUE)
     } else if (is(tiles, 'data.frame')) {
         tiles = GenomicRanges::makeGRangesFromDataFrame(tiles, keep.extra.columns = FALSE)
-
-        tiles = GenomeInfoDb::keepSeqlevels(x = tiles, value = GenomeInfoDb::seqlevels(meth), pruning.mode = 'coarse')
-        GenomeInfoDb::seqinfo(tiles) = GenomeInfoDb::seqinfo(meth)
     } else if (is(tiles, 'GRanges')) {
-        if(any(is.na(GenomeInfoDb::genome(tiles)))) {
-            message("The genome of the GRanges 'tiles' is NA. Coercing to that of 'meth'.")
-
-            tiles = GenomeInfoDb::keepSeqlevels(x = tiles, value = GenomeInfoDb::seqlevels(meth), pruning.mode = 'coarse')
-            GenomeInfoDb::seqinfo(tiles) = GenomeInfoDb::seqinfo(meth)
-        } else if (unique(GenomeInfoDb::genome(tiles)) != unique(GenomeInfoDb::genome(meth))) {
-            stop("The genome of the GRanges 'tiles' is assigned, but does not match that of 'meth'.")
-        }
-
-        tiles = GenomicRanges::trim(tiles)
         tiles = GenomicRanges::granges(tiles)
     }
 

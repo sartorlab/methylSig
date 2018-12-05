@@ -48,7 +48,6 @@ test_that('Test tileGenome tiling', {
 
     expect_true(all(truth1_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
     expect_true(all(truth1_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
-    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
     expect_true(all(S4Vectors::metadata(tiled_data)$cpgs.per.tile == c(1,1,1)))
 })
@@ -64,7 +63,6 @@ test_that('Test data.frame tiling with matching chromosomes', {
 
     expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
     expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
-    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
 })
 
@@ -76,7 +74,6 @@ test_that('Test GRanges tiling with matching chromosomes and no seqinfo', {
 
     expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
     expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
-    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
 })
 
@@ -88,7 +85,6 @@ test_that('Test GRanges tiling with matching chromosomes and full seqinfo', {
 
     expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
     expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
-    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
 })
 
@@ -100,7 +96,6 @@ test_that('Test data.frame tiling with extra chromosomes', {
 
     expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
     expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
-    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
 })
 
@@ -112,7 +107,6 @@ test_that('Test GRanges tiling with extra chromosomes and no seqinfo', {
 
     expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
     expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
-    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
 })
 
@@ -124,15 +118,5 @@ test_that('Test GRanges tiling with extra chromosomes and full seqinfo', {
 
     expect_true(all(truth2_meth == as.matrix(bsseq::getCoverage(tiled_data, type='M'))))
     expect_true(all(truth2_cov == as.matrix(bsseq::getCoverage(tiled_data, type='Cov'))))
-    expect_true(unique(GenomeInfoDb::genome(tiled_data)) == 'hg19')
     expect_true(all(dim(bsseq::pData(tiled_data)) == c(2,3)))
-})
-
-test_that('Test GRanges tiling warning', {
-    expect_message(
-        methylSigTile(
-            meth = meth,
-            tiles = tiles_gr_samechr_noseqinfo,
-            win.size = 200),
-        'genome of the GRanges')
 })

@@ -35,3 +35,7 @@ BUG FIXES
 REMOVED FEATURES
 
     o Removed plotting functions for retooling.
+
+    o Do not use seqinfo for any objects. Instead, when tiling a genome,
+      find the maximum length of each existing chromosome, add 1000, and use
+      that as the input to GenomicRanges::tileGenome().

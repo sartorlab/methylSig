@@ -106,34 +106,11 @@ methylSigReadData = function(
     # Rebuild the BSseq object after altering the Cov and M counts
     bs = bsseq::BSseq(gr = GenomicRanges::granges(bs), M = m, Cov = cov, pData = pData, rmZeroCov = TRUE)
 
-    # Add the seqinfo information
-    genome_seqinfo = tryCatch({
-        GenomeInfoDb::Seqinfo(genome = assembly)
-    }, error = function(e){
-
-        # If the genome isn't supported:
-        # Get the max within each chrom and add 100bp so the last tile isn't weird
-        grl = split(GenomicRanges::granges(bs), GenomeInfoDb::seqnames(bs))
-        lengths = sapply(grl, function(gr){
-            max(end(gr)) + 100
-        })
-
-        g_info = GenomeInfoDb::Seqinfo(
-            seqnames = GenomeInfoDb::seqlevelsInUse(bs),
-            seqlengths = lengths,
-            isCircular = NA,
-            genome = assembly
-        )
-
-        return(g_info)
-    })
-    genome_seqinfo = genome_seqinfo[GenomeInfoDb::seqlevelsInUse(bs)]
-    GenomeInfoDb::seqinfo(bs) = genome_seqinfo
-
     bs = sort(bs, ignore.strand = TRUE)
 
     bs_metadata = list(
         files = fileList,
+        assembly = assembly,
         destranded = destranded,
         maxCount = maxCount,
         minCount = minCount,
