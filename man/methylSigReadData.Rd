@@ -53,7 +53,7 @@ pData = data.frame(
     row.names = sample.ids,
     stringsAsFactors = FALSE)
 
-data = methylSigReadData(
+meth = methylSigReadData(
     fileList = files,
     pData = pData,
     assembly = 'hg19',

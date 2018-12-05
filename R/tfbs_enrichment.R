@@ -21,7 +21,7 @@
 #' }
 #'
 #' @examples
-#' data(data, package = 'methylSig')
+#' utils::data(sample_data, package = 'methylSig')
 #'
 #' dmcList = msig_cpgs$fdr < 0.05 & abs(msig_cpgs$meth.diff) > 25
 #'
@@ -32,14 +32,14 @@ methylSig.tfbsEnrichTest <- function(myDiff, dmcList, tfbsInfo) {
     # NOTE: All notation is relative to the paper
 
     # Create GRangesList of tfbsInfo based on 'name'
-    tfbs_by_tf = split(tfbs, f = tfbs$name)
+    tfbs_by_tf = split(tfbsInfo, f = tfbsInfo$name)
 
     # Subset myDiff by the dmcList
     dmcs = myDiff[dmcList]
 
     # Overlap tested CpGs and DMCs with TFBSs, respectively
-    tested_overlaps = GenomicRanges::findOverlaps(tfbs, myDiff)
-    dmc_overlaps = GenomicRanges::findOverlaps(tfbs, dmcs)
+    tested_overlaps = GenomicRanges::findOverlaps(tfbsInfo, myDiff)
+    dmc_overlaps = GenomicRanges::findOverlaps(tfbsInfo, dmcs)
 
     # Determine the total number of CpGs and DMCs in TFBSs, respectively
     N_total = length(unique(S4Vectors::subjectHits(tested_overlaps)))
@@ -70,7 +70,7 @@ methylSig.tfbsEnrichTest <- function(myDiff, dmcList, tfbsInfo) {
     # Spacing is to help figure out what's grouped together
     logLik = 2    *    ( n_dmc_by_tf * log( pmax(p_dmc, 1e-100)  /  p_total )   +   (N_dmc - n_dmc_by_tf) * log( pmax(1 - p_dmc, 1e-100)  /  (1 - p_total) ) )
 
-    pvalue = pchisq(logLik, 1, lower.tail=FALSE)
+    pvalue = stats::pchisq(logLik, 1, lower.tail=FALSE)
 
     by_tf$N_total = N_total
     by_tf$N_dmc = N_dmc

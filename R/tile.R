@@ -9,8 +9,8 @@
 #' @return A \code{BSseq-class} object.
 #'
 #' @examples
-#' data(data, package = 'methylSig')
-#' methTile = methylSigTile(data)
+#' utils::data(sample_data, package = 'methylSig')
+#' methTile = methylSigTile(meth)
 #'
 #' @export
 methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
@@ -41,7 +41,7 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
             stop("The genome of the GRanges 'tiles' is assigned, but does not match that of 'meth'.")
         }
 
-        tiles = IRanges::trim(tiles)
+        tiles = GenomicRanges::trim(tiles)
         tiles = GenomicRanges::granges(tiles)
     }
 

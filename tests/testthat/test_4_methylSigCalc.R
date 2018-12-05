@@ -1,10 +1,10 @@
 context('Test methylSigCalc')
 
-data(data, package = 'methylSig')
+utils::data(sample_data, package = 'methylSig')
 
 test_that('Test CpG no local both dispersion', {
     result_calc = methylSigCalc(
-        meth = data,
+        meth = meth,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
         local.info = FALSE,
@@ -20,7 +20,7 @@ test_that('Test CpG no local both dispersion', {
 
 test_that('Test CpG no local DR dispersion', {
     result_calc = methylSigCalc(
-        meth = data,
+        meth = meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
         local.info = FALSE,
@@ -36,7 +36,7 @@ test_that('Test CpG no local DR dispersion', {
 
 test_that('Test CpG no local DS dispersion', {
     result_calc = methylSigCalc(
-        meth = data,
+        meth = meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
         local.info = FALSE,
@@ -52,7 +52,7 @@ test_that('Test CpG no local DS dispersion', {
 
 test_that('Test CpG local both dispersion', {
     result_calc = methylSigCalc(
-        meth = data,
+        meth = meth,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
         local.info = TRUE,
@@ -68,7 +68,7 @@ test_that('Test CpG local both dispersion', {
 
 test_that('Test CpG local DR dispersion', {
     result_calc = methylSigCalc(
-        meth = data,
+        meth = meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
         local.info = TRUE,
@@ -84,7 +84,7 @@ test_that('Test CpG local DR dispersion', {
 
 test_that('Test CpG local DS dispersion', {
     result_calc = methylSigCalc(
-        meth = data,
+        meth = meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
         local.info = TRUE,
@@ -100,7 +100,7 @@ test_that('Test CpG local DS dispersion', {
 
 test_that('Test tiled no local both dispersion', {
     result_calc = methylSigCalc(
-        meth = tiled_data,
+        meth = tiled_meth,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
         local.info = FALSE,
@@ -116,7 +116,7 @@ test_that('Test tiled no local both dispersion', {
 
 test_that('Test tiled no local DR dispersion', {
     result_calc = methylSigCalc(
-        meth = tiled_data,
+        meth = tiled_meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
         local.info = FALSE,
@@ -132,7 +132,7 @@ test_that('Test tiled no local DR dispersion', {
 
 test_that('Test tiled no local DS dispersion', {
     result_calc = methylSigCalc(
-        meth = tiled_data,
+        meth = tiled_meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
         local.info = FALSE,
@@ -148,7 +148,7 @@ test_that('Test tiled no local DS dispersion', {
 
 test_that('Test tiled local both dispersion', {
     result_calc = methylSigCalc(
-        meth = tiled_data,
+        meth = tiled_meth,
         comparison = 'DR_vs_DS',
         dispersion = 'both',
         local.info = TRUE,
@@ -164,7 +164,7 @@ test_that('Test tiled local both dispersion', {
 
 test_that('Test tiled local DR dispersion', {
     result_calc = methylSigCalc(
-        meth = tiled_data,
+        meth = tiled_meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DR',
         local.info = TRUE,
@@ -180,7 +180,7 @@ test_that('Test tiled local DR dispersion', {
 
 test_that('Test tiled local DS dispersion', {
     result_calc = methylSigCalc(
-        meth = tiled_data,
+        meth = tiled_meth,
         comparison = 'DR_vs_DS',
         dispersion = 'DS',
         local.info = TRUE,

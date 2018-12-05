@@ -24,7 +24,7 @@ pData = data.frame(
     row.names = sample_names,
     stringsAsFactors = FALSE)
 
-data = methylSigReadData(
+meth = methylSigReadData(
     fileList = files,
     pData = pData,
     assembly = 'hg19',
@@ -42,7 +42,7 @@ truth1_cov = matrix(c(34,10,0,300,96,458), nrow = 3, ncol = 2, byrow = TRUE)
 
 test_that('Test tileGenome tiling', {
     tiled_data = methylSigTile(
-        meth = data,
+        meth = meth,
         tiles = NULL,
         win.size = 200)
 
@@ -58,7 +58,7 @@ truth2_cov = matrix(c(34,10,96,758), nrow = 2, ncol = 2, byrow = TRUE)
 
 test_that('Test data.frame tiling with matching chromosomes', {
     tiled_data = methylSigTile(
-        meth = data,
+        meth = meth,
         tiles = tiles_df_samechr,
         win.size = 200)
 
@@ -70,7 +70,7 @@ test_that('Test data.frame tiling with matching chromosomes', {
 
 test_that('Test GRanges tiling with matching chromosomes and no seqinfo', {
     tiled_data = methylSigTile(
-        meth = data,
+        meth = meth,
         tiles = tiles_gr_samechr_noseqinfo,
         win.size = 200)
 
@@ -82,7 +82,7 @@ test_that('Test GRanges tiling with matching chromosomes and no seqinfo', {
 
 test_that('Test GRanges tiling with matching chromosomes and full seqinfo', {
     tiled_data = methylSigTile(
-        meth = data,
+        meth = meth,
         tiles = tiles_gr_samechr_fullseqinfo,
         win.size = 200)
 
@@ -94,7 +94,7 @@ test_that('Test GRanges tiling with matching chromosomes and full seqinfo', {
 
 test_that('Test data.frame tiling with extra chromosomes', {
     tiled_data = methylSigTile(
-        meth = data,
+        meth = meth,
         tiles = tiles_df_extrachr,
         win.size = 200)
 
@@ -106,7 +106,7 @@ test_that('Test data.frame tiling with extra chromosomes', {
 
 test_that('Test GRanges tiling with extra chromosomes and no seqinfo', {
     tiled_data = methylSigTile(
-        meth = data,
+        meth = meth,
         tiles = tiles_gr_extrachr_noseqinfo,
         win.size = 200)
 
@@ -118,7 +118,7 @@ test_that('Test GRanges tiling with extra chromosomes and no seqinfo', {
 
 test_that('Test GRanges tiling with extra chromosomes and full seqinfo', {
     tiled_data = methylSigTile(
-        meth = data,
+        meth = meth,
         tiles = tiles_gr_extrachr_fullseqinfo,
         win.size = 200)
 
@@ -131,7 +131,7 @@ test_that('Test GRanges tiling with extra chromosomes and full seqinfo', {
 test_that('Test GRanges tiling warning', {
     expect_message(
         methylSigTile(
-            meth = data,
+            meth = meth,
             tiles = tiles_gr_samechr_noseqinfo,
             win.size = 200),
         'genome of the GRanges')

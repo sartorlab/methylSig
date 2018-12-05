@@ -25,7 +25,7 @@
 #'
 #' @examples
 #' # Annotate the msig_cpgs results
-#' data(data, package = 'methylSig')
+#' utils::data(sample_data, package = 'methylSig')
 #'
 #' # Use the genome of msig_cpgs and build annotations for CpG features
 #' genome = GenomeInfoDb::genome(msig_cpgs)

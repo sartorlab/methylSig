@@ -18,13 +18,13 @@
 #' @seealso \code{\link{methylSigReadData}}
 #'
 #' @examples
-#' data(data, package = 'methylSig')
+#' utils::data(sample_data, package = 'methylSig')
 #'
 #' # Example with implicit intercept
-#' design1 = data.frame(group = bsseq::pData(data)$DR_vs_DS)
+#' design1 = data.frame(group = bsseq::pData(meth)$DR_vs_DS)
 #' contrast1 = matrix(c(0,1), ncol = 1)
 #' result1 = methylSigDSS(
-#'     meth = data,
+#'     meth = meth,
 #'     design = design1,
 #'     formula = '~ group',
 #'     contrast = contrast1,
@@ -35,7 +35,7 @@
 #' # NOTE: result2 is the same as result1
 #' contrast2 = matrix(c(-1,1), ncol = 1)
 #' result2 = methylSigDSS(
-#'     meth = data,
+#'     meth = meth,
 #'     design = design1,
 #'     formula = '~ 0 + group',
 #'     contrast = contrast2,
@@ -44,11 +44,11 @@
 #'
 #' # Example with subject pairing
 #' design2 = data.frame(
-#'     group = bsseq::pData(data)$DR_vs_DS,
+#'     group = bsseq::pData(meth)$DR_vs_DS,
 #'     subject = factor(c(1,1,2,2,3,3)))
 #' contrast2 = matrix(c(0,1,0,0), ncol = 1)
 #' result2 = methylSigDSS(
-#'     meth = data,
+#'     meth = meth,
 #'     design = design2,
 #'     formula = '~ group + subject',
 #'     contrast = contrast2,
@@ -108,7 +108,7 @@ methylSigDSS = function(
     ############################################################################
     # Test for differential methylation
 
-    dss_fit = DSS::DMLfit.multiFactor(BSobj = meth, design = design, formula = as.formula(formula), smoothing=FALSE)
+    dss_fit = DSS::DMLfit.multiFactor(BSobj = meth, design = design, formula = stats::as.formula(formula), smoothing=FALSE)
 
     # Need to remove any rows with NAs because the contrast will fail
     # design; fit: beta, var.beta; formula; gr; X

@@ -1,10 +1,10 @@
 context('Test binomialDiffCalc')
 
-data(data, package = 'methylSig')
+utils::data(sample_data, package = 'methylSig')
 
 test_that('Test CpG no local both dispersion', {
     result_binomial = binomialDiffCalc(
-        meth = data,
+        meth = meth,
         comparison = 'DR_vs_DS',
         min.per.group = c(3,3))
 

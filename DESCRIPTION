@@ -2,7 +2,7 @@ Package: methylSig
 Type: Package
 Title: a whole genome DNA methylation analysis pipeline
 Version: 0.5.0
-Date: 2018-01-17
+Date: 2018-12-05
 Authors@R: c(
     person("Yongseok", "Park", email = "yongpark@pitt.edu", role = c("aut")),
     person("Raymond G.", "Cavalcante", email = "rcavalca@umich.edu", role = c("aut", "cre")))
@@ -36,7 +36,7 @@ Suggests:
     gplots,
     testthat,
     knitr,
-    rmarkdown
-Packaged: 2016-04-20; rcavalca
+    rmarkdown,
+    rtracklayer
 VignetteBuilder: knitr
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1

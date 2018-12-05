@@ -1,0 +1,37 @@
+CHANGES IN VERSION 0.5.0
+------------------------
+
+    o NOTE: This version of methylSig only works for R <= 3.4.4 and Bioc <= 3.6
+      A feature change in the bsseq Bioconductor package in Bioc >= 3.7 does not
+      allow BSseq-class objects whose GRanges are not points, and this breaks
+      the tiling functionality of methylSig.
+
+NEW FEATURES
+
+    o Annotations are now done with the annotatr Bioconductor package.
+
+USER-LEVEL CHANGES
+
+    o methylSig v0.5.0 reuses Bioconductor classes rather than the home-spun
+      classes of earlier versions. This will improve maintainability greatly.
+
+        o The methylSigReadData() function now is a wrapper for the
+          bsseq::read.bismark() function, obviating the need to transform
+          the input data in anyway. The output is a BSseq-class object.
+
+            o As before, filtering for common SNPs (hg19 only), minCount,
+              and maxCount are available. Destranding also remains.
+
+        o The result of any of the tests for differential methylation are now
+          GenomicRanges-class objects.
+
+    o Built-in example data is now known as sample_data.
+
+BUG FIXES
+
+    o Fixed a mistake in methylSig.tfbsEnrichTest() that mistakenly referred
+      referred to tfbsInfo parameter as tfbs.
+
+REMOVED FEATURES
+
+    o Removed plotting functions for retooling.

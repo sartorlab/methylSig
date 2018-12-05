@@ -33,7 +33,7 @@ This function tests for enriched transcription binding sites among differentiall
 Likelihood ratio test is used based on the binomial distribution.
 }
 \examples{
-data(data, package = 'methylSig')
+utils::data(sample_data, package = 'methylSig')
 
 dmcList = msig_cpgs$fdr < 0.05 & abs(msig_cpgs$meth.diff) > 25
 

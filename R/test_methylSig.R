@@ -1,4 +1,14 @@
-# Called by methylSigCalc
+#' Default methylSig Weight Function
+#'
+#' The default weight function used by methylSigCalc
+#'
+#' @param u A numeric between 0 and 1
+#'
+#' @return A \code{GRanges} object containing the following \code{mcols}:
+#'
+#' @examples
+#' methylSig_weightFunc(0.5)
+#' 
 #' @export
 methylSig_weightFunc <- function(u) (1-u^2)^3
 
@@ -97,13 +107,13 @@ methylSig_logLik  <- function(mu, phi, lCreads, lTreads, weight) {
 #'   \item{fdr}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 #' }
 #'
-#' @seealso \code{\link{methylSigPlot}}, \code{\link{methylSigReadData}}
+#' @seealso \code{\link{methylSigReadData}}
 #'
 #' @examples
-#' data(data, package = 'methylSig')
+#' utils::data(sample_data, package = 'methylSig')
 #'
 #' result = methylSigCalc(
-#'     meth = data,
+#'     meth = meth,
 #'     comparison = 'DR_vs_DS',
 #'     dispersion = 'both',
 #'     local.info = FALSE,
@@ -372,7 +382,7 @@ methylSigCalc = function(
     results_gr$meth.diff[abs(results_gr$meth.diff) < 0.01] = 0
     results_gr$meth.diff = as.numeric(results_gr$meth.diff)
 
-    results_gr$fdr = p.adjust(results_gr$pvalue, method = 'BH')
+    results_gr$fdr = stats::p.adjust(results_gr$pvalue, method = 'BH')
 
     results_gr$hyper.direction = ifelse(results_gr$meth.diff >= 0, group2, group1)
 

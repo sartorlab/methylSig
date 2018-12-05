@@ -35,7 +35,7 @@
 #'     row.names = sample.ids,
 #'     stringsAsFactors = FALSE)
 #'
-#' data = methylSigReadData(
+#' meth = methylSigReadData(
 #'     fileList = files,
 #'     pData = pData,
 #'     assembly = 'hg19',
@@ -80,7 +80,8 @@ methylSigReadData = function(
     if(filterSNPs) {
         if(assembly == 'hg19') {
             message('Filtering SNPs')
-            data('CT_SNPs_hg19', envir=environment())
+            utils::data('CT_SNPs_hg19', envir=environment())
+            CT_SNPs_hg19 = get('CT_SNPs_hg19')
 
             overlaps = GenomicRanges::findOverlaps(GenomicRanges::granges(bs), CT_SNPs_hg19, ignore.strand = T)
             snp_invalid_list = S4Vectors::queryHits(overlaps)

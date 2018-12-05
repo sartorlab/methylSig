@@ -12,6 +12,7 @@ vignette: >
 
 ```{r, echo=FALSE}
 library(methylSig)
+library(rtracklayer)
 ```
 
 # Introduction
@@ -59,7 +60,7 @@ pData = data.frame(
     row.names = sample.ids,
     stringsAsFactors = FALSE)
 
-data = methylSigReadData(
+meth = methylSigReadData(
     fileList = files,
     pData = pData,
     assembly = 'hg19',
@@ -70,7 +71,7 @@ data = methylSigReadData(
     num.cores = 4,
     fileType = 'cytosineReport')
 
-print(data)
+print(meth)
 ```
 
 ## Differential methylation analysis
@@ -88,7 +89,7 @@ The default is to do site specific analysis and to use both groups to estimate v
 ```{r}
 ### Test on CpGs
 result = methylSigCalc(
-    meth = data,
+    meth = meth,
     comparison = 'DR_vs_DS',
     dispersion = 'both',
     local.info = FALSE,
@@ -109,14 +110,14 @@ The following example illustrates a case with no covariates and where the model 
 
 ```{r}
 # Must create a design matrix
-design1 = data.frame(group = bsseq::pData(data)$DR_vs_DS)
+design1 = data.frame(group = bsseq::pData(meth)$DR_vs_DS)
 
 print(design1)
 
 # NOTE this model has an intercept
 contrast_intercept = matrix(c(0,1), ncol = 1)
 result_dss_intercept = methylSigDSS(
-    meth = data,
+    meth = meth,
     design = design1,
     formula = '~ group',
     contrast = contrast_intercept,
@@ -133,7 +134,7 @@ The following example illustrates a case with no covariates and where the model 
 # but is the same as above
 contrast_no_intercept = matrix(c(-1,1), ncol = 1)
 result_dss_no_intercept = methylSigDSS(
-    meth = data,
+    meth = meth,
     design = design1,
     formula = '~ 0 + group',
     contrast = contrast_no_intercept,
@@ -149,7 +150,7 @@ The following example illustrates a case with covariates and where the model has
 # Add a covariate column, note specification as a factor, but can
 # also use a numeric covariate
 design2 = data.frame(
-    group = bsseq::pData(data)$DR_vs_DS,
+    group = bsseq::pData(meth)$DR_vs_DS,
     subject = factor(c(1,1,2,2,3,3)))
 
 print(design2)
@@ -158,7 +159,7 @@ print(design2)
 # levels in group and subject, in the formula.
 contrast_covariates = matrix(c(0,1,0,0), ncol = 1)
 result_dss_covariates = methylSigDSS(
-    meth = data,
+    meth = meth,
     design = design2,
     formula = '~ group + subject',
     contrast = contrast_covariates,
@@ -176,10 +177,10 @@ print(result_dss_covariates)
 
 ```{r}
 ### Test on 10000bp windows
-windowed_data = methylSigTile(data, tiles = NULL, win.size = 10000)
+windowed_meth = methylSigTile(meth, tiles = NULL, win.size = 10000)
 
 tiled_result = methylSigCalc(
-    meth = windowed_data,
+    meth = windowed_meth,
     comparison = 'DR_vs_DS',
     dispersion = 'both',
     local.info = FALSE,
@@ -204,10 +205,10 @@ library(annotatr)
 
 cpg_islands = annotatr::build_annotations(genome = 'hg19', annotations = 'hg19_cpg_islands')
 
-cpg_island_data = methylSigTile(data, tiles = cpg_islands)
+cpg_island_meth = methylSigTile(meth, tiles = cpg_islands)
 
 cpg_island_result = methylSigCalc(
-    meth = cpg_island_data,
+    meth = cpg_island_meth,
     comparison = 'DR_vs_DS',
     dispersion = 'both',
     local.info = FALSE,
@@ -227,7 +228,7 @@ Using the `dispersion` argument, it is possible to estimate variances from one g
 ```{r}
 ### Variance on the DS group only
 ds_var_result = methylSigCalc(
-    meth = data,
+    meth = meth,
     comparison = 'DR_vs_DS',
     dispersion = 'DS',
     local.info = FALSE,
@@ -247,7 +248,7 @@ It is also possible to use information from nearby CpG sites to improve the vari
 ```{r}
 ### Variance from both groups and using local information
 local_result = methylSigCalc(
-    meth = data,
+    meth = meth,
     comparison = 'DR_vs_DS',
     dispersion = 'both',
     local.info = TRUE,

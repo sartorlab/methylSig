@@ -33,13 +33,13 @@ A \code{GRanges} object containing the following \code{mcols}:
 Calculates differential methylation statistics under general experimental design
 }
 \examples{
-data(data, package = 'methylSig')
+utils::data(sample_data, package = 'methylSig')
 
 # Example with implicit intercept
-design1 = data.frame(group = bsseq::pData(data)$DR_vs_DS)
+design1 = data.frame(group = bsseq::pData(meth)$DR_vs_DS)
 contrast1 = matrix(c(0,1), ncol = 1)
 result1 = methylSigDSS(
-    meth = data,
+    meth = meth,
     design = design1,
     formula = '~ group',
     contrast = contrast1,
@@ -50,7 +50,7 @@ result1 = methylSigDSS(
 # NOTE: result2 is the same as result1
 contrast2 = matrix(c(-1,1), ncol = 1)
 result2 = methylSigDSS(
-    meth = data,
+    meth = meth,
     design = design1,
     formula = '~ 0 + group',
     contrast = contrast2,
@@ -59,11 +59,11 @@ result2 = methylSigDSS(
 
 # Example with subject pairing
 design2 = data.frame(
-    group = bsseq::pData(data)$DR_vs_DS,
+    group = bsseq::pData(meth)$DR_vs_DS,
     subject = factor(c(1,1,2,2,3,3)))
 contrast2 = matrix(c(0,1,0,0), ncol = 1)
 result2 = methylSigDSS(
-    meth = data,
+    meth = meth,
     design = design2,
     formula = '~ group + subject',
     contrast = contrast2,

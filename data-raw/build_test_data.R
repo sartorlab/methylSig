@@ -31,7 +31,7 @@ pData = data.frame(
     row.names = sample.ids,
     stringsAsFactors = FALSE)
 
-data = methylSigReadData(
+meth = methylSigReadData(
     fileList = files,
     pData = pData,
     assembly = 'hg19',
@@ -42,10 +42,10 @@ data = methylSigReadData(
     num.cores = 4,
     fileType = 'cytosineReport')
 
-tiled_data = methylSigTile(meth = data, tiles = NULL, win.size = 1000)
+tiled_meth = methylSigTile(meth = meth, tiles = NULL, win.size = 1000)
 
 msig_cpgs = methylSigCalc(
-    meth = data,
+    meth = meth,
     comparison = 'DR_vs_DS',
     dispersion = 'both',
     local.info = FALSE,
@@ -56,7 +56,7 @@ msig_cpgs = methylSigCalc(
     num.cores = 1)
 
 msig_tiles = methylSigCalc(
-    meth = tiled_data,
+    meth = tiled_meth,
     comparison = 'DR_vs_DS',
     dispersion = 'both',
     local.info = FALSE,
@@ -69,4 +69,4 @@ msig_tiles = methylSigCalc(
 tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
 tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
 
-save(data, tiled_data, msig_cpgs, msig_tiles, tfbs, file = 'data/data.RData', compress = 'xz')
+save(meth, tiled_meth, msig_cpgs, msig_tiles, tfbs, file = 'data/sample_data.RData', compress = 'xz')
