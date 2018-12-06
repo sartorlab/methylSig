@@ -15,6 +15,7 @@ Description: MethylSig is a method for testing for differentially methylated
     It allows annotating the resulting regions to multiple genome features, and
     visualizing the results for chosen genomic regions along with supporting genomic
     information.
+biocViews: DNAMethylation, DifferentialMethylation, Epigenetics, Regression, MethylSeq
 License: GPL-3
 BugReports: https://github.com/sartorlab/methylSig/issues
 Depends:
