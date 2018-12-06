@@ -4,23 +4,23 @@
 \alias{methylSigTile}
 \title{Obtain tiled methylation data in non-overlapping continuous windows.}
 \usage{
-methylSigTile(meth, tiles = NULL, win.size = 25)
+methylSigTile(meth, tiles = NULL, win.size = 200)
 }
 \arguments{
-\item{meth}{A \code{methylSigData-class} object used to tile data.}
+\item{meth}{A \code{BSseq-class} object, as from \code{methylSigReadData}.}
 
-\item{tiles}{A data.frame including columns with chr, start, end columns for predefined tiles. Those CpG sites not belonging any tile will be removed from tiled data. If \code{tiles} is not \code{NULL}, then \code{win.size} is ignored.}
+\item{tiles}{One of \code{NULL}, a \code{data.frame}, or a \code{GRanges} object. If not \code{NULL}, the regions should be non-overlapping. Those CpG sites not belonging to any tile will be removed from tiled data.}
 
-\item{win.size}{An integer value indicating the desired window size in bps. Default is 25. If \code{tiles} is not \code{NULL}, then \code{win.size} is ignored.}
+\item{win.size}{An \code{integer} indicating the desired window size in bps. Default is 200. Used only when \code{tiles = NULL}.}
 }
 \value{
-A \code{methylSigData-class} object.
+A \code{BSseq-class} object.
 }
 \description{
-This funciton tiles data within windows of a given width across genome. It gives total number of methylated cytosines and total number of reads (coverage) within each tiled window. This is used prior to the \code{\link{methylSigCalc}} function when the user prefers to conduct a tiled analysis instead of a base specific analysis for differential methylation. Tiling may provide higher power to detect significant differences, especially for experiments with low coverage.
+This function summarizes methylation data within tiles or user-specified regions. For all CpGs within an intersecting genomic region, the coverage and methylation reads are summed. This is used prior to the \code{\link{methylSigCalc}} function when the user prefers to conduct a tiled analysis instead of a base specific analysis for differential methylation. Tiling may provide higher power to detect significant differences, especially for experiments with low coverage.
 }
 \examples{
-data(sampleData)
-methTile = methylSigTile(meth)
-}
+utils::data(sample_data, package = 'methylSig')
+methTile = methylSigTile(meth, tiles = NULL, win.size = 200)
 
+}

@@ -4,44 +4,39 @@
 \alias{methylSig.tfbsEnrichTest}
 \title{Perform transcription factor enrichment test among differentially methylated cytosines or regions}
 \usage{
-methylSig.tfbsEnrichTest(myDiff, dmcList, tfbsInfo, plot = TRUE,
-  max.plot.num = 10, main = "tfbs Enrichment")
+methylSig.tfbsEnrichTest(myDiff, dmcList, tfbsInfo)
 }
 \arguments{
-\item{myDiff}{\code{methylSigDiff-class} object that contains all CpG sites that are tested for differential methylation.}
+\item{myDiff}{\code{GRanges} object resulting from \code{methylSigCalc} that contains all CpG sites that are tested for differential methylation.}
 
-\item{dmcList}{A boolean vector of the same length as myDiff defining the DMCs or DMRs. A value of TRUE for dmcList[i] means that the ith CpG site in myDiff is a DMC.}
+\item{dmcList}{A \code{logical} of the same length as \code{myDiff} defining the DMCs or DMRs.}
 
-\item{tfbsInfo}{An object that contains transcription factor binding sites information.}
-
-\item{plot}{If plot = TRUE, this function draws a plot. Otherwise no plot is given. Default is TRUE.}
-
-\item{max.plot.num}{Maximum number of transcription factor binding sites on the plot. Default is 10.}
-
-\item{main}{An overall title for the plot.}
+\item{tfbsInfo}{A \code{GRanges} object of the genomic regions representing peaks. The \code{name} column should indicate which TF the peak is for.}
 }
 \value{
-p-values of enriched transcription factor binding sites.
+A \code{data.frame} whose \code{rownames} are inherited from the \code{name} column of the input BED file, and whose columns are:
+\describe{
+  \item{n_total_by_tf}{ The number of tested CpGs in a TFBS for a TF. }
+  \item{n_dmc_by_tf}{ The number of DM CpGs in a TFBS for a TF. }
+  \item{N_total}{ The total number of tested CpGs in a TFBS across all the TFs. }
+  \item{N_dmc}{ The total number of DM CpGs in a TFBS across all the TFs. }
+  \item{p_total}{ \code{n_total_by_tf} / \code{N_total}, used in the likelihood calculation. }
+  \item{p_dmc}{ \code{n_dmc_by_tf} / \code{N_dmc}, used in the likelihood calculation. }
+  \item{logLik}{ The log-likelihood based on the binomial distribution. }
+  \item{pvalue}{ The p-value from the likelihood ratio test. }
+}
 }
 \description{
-This function tests for enriched transcription binding sites among differentially methylated sites or regions using a binomial test. It also has an option to generate a bar plot to show the significance levels for the enriched transcription factor binding sites.
+This function tests for enriched transcription binding sites among differentially methylated sites or regions using a binomial test.
 }
 \details{
 Likelihood ratio test is used based on the binomial distribution.
 }
 \examples{
-data(sampleData)
+utils::data(sample_data, package = 'methylSig')
 
-tfbsInfo = getTFBSInfo(system.file("annotation", "tfbsUniform.txt",
-                        package = "methylSig"))
+dmcList = msig_cpgs$fdr < 0.05 & abs(msig_cpgs$meth.diff) > 25
 
-pvalue = methylSig.tfbsEnrichTest(myDiffSigboth,
-         myDiffSigboth[,"qvalue"]<0.05 & abs(myDiffSigboth[,"meth.diff"])>25,
-         tfbsInfo)
+methylSig.tfbsEnrichTest(myDiff = msig_cpgs, dmcList = dmcList, tfbsInfo = tfbs)
 
 }
-\seealso{
-\code{\link{getTFBSInfo}}
-}
-\keyword{tfbsAnnotation}
-

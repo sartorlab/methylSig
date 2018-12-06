@@ -1,10 +1,11 @@
 Package: methylSig
 Type: Package
 Title: a whole genome DNA methylation analysis pipeline
-Version: 0.4.4
-Date: 2016-06-10
-Author: Yongseok Park
-Maintainer: Who to complain to <yongpark@pitt.edu>
+Version: 0.5.0
+Date: 2018-12-05
+Authors@R: c(
+    person("Yongseok", "Park", email = "yongpark@pitt.edu", role = c("aut")),
+    person("Raymond G.", "Cavalcante", email = "rcavalca@umich.edu", role = c("aut", "cre")))
 Description: MethylSig is a method for testing for differentially methylated
     cytosines (DMCs) or regions (DMRs) in whole-genome bisulfite sequencing (bis-
     seq) or reduced representation bisulfite sequencing (RRBS) experiments.
@@ -17,17 +18,25 @@ Description: MethylSig is a method for testing for differentially methylated
 License: GPL-3
 BugReports: https://github.com/sartorlab/methylSig/issues
 Depends:
-    R (>= 3.0),
-    methods,
+    R (>= 3.4)
+Imports:
+    annotatr,
+    BiocGenerics,
     boot,
+    bsseq,
+    DelayedArray,
+    DSS,
+    GenomeInfoDb,
+    GenomicRanges,
+    methods,
     parallel,
-    GenomicRanges
+    S4Vectors
 Suggests:
     BiocStyle,
     gplots,
     testthat,
     knitr,
-    rmarkdown
-Packaged: 2016-04-20; rcavalca
+    rmarkdown,
+    rtracklayer
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.1
