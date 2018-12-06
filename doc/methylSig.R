@@ -33,7 +33,7 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 4,
+    num.cores = 1,
     fileType = 'cytosineReport')
 
 print(meth)
@@ -54,36 +54,6 @@ result = methylSigCalc(
 print(result)
 
 ## --------------------------------------------------------------------------
-### Variance on the DS group only
-ds_var_result = methylSigCalc(
-    meth = meth,
-    comparison = 'DR_vs_DS',
-    dispersion = 'DS',
-    local.info = FALSE,
-    local.winsize = 200,
-    min.per.group = c(3,3),
-    weightFunc = methylSig_weightFunc,
-    T.approx = TRUE,
-    num.cores = 1)
-
-print(ds_var_result)
-
-## --------------------------------------------------------------------------
-### Variance from both groups and using local information
-local_result = methylSigCalc(
-    meth = meth,
-    comparison = 'DR_vs_DS',
-    dispersion = 'both',
-    local.info = TRUE,
-    local.winsize = 200,
-    min.per.group = c(3,3),
-    weightFunc = methylSig_weightFunc,
-    T.approx = TRUE,
-    num.cores = 1)
-
-print(local_result)
-
-## --------------------------------------------------------------------------
 # Must create a design matrix
 design1 = data.frame(group = bsseq::pData(meth)$DR_vs_DS)
 
@@ -100,20 +70,6 @@ result_dss_intercept = methylSigDSS(
     min.per.group=c(3,3))
 
 print(result_dss_intercept)
-
-## --------------------------------------------------------------------------
-# NOTE this model does not have an intercept,
-# but is the same as above
-contrast_no_intercept = matrix(c(-1,1), ncol = 1)
-result_dss_no_intercept = methylSigDSS(
-    meth = meth,
-    design = design1,
-    formula = '~ 0 + group',
-    contrast = contrast_no_intercept,
-    group.term = 'group',
-    min.per.group=c(3,3))
-
-print(result_dss_no_intercept)
 
 ## --------------------------------------------------------------------------
 # Add a covariate column, note specification as a factor, but can
@@ -176,13 +132,14 @@ cpg_island_result = methylSigCalc(
 print(cpg_island_result)
 
 ## --------------------------------------------------------------------------
-# Build annotations for genic and CpG features
-annots = annotatr::build_annotations(genome = 'hg19', annotations = c('hg19_basicgenes','hg19_cpgs'))
+# Get CpG island annotations from built-in data they could be built with the following:
+# cpg_annots = annotatr::build_annotations(genome = 'hg19', annotations = c('hg19_cpg_islands'))
+utils::data(sample_data, package = 'methylSig')
 
 # Determine what CpGs should be considered significant
 dmcList = result$fdr < 0.05 & abs(result$meth.diff) > 25
 
-annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annotations = annots)
+annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annotations = cpg_annots)
 
 ## --------------------------------------------------------------------------
 print(annotated_result)
@@ -191,9 +148,9 @@ print(annotated_result)
 print(head(as.data.frame(annotated_result)))
 
 ## --------------------------------------------------------------------------
-# Read in TFBS
-tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
-tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
+# Use preloaded tfbs from package sample_data. Could be manually loaded as with:
+# tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
+# tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
 
 print(tfbs)
 

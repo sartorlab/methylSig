@@ -11,7 +11,7 @@
 
 <meta name="author" content="Yongseok Park, Raymond G. Cavalcante, Maria E. Figueroa, Laura S. Rozek, and Maureen A. Sartor" />
 
-<meta name="date" content="2018-12-05" />
+<meta name="date" content="2018-12-06" />
 
 <title>methylSig: A package for whole genome DNA methylation analysis</title>
 
@@ -120,7 +120,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">methylSig: A package for whole genome DNA methylation analysis</h1>
 <p class="author-name">Yongseok Park, Raymond G. Cavalcante, Maria E. Figueroa, Laura S. Rozek, and Maureen A. Sartor</p>
-<h4 class="date"><em>2018-12-05</em></h4>
+<h4 class="date"><em>2018-12-06</em></h4>
 
 </div>
 
@@ -226,10 +226,16 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 4,
+    num.cores = 1,
     fileType = 'cytosineReport')</code></pre>
 <pre><code>## Assuming file type is cytosineReport</code></pre>
-<pre><code>## [read.bismark] Joining samples ... done in 1.1 secs</code></pre>
+<pre><code>## [read.bismark] Reading file '/tmp/Rtmp6sEBze/temp_libpath2056f65bde/methylSig/extdata/MDAMB_231_1DR.txt.gz' ... done in 1.8 secs
+## [read.bismark] Reading file '/tmp/Rtmp6sEBze/temp_libpath2056f65bde/methylSig/extdata/MDAMB_231_1DS.txt.gz' ... done in 1.1 secs
+## [read.bismark] Reading file '/tmp/Rtmp6sEBze/temp_libpath2056f65bde/methylSig/extdata/MDAMB_231_2DR.txt.gz' ... done in 0.3 secs
+## [read.bismark] Reading file '/tmp/Rtmp6sEBze/temp_libpath2056f65bde/methylSig/extdata/MDAMB_231_2DS.txt.gz' ... done in 0.3 secs
+## [read.bismark] Reading file '/tmp/Rtmp6sEBze/temp_libpath2056f65bde/methylSig/extdata/MDAMB_231_3DR.txt.gz' ... done in 0.3 secs
+## [read.bismark] Reading file '/tmp/Rtmp6sEBze/temp_libpath2056f65bde/methylSig/extdata/MDAMB_231_3DS.txt.gz' ... done in 0.3 secs
+## [read.bismark] Joining samples ... done in 0.2 secs</code></pre>
 <pre><code>## Filtering SNPs</code></pre>
 <pre class="r"><code>print(meth)</code></pre>
 <pre><code>## An object of type 'BSseq' with
@@ -304,121 +310,11 @@ print(result)</code></pre>
 <p>The output includes the estimated dispersion (<code>phiCommonEst</code>), the log-likelihood ratio (<code>logLikRatio</code>), the degrees of freedom (<code>df</code>), the group methylation estimates (<code>muEstC_group1</code> and <code>muEstC_group2</code> where group 1 is the reference factor in the comparison column of the <code>pData</code> matrix), the methylation difference (<code>meth.diff = muEstC_group2 - muEstC_group1</code>), the group for which the site is hyper-methylated (<code>hyper.direction</code>, note, this is regardless of significance), the <code>pvalue</code>, and <code>fdr</code>.</p>
 <div id="variance-from-one-group" class="section level4">
 <h4><span class="header-section-number">3.2.1.1</span> Variance from one group</h4>
-<p>Using the <code>dispersion</code> argument, it is possible to estimate variances from one group rather than from both groups.</p>
-<pre class="r"><code>### Variance on the DS group only
-ds_var_result = methylSigCalc(
-    meth = meth,
-    comparison = 'DR_vs_DS',
-    dispersion = 'DS',
-    local.info = FALSE,
-    local.winsize = 200,
-    min.per.group = c(3,3),
-    weightFunc = methylSig_weightFunc,
-    T.approx = TRUE,
-    num.cores = 1)
-
-print(ds_var_result)</code></pre>
-<pre><code>## GRanges object with 2962 ranges and 9 metadata columns:
-##          seqnames               ranges strand | variance.est logLikRatio
-##             &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; |    &lt;numeric&gt;   &lt;numeric&gt;
-##      [1]    chr21   [9437432, 9437432]      * | 1.331768e+01   0.9092865
-##      [2]    chr21   [9437444, 9437444]      * | 1.000000e+06   0.2131537
-##      [3]    chr21   [9437458, 9437458]      * | 2.195536e+01   0.4013498
-##      [4]    chr21   [9437461, 9437461]      * | 3.313407e+01   1.8651583
-##      [5]    chr21   [9437464, 9437464]      * | 2.635570e+01   6.4414536
-##      ...      ...                  ...    ... .          ...         ...
-##   [2958]    chr21 [26980251, 26980251]      * | 1.000000e+06   0.0000000
-##   [2959]    chr21 [26980274, 26980274]      * | 2.938656e+00   1.3742289
-##   [2960]    chr21 [26980313, 26980313]      * | 1.000000e+06   0.0000000
-##   [2961]    chr21 [26980346, 26980346]      * | 1.000000e+06   0.8909992
-##   [2962]    chr21 [26980353, 26980353]      * | 1.000000e+06   0.0000000
-##                 df   meth.DR    meth.DS   meth.diff hyper.direction
-##          &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;   &lt;numeric&gt;     &lt;character&gt;
-##      [1]         4  98.28653   94.94017   3.3463595              DR
-##      [2]         4  96.99333   97.87526  -0.8819329              DS
-##      [3]         4  94.74408   91.68293   3.0611472              DR
-##      [4]         4  94.39078   87.42856   6.9622218              DR
-##      [5]         4  96.82136   83.69095  13.1304132              DR
-##      ...       ...       ...        ...         ...             ...
-##   [2958]         4  0.000000  0.0000000   0.0000000              DR
-##   [2959]         4  4.334075 14.5866928 -10.2526177              DS
-##   [2960]         4  0.000000  0.0000000   0.0000000              DR
-##   [2961]         4  0.000000  0.2568636  -0.2568636              DS
-##   [2962]         4  0.000000  0.0000000   0.0000000              DR
-##              pvalue       fdr
-##           &lt;numeric&gt; &lt;numeric&gt;
-##      [1] 0.39430218 0.5790397
-##      [2] 0.66829838 0.8577347
-##      [3] 0.56080815 0.7479125
-##      [4] 0.24378427 0.4336163
-##      [5] 0.06411687 0.1665914
-##      ...        ...       ...
-##   [2958]  1.0000000 1.0000000
-##   [2959]  0.3061399 0.4944310
-##   [2960]  1.0000000 1.0000000
-##   [2961]  0.3986540 0.5813949
-##   [2962]  1.0000000 1.0000000
-##   -------
-##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
+<p>Using the <code>dispersion</code> argument, it is possible to estimate variances from one group rather than from both groups. This can be accomplished by changing the <code>dispersion</code> parameter in the previous example from <code>'both'</code> to <code>'DS'</code> or <code>'DR'</code></p>
 </div>
 <div id="using-local-information" class="section level4">
 <h4><span class="header-section-number">3.2.1.2</span> Using local information</h4>
 <p>It is also possible to use information from nearby CpG sites to improve the variance and methylation level estimates. The default <code>local.winsize</code> is 200 bps. The <code>local.winsize</code> is only used when <code>local.info = TRUE</code>.</p>
-<pre class="r"><code>### Variance from both groups and using local information
-local_result = methylSigCalc(
-    meth = meth,
-    comparison = 'DR_vs_DS',
-    dispersion = 'both',
-    local.info = TRUE,
-    local.winsize = 200,
-    min.per.group = c(3,3),
-    weightFunc = methylSig_weightFunc,
-    T.approx = TRUE,
-    num.cores = 1)
-
-print(local_result)</code></pre>
-<pre><code>## GRanges object with 2962 ranges and 9 metadata columns:
-##          seqnames               ranges strand | variance.est logLikRatio
-##             &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; |    &lt;numeric&gt;   &lt;numeric&gt;
-##      [1]    chr21   [9437432, 9437432]      * |     60.96516    72.23497
-##      [2]    chr21   [9437444, 9437444]      * |     78.62397    66.91621
-##      [3]    chr21   [9437458, 9437458]      * |     71.65943    40.49854
-##      [4]    chr21   [9437461, 9437461]      * |     76.98749   123.82323
-##      [5]    chr21   [9437464, 9437464]      * |     95.57161   332.98890
-##      ...      ...                  ...    ... .          ...         ...
-##   [2958]    chr21 [26980251, 26980251]      * |     7.704050    2.803271
-##   [2959]    chr21 [26980274, 26980274]      * |     6.488081    2.114429
-##   [2960]    chr21 [26980313, 26980313]      * |     5.933074    1.680995
-##   [2961]    chr21 [26980346, 26980346]      * |     6.609806    1.549463
-##   [2962]    chr21 [26980353, 26980353]      * |     6.858105    1.489793
-##                 df   meth.DR   meth.DS  meth.diff hyper.direction
-##          &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;     &lt;character&gt;
-##      [1]  24.80504  96.58152  90.50492   6.076595              DR
-##      [2]  29.27076  94.25320  89.09242   5.160784              DR
-##      [3]  33.36930  92.21161  88.28350   3.928107              DR
-##      [4]  36.55941  92.61052  85.69919   6.911331              DR
-##      [5]  39.81848  93.30777  83.43922   9.868544              DR
-##      ...       ...       ...       ...        ...             ...
-##   [2958]  27.78749 0.4796908  1.780275 -1.3005839              DS
-##   [2959]  27.19215 0.4809628  1.622706 -1.1417435              DS
-##   [2960]  25.18259 0.3979029  1.382683 -0.9847806              DS
-##   [2961]  21.27898 0.3056165  1.220767 -0.9151507              DS
-##   [2962]  19.15467 0.3045162  1.253797 -0.9492806              DS
-##                pvalue          fdr
-##             &lt;numeric&gt;    &lt;numeric&gt;
-##      [1] 8.158288e-09 2.359848e-08
-##      [2] 4.743257e-09 1.386923e-08
-##      [3] 3.161511e-07 8.406099e-07
-##      [4] 2.703454e-13 1.004722e-12
-##      [5] 6.062239e-21 3.043450e-20
-##      ...          ...          ...
-##   [2958]    0.1052931    0.1803807
-##   [2959]    0.1573625    0.2630404
-##   [2960]    0.2065478    0.3372628
-##   [2961]    0.2267503    0.3664127
-##   [2962]    0.2370621    0.3807906
-##   -------
-##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
 </div>
 </div>
 <div id="site-specific-analysis-with-methylsigdss" class="section level3">
@@ -475,49 +371,7 @@ result_dss_intercept = methylSigDSS(
 ##   [2962]  0.0000000   0.0000000              DR  0.8155249  0.9520460
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
-<p>The following example illustrates a case with no covariates and where the model has no intercept. Note, the change in contrast.</p>
-<pre class="r"><code># NOTE this model does not have an intercept,
-# but is the same as above
-contrast_no_intercept = matrix(c(-1,1), ncol = 1)
-result_dss_no_intercept = methylSigDSS(
-    meth = meth,
-    design = design1,
-    formula = '~ 0 + group',
-    contrast = contrast_no_intercept,
-    group.term = 'group',
-    min.per.group=c(3,3))</code></pre>
-<pre><code>## Fitting DML model for CpG site:</code></pre>
-<pre class="r"><code>print(result_dss_no_intercept)</code></pre>
-<pre><code>## GRanges object with 2962 ranges and 7 metadata columns:
-##          seqnames               ranges strand |      stat   meth.DR
-##             &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;numeric&gt;
-##      [1]    chr21   [9437432, 9437432]      * | 1.0009952  99.35897
-##      [2]    chr21   [9437444, 9437444]      * | 0.5713017  97.56852
-##      [3]    chr21   [9437458, 9437458]      * | 0.7730615  96.35279
-##      [4]    chr21   [9437461, 9437461]      * | 1.0119228  93.08807
-##      [5]    chr21   [9437464, 9437464]      * | 2.5388560  97.40130
-##      ...      ...                  ...    ... .       ...       ...
-##   [2958]    chr21 [26980251, 26980251]      * | 0.2692223 0.0000000
-##   [2959]    chr21 [26980274, 26980274]      * | 0.9297976 0.8130081
-##   [2960]    chr21 [26980313, 26980313]      * | 0.2404340 0.0000000
-##   [2961]    chr21 [26980346, 26980346]      * | 0.2829581 0.0000000
-##   [2962]    chr21 [26980353, 26980353]      * | 0.2333046 0.0000000
-##             meth.DS   meth.diff hyper.direction     pvalue        fdr
-##           &lt;numeric&gt;   &lt;numeric&gt;     &lt;character&gt;  &lt;numeric&gt;  &lt;numeric&gt;
-##      [1]   94.83092   4.5280565              DR 0.31682912 0.53230168
-##      [2]   97.88406  -0.3155345              DS 0.56779516 0.79244608
-##      [3]   91.80998   4.5428012              DR 0.43948598 0.67343894
-##      [4]   87.56200   5.5260746              DR 0.31157495 0.52646035
-##      [5]   83.69082  13.7104781              DR 0.01112156 0.03098971
-##      ...        ...         ...             ...        ...        ...
-##   [2958]  0.0000000   0.0000000              DR  0.7877586  0.9520460
-##   [2959] 15.7205924 -14.9075843              DS  0.3524759  0.5779137
-##   [2960]  0.0000000   0.0000000              DR  0.8099938  0.9520460
-##   [2961]  0.2364066  -0.2364066              DS  0.7772090  0.9520460
-##   [2962]  0.0000000   0.0000000              DR  0.8155249  0.9520460
-##   -------
-##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
-<p>The following example illustrates a case with covariates and where the model has no intercept. Note, the change in contrast.</p>
+<p>The following illustrates an paired-type test.</p>
 <pre class="r"><code># Add a covariate column, note specification as a factor, but can
 # also use a numeric covariate
 design2 = data.frame(
@@ -726,76 +580,57 @@ print(cpg_island_result)</code></pre>
 <div id="annotating-differentially-methylated-cpgs" class="section level2">
 <h2><span class="header-section-number">4.1</span> Annotating differentially methylated CpGs</h2>
 <p>Once differential methylation has been determined with <code>methylSigCalc()</code>, it may be of interest understand where differential methylation occurs in terms of genes and CpG features (islands, shores, shelves). <code>methylSig</code> uses the <code>annotatr</code> package to accomplish this.</p>
-<pre class="r"><code># Build annotations for genic and CpG features
-annots = annotatr::build_annotations(genome = 'hg19', annotations = c('hg19_basicgenes','hg19_cpgs'))</code></pre>
-<pre><code>## Loading required package: GenomicFeatures</code></pre>
-<pre><code>## Loading required package: AnnotationDbi</code></pre>
-<pre><code>## Loading required package: Biobase</code></pre>
-<pre><code>## Welcome to Bioconductor
-## 
-##     Vignettes contain introductory material; view with
-##     'browseVignettes()'. To cite Bioconductor, see
-##     'citation(&quot;Biobase&quot;)', and for packages 'citation(&quot;pkgname&quot;)'.</code></pre>
-<pre><code>## 'select()' returned 1:1 mapping between keys and columns</code></pre>
-<pre><code>## Building promoters...</code></pre>
-<pre><code>## Building 1to5kb upstream of TSS...</code></pre>
-<pre><code>## Building 5UTRs...</code></pre>
-<pre><code>## Building 3UTRs...</code></pre>
-<pre><code>## Building exons...</code></pre>
-<pre><code>## Building introns...</code></pre>
-<pre><code>## snapshotDate(): 2017-10-27</code></pre>
-<pre><code>## Building CpG islands...</code></pre>
-<pre><code>## loading from cache '/root//.AnnotationHub/5086'</code></pre>
-<pre><code>## Building CpG shores...</code></pre>
-<pre><code>## Building CpG shelves...</code></pre>
-<pre><code>## Building inter-CpG-islands...</code></pre>
-<pre class="r"><code># Determine what CpGs should be considered significant
+<pre class="r"><code># Get CpG island annotations from built-in data they could be built with the following:
+# cpg_annots = annotatr::build_annotations(genome = 'hg19', annotations = c('hg19_cpg_islands'))
+utils::data(sample_data, package = 'methylSig')
+
+# Determine what CpGs should be considered significant
 dmcList = result$fdr &lt; 0.05 &amp; abs(result$meth.diff) &gt; 25
 
-annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annotations = annots)</code></pre>
+annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annotations = cpg_annots)</code></pre>
 <pre><code>## Annotating...</code></pre>
 <p>The result is a <code>GRanges</code> object with the same columns as the <code>result</code> with the addition of columns giving the differential methylation status (<code>dm_status</code>), a unique locus id (<code>locus_id</code>), and information about the annotation which is itself a <code>GRanges</code> object (<code>annot</code>). It is important to note that regions tested for differential methylation may occur on multiple rows, depending on the number of features it is annotated to. The <code>locus_id</code> column helps to quickly see when this is the case.</p>
 <pre class="r"><code>print(annotated_result)</code></pre>
-<pre><code>## GRanges object with 7258 ranges and 12 metadata columns:
-##          seqnames               ranges strand | variance.est logLikRatio
-##             &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; |    &lt;numeric&gt;   &lt;numeric&gt;
-##      [1]    chr21   [9437432, 9437432]      * | 2.783517e+01   1.2816869
-##      [2]    chr21   [9437444, 9437444]      * | 1.000000e+06   0.2131537
-##      [3]    chr21   [9437458, 9437458]      * | 5.163216e+01   0.6232777
-##      [4]    chr21   [9437461, 9437461]      * | 2.508937e+01   1.6203272
-##      [5]    chr21   [9437464, 9437464]      * | 5.434622e+01   9.3657230
-##      ...      ...                  ...    ... .          ...         ...
-##   [7254]    chr21 [26980346, 26980346]      * |        1e+06   0.8909992
-##   [7255]    chr21 [26980346, 26980346]      * |        1e+06   0.8909992
-##   [7256]    chr21 [26980353, 26980353]      * |        1e+06   0.0000000
-##   [7257]    chr21 [26980353, 26980353]      * |        1e+06   0.0000000
-##   [7258]    chr21 [26980353, 26980353]      * |        1e+06   0.0000000
-##                 df   meth.DR   meth.DS  meth.diff hyper.direction     pvalue
-##          &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;     &lt;character&gt;  &lt;numeric&gt;
-##      [1]         6  98.72839  95.58233  3.1460617              DR 0.30079244
-##      [2]         6  96.99333  97.87526 -0.8819329              DS 0.66057168
-##      [3]         6  95.23565  92.12952  3.1061310              DR 0.45988357
-##      [4]         6  94.22184  87.23211  6.9897317              DR 0.25014206
-##      [5]         6  97.29838  83.97197 13.3264146              DR 0.02221512
-##      ...       ...       ...       ...        ...             ...        ...
-##   [7254]         6         0 0.2568636 -0.2568636              DS   0.381647
-##   [7255]         6         0 0.2568636 -0.2568636              DS   0.381647
-##   [7256]         6         0 0.0000000  0.0000000              DR   1.000000
-##   [7257]         6         0 0.0000000  0.0000000              DR   1.000000
-##   [7258]         6         0 0.0000000  0.0000000              DR   1.000000
-##                 fdr   dm_status  locus_id                     annot
-##           &lt;numeric&gt; &lt;character&gt; &lt;integer&gt;                 &lt;GRanges&gt;
-##      [1] 0.46548966       No DM         1     chr21:9437273-9439473
-##      [2] 0.84303415       No DM         2     chr21:9437273-9439473
-##      [3] 0.63034480       No DM         3     chr21:9437273-9439473
-##      [4] 0.41362110       No DM         4     chr21:9437273-9439473
-##      [5] 0.06351466       No DM         5     chr21:9437273-9439473
-##      ...        ...         ...       ...                       ...
-##   [7254]  0.5506923       No DM      2961 chr21:26979802-26980801:-
-##   [7255]  0.5506923       No DM      2961 chr21:26980253-26982252:*
-##   [7256]  1.0000000       No DM      2962 chr21:26979802-26980801:-
-##   [7257]  1.0000000       No DM      2962 chr21:26979802-26980801:-
-##   [7258]  1.0000000       No DM      2962 chr21:26980253-26982252:*
+<pre><code>## GRanges object with 985 ranges and 12 metadata columns:
+##         seqnames               ranges strand | variance.est logLikRatio
+##            &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; |    &lt;numeric&gt;   &lt;numeric&gt;
+##     [1]    chr21   [9437432, 9437432]      * | 2.783517e+01   1.2816869
+##     [2]    chr21   [9437444, 9437444]      * | 1.000000e+06   0.2131537
+##     [3]    chr21   [9437458, 9437458]      * | 5.163216e+01   0.6232777
+##     [4]    chr21   [9437461, 9437461]      * | 2.508937e+01   1.6203272
+##     [5]    chr21   [9437464, 9437464]      * | 5.434622e+01   9.3657230
+##     ...      ...                  ...    ... .          ...         ...
+##   [981]    chr21 [26980131, 26980131]      * |     107.3813    7.680714
+##   [982]    chr21 [26980148, 26980148]      * | 1000000.0000   12.786767
+##   [983]    chr21 [26980233, 26980233]      * | 1000000.0000    0.000000
+##   [984]    chr21 [26980249, 26980249]      * | 1000000.0000    0.000000
+##   [985]    chr21 [26980251, 26980251]      * | 1000000.0000    0.000000
+##                df   meth.DR   meth.DS  meth.diff hyper.direction     pvalue
+##         &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;     &lt;character&gt;  &lt;numeric&gt;
+##     [1]         6  98.72839  95.58233  3.1460617              DR 0.30079244
+##     [2]         6  96.99333  97.87526 -0.8819329              DS 0.66057168
+##     [3]         6  95.23565  92.12952  3.1061310              DR 0.45988357
+##     [4]         6  94.22184  87.23211  6.9897317              DR 0.25014206
+##     [5]         6  97.29838  83.97197 13.3264146              DR 0.02221512
+##     ...       ...       ...       ...        ...             ...        ...
+##   [981]         6  0.000000  2.273272  -2.273272              DS 0.03236211
+##   [982]         6  1.851407 19.999972 -18.148565              DS 0.01170130
+##   [983]         6  0.000000  0.000000   0.000000              DR 1.00000000
+##   [984]         6  0.000000  0.000000   0.000000              DR 1.00000000
+##   [985]         6  0.000000  0.000000   0.000000              DR 1.00000000
+##                fdr   dm_status  locus_id                   annot
+##          &lt;numeric&gt; &lt;character&gt; &lt;integer&gt;               &lt;GRanges&gt;
+##     [1] 0.46548966       No DM         1   chr21:9437273-9439473
+##     [2] 0.84303415       No DM         2   chr21:9437273-9439473
+##     [3] 0.63034480       No DM         3   chr21:9437273-9439473
+##     [4] 0.41362110       No DM         4   chr21:9437273-9439473
+##     [5] 0.06351466       No DM         5   chr21:9437273-9439473
+##     ...        ...         ...       ...                     ...
+##   [981] 0.08467895       No DM      2954 chr21:26979578-26980252
+##   [982] 0.03868219       No DM      2955 chr21:26979578-26980252
+##   [983] 1.00000000       No DM      2956 chr21:26979578-26980252
+##   [984] 1.00000000       No DM      2957 chr21:26979578-26980252
+##   [985] 1.00000000       No DM      2958 chr21:26979578-26980252
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
 <p>It is more illuminating to view this object as a coerced <code>data.frame</code>, wherein the information about the annotations are displayed.</p>
@@ -822,20 +657,20 @@ annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annot
 ## 5        5          chr21     9437273   9439473        2201            *
 ## 6        6          chr21     9437273   9439473        2201            *
 ##       annot.id annot.tx_id annot.gene_id annot.symbol       annot.type
-## 1 island:25558        &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt; hg19_cpg_islands
-## 2 island:25558        &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt; hg19_cpg_islands
-## 3 island:25558        &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt; hg19_cpg_islands
-## 4 island:25558        &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt; hg19_cpg_islands
-## 5 island:25558        &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt; hg19_cpg_islands
-## 6 island:25558        &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt; hg19_cpg_islands</code></pre>
+## 1 island:25558          NA            NA           NA hg19_cpg_islands
+## 2 island:25558          NA            NA           NA hg19_cpg_islands
+## 3 island:25558          NA            NA           NA hg19_cpg_islands
+## 4 island:25558          NA            NA           NA hg19_cpg_islands
+## 5 island:25558          NA            NA           NA hg19_cpg_islands
+## 6 island:25558          NA            NA           NA hg19_cpg_islands</code></pre>
 </div>
 <div id="transcription-factor-tf-enrichment-test" class="section level2">
 <h2><span class="header-section-number">4.2</span> Transcription factor (TF) enrichment test</h2>
 <p>Changes in DNA methylation have been shown to alter transcription factor binding. The <code>methylSig</code> package has implemented <code>methylSig.tfbsEnrichTest()</code> to test a set of transcription factor binding sites (TFBSs) are enriched for differentially methylated CpGs.</p>
 <p>We demonstrate this funciton on a set of TFBSs from ENCODE. The <code>rtracklayer::import()</code> function makes reading in <code>BED</code> files simple.</p>
-<pre class="r"><code># Read in TFBS
-tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
-tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
+<pre class="r"><code># Use preloaded tfbs from package sample_data. Could be manually loaded as with:
+# tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
+# tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
 
 print(tfbs)</code></pre>
 <pre><code>## GRanges object with 47964 ranges and 2 metadata columns:

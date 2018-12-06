@@ -68,7 +68,7 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 4,
+    num.cores = 1,
     fileType = 'cytosineReport')
 
 print(meth)
@@ -106,43 +106,11 @@ The output includes the estimated dispersion (`phiCommonEst`), the log-likelihoo
 
 #### Variance from one group
 
-Using the `dispersion` argument, it is possible to estimate variances from one group rather than from both groups.
-
-```{r}
-### Variance on the DS group only
-ds_var_result = methylSigCalc(
-    meth = meth,
-    comparison = 'DR_vs_DS',
-    dispersion = 'DS',
-    local.info = FALSE,
-    local.winsize = 200,
-    min.per.group = c(3,3),
-    weightFunc = methylSig_weightFunc,
-    T.approx = TRUE,
-    num.cores = 1)
-
-print(ds_var_result)
-```
+Using the `dispersion` argument, it is possible to estimate variances from one group rather than from both groups. This can be accomplished by changing the `dispersion` parameter in the previous example from `'both'` to `'DS'` or `'DR'`
 
 #### Using local information
 
 It is also possible to use information from nearby CpG sites to improve the variance and methylation level estimates. The default `local.winsize` is 200 bps.  The `local.winsize` is only used when `local.info = TRUE`.
-
-```{r}
-### Variance from both groups and using local information
-local_result = methylSigCalc(
-    meth = meth,
-    comparison = 'DR_vs_DS',
-    dispersion = 'both',
-    local.info = TRUE,
-    local.winsize = 200,
-    min.per.group = c(3,3),
-    weightFunc = methylSig_weightFunc,
-    T.approx = TRUE,
-    num.cores = 1)
-
-print(local_result)
-```
 
 ### Site specific analysis with `methylSigDSS()`
 
@@ -167,24 +135,7 @@ result_dss_intercept = methylSigDSS(
 print(result_dss_intercept)
 ```
 
-The following example illustrates a case with no covariates and where the model has no intercept. Note, the change in contrast.
-
-```{r}
-# NOTE this model does not have an intercept,
-# but is the same as above
-contrast_no_intercept = matrix(c(-1,1), ncol = 1)
-result_dss_no_intercept = methylSigDSS(
-    meth = meth,
-    design = design1,
-    formula = '~ 0 + group',
-    contrast = contrast_no_intercept,
-    group.term = 'group',
-    min.per.group=c(3,3))
-
-print(result_dss_no_intercept)
-```
-
-The following example illustrates a case with covariates and where the model has no intercept. Note, the change in contrast.
+The following illustrates an paired-type test.
 
 ```{r}
 # Add a covariate column, note specification as a factor, but can
@@ -268,13 +219,14 @@ print(cpg_island_result)
 Once differential methylation has been determined with `methylSigCalc()`, it may be of interest understand where differential methylation occurs in terms of genes and CpG features (islands, shores, shelves). `methylSig` uses the `annotatr` package to accomplish this.
 
 ```{r}
-# Build annotations for genic and CpG features
-annots = annotatr::build_annotations(genome = 'hg19', annotations = c('hg19_basicgenes','hg19_cpgs'))
+# Get CpG island annotations from built-in data they could be built with the following:
+# cpg_annots = annotatr::build_annotations(genome = 'hg19', annotations = c('hg19_cpg_islands'))
+utils::data(sample_data, package = 'methylSig')
 
 # Determine what CpGs should be considered significant
 dmcList = result$fdr < 0.05 & abs(result$meth.diff) > 25
 
-annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annotations = annots)
+annotated_result = methylSigAnnotation(myDiff = result, dmcList = dmcList, annotations = cpg_annots)
 ```
 
 The result is a `GRanges` object with the same columns as the `result` with the addition of columns giving the differential methylation status (`dm_status`), a unique locus id (`locus_id`), and information about the annotation which is itself a `GRanges` object (`annot`). It is important to note that regions tested for differential methylation may occur on multiple rows, depending on the number of features it is annotated to. The `locus_id` column helps to quickly see when this is the case.
@@ -296,9 +248,9 @@ Changes in DNA methylation have been shown to alter transcription factor binding
 We demonstrate this funciton on a set of TFBSs from ENCODE. The `rtracklayer::import()` function makes reading in `BED` files simple.
 
 ```{r}
-# Read in TFBS
-tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
-tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
+# Use preloaded tfbs from package sample_data. Could be manually loaded as with:
+# tfbs_file = system.file('extdata','tfbs.bed.gz', package = 'methylSig')
+# tfbs = rtracklayer::import(tfbs_file, genome = 'hg19')
 
 print(tfbs)
 ```
