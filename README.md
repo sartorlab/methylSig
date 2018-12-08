@@ -1,6 +1,6 @@
 ﻿# methylSig
 
-[![Build Status](https://travis-ci.org/sartorlab/methylSig.svg?branch=master)](https://travis-ci.org/sartorlab/methylSig) [![Coverage Status](https://coveralls.io/repos/sartorlab/methylSig/badge.svg?branch=master&service=github)](https://coveralls.io/github/sartorlab/methylSig?branch=master)
+[![Build Status](https://travis-ci.org/sartorlab/methylSig.svg?branch=master)](https://travis-ci.org/sartorlab/methylSig) [![Coverage Status](https://coveralls.io/repos/github/sartorlab/methylSig/badge.svg?branch=master)](https://coveralls.io/github/sartorlab/methylSig?branch=master)
 
 A whole genome DNA methylation analysis pipeline.
 
