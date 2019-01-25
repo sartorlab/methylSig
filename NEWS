@@ -1,3 +1,10 @@
+CHANGES IN VERSION 0.5.1
+------------------------
+
+    o Minor bugfix in methylSigTile() function. Cannot reproduce everywhere,
+      but sometimes when a chromosome has no entries in the meth object, the
+      tiling function failed. Now check for entries on the chromosome.
+
 CHANGES IN VERSION 0.5.0
 ------------------------
 

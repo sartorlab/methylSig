@@ -1,8 +1,8 @@
 Package: methylSig
 Type: Package
 Title: a whole genome DNA methylation analysis pipeline
-Version: 0.5.0
-Date: 2018-12-05
+Version: 0.5.1
+Date: 2019-01-25
 Authors@R: c(
     person("Yongseok", "Park", email = "yongpark@pitt.edu", role = c("aut")),
     person("Raymond G.", "Cavalcante", email = "rcavalca@umich.edu", role = c("aut", "cre")))

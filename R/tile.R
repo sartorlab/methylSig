@@ -32,10 +32,12 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
         )
         seqinfo_list = split(seqinfo_df, seqinfo_df$seqnames)
         seqinfo_list = lapply(seqinfo_list, function(chr){
-            max_df = data.frame(
-                seqnames = unique(chr$seqnames),
-                end = max(chr$end)
-            )
+            if(nrow(chr) > 0) {
+                max_df = data.frame(
+                    seqnames = unique(chr$seqnames),
+                    end = max(chr$end)
+                )
+            }
         })
         seqinfo_df = Reduce(rbind, seqinfo_list)
 
