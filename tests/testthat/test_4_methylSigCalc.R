@@ -16,6 +16,7 @@ test_that('Test CpG no local both dispersion', {
 
     expect_true(is(result_calc, 'GRanges'))
     expect_match(S4Vectors::metadata(result_calc)$method, 'methylSigCalc')
+    expect_true(all(genome(result_calc) == 'hg19'))
 })
 
 # test_that('Test CpG no local DR dispersion', {

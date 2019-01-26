@@ -121,5 +121,9 @@ binomialDiffCalc <- function(
 
     S4Vectors::metadata(results_gr) = results_metadata
 
+    ############################################################################
+
+    seqinfo(results_gr) = merge(seqinfo(results_gr), seqinfo(meth))
+
     return(results_gr)
 }

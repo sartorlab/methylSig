@@ -24,31 +24,20 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
 
     # Check for tiles possibilities
     if(is.null(tiles)) {
-        # Need to find the last element on each chromosome, add 1000, and use it
-        # as the first argument in GenomicRanges::tileGenome()
-        seqinfo_df = data.frame(
-            seqnames = seqnames(meth),
-            end = end(meth)
-        )
-        seqinfo_list = split(seqinfo_df, seqinfo_df$seqnames)
-        seqinfo_list = lapply(seqinfo_list, function(chr){
-            if(nrow(chr) > 0) {
-                max_df = data.frame(
-                    seqnames = unique(chr$seqnames),
-                    end = max(chr$end)
-                )
-            }
-        })
-        seqinfo_df = Reduce(rbind, seqinfo_list)
+        # If the seqlengths aren't defined, remind the user to create a custom GenomeInfoDb::Seqinfo and assign it to meth
+        if(any(is.na(GenomeInfoDb::seqlengths(meth)))) {
+            stop("The seqinfo for 'meth' is ill-defined, with seqlengths being NA. In order to use the methylSigTile function, you should create a custom GenomeInfoDb::Seqinfo and assign it to 'meth'.")
+        }
 
-        seqinfo_vect = seqinfo_df$end + 1000
-        names(seqinfo_vect) = seqinfo_df$seqnames
-
-        tiles = GenomicRanges::tileGenome(seqinfo_vect, tilewidth = win.size, cut.last.tile.in.chrom = TRUE)
+        seqlevels_in_use = seqlengths(meth)[seqlevelsInUse(meth)]
+        tiles = GenomicRanges::tileGenome(seqlevels_in_use, tilewidth = win.size, cut.last.tile.in.chrom = TRUE)
+        seqinfo(tiles) = merge(seqinfo(tiles), seqinfo(meth))
     } else if (is(tiles, 'data.frame')) {
         tiles = GenomicRanges::makeGRangesFromDataFrame(tiles, keep.extra.columns = FALSE)
+        seqinfo(tiles) = merge(seqinfo(tiles), seqinfo(meth))
     } else if (is(tiles, 'GRanges')) {
         tiles = GenomicRanges::granges(tiles)
+        seqinfo(tiles) = merge(seqinfo(tiles), seqinfo(meth))
     }
 
     # Subset tiles based on findOverlaps to save some work downstream

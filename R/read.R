@@ -73,12 +73,40 @@ methylSigReadData = function(
         mc.cores = num.cores,
         verbose = verbose)
 
+    # Assign Seqinfo to bs
+    # If the assembly is supported, then downstream functions such as tiling and
+    # annotation should work without issue, assuming that the annotations for
+    # the same genome don't somehow have different seqlengths. This shouldn't
+    # happen on-the-fly because GenomeInfoDb::Seqinfo is used. BUT, if saved
+    # annotations are used that are old, GenomeInfoDb::Seqinfo could result in
+    # mismatched lengths between Bioc versions
+
+    # If the assembly is not supported, we have to be careful about how the
+    # Seqinfo is defined. If we try to define it as the end of each present
+    # chromosome + some width to allow for tiling, we run the risk of not being
+    # able to perform custom annotations if the annotation Seqinfo doesn't match.
+
+    # If the Seqinfo is left blank, we cannot tile downstream, warn the user.
+    if(!is.na(assembly)) {
+        genome_seqinfo = tryCatch({
+            GenomeInfoDb::Seqinfo(genome = assembly)
+        }, error = function(e) {
+            warning(sprintf('The assembly %s is not supported by GenomeInfoDb::fetchExtendedChromInfoFromUCSC, and the resulting BSseq object from this function will have the trivial seqinfo attributes. In order to use the methylSigTile function, you must create a custom GenomeInfoDb::Seqinfo and assign it to the result of this function. If you would like to use annotation functions downstream, the seqinfo for custom annotations MUST BE THE SAME as what is assigned to the result this function.', assembly))
+            seqinfo(bs)
+        })
+    } else {
+        warning('Leaving assembly as NA will give the resulting BSseq object from this function the trivial seqinfo attributes. In order to use the methylSigTile function downstream, you MUST create a custom GenomeInfoDb::Seqinfo and assign it to the result of this function. If you would like to use annotation functions downstream, the seqinfo for custom annotations MUST BE THE SAME as what is assigned to the result of this function.')
+
+        genome_seqinfo = seqinfo(bs)
+    }
+    seqinfo(bs) = merge(seqinfo(bs), genome_seqinfo)
+
     # Filter C > T (+) or G > A (-) SNPs
     # SNPs are 1-based
     # In order to avoid seqinfo() incompatibility issues between the BSseq
     # object and the CT_SNPs_hg19 object
     if(filterSNPs) {
-        if(assembly == 'hg19') {
+        if(!is.na(assembly) && assembly == 'hg19') {
             message('Filtering SNPs')
             utils::data('CT_SNPs_hg19', envir=environment())
             CT_SNPs_hg19 = get('CT_SNPs_hg19')
@@ -88,7 +116,7 @@ methylSigReadData = function(
 
             bs = bs[-snp_invalid_list]
         } else {
-            warning(sprintf('Skipping SNP filtering, %s is not supported.', assembly))
+            message(sprintf('Skipping SNP filtering, genome %s is not supported.', assembly))
         }
     }
 

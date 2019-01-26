@@ -10,4 +10,5 @@ test_that('Test CpG no local both dispersion', {
 
     expect_true(is(result_binomial, 'GRanges'))
     expect_match(S4Vectors::metadata(result_binomial)$method, 'binomialDiffCalc')
+    expect_true(all(genome(result_binomial) == 'hg19'))
 })

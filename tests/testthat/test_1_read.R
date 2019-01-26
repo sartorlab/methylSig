@@ -110,8 +110,67 @@ pData = data.frame(
     row.names = sample_names,
     stringsAsFactors = FALSE)
 
-test_that('data1 coverage and M matrices are as expected', {
-    data1 = methylSigReadData(
+test_that('Test messages/warnings and trivial seqinfo', {
+    expect_message(
+        suppressWarnings(methylSigReadData(
+            fileList = files,
+            pData = pData,
+            assembly = NA,
+            destranded = TRUE,
+            maxCount = 500,
+            minCount = 10,
+            filterSNPs = TRUE,
+            num.cores = 1,
+            fileType = 'cytosineReport')),
+        'Skipping SNP filtering'
+    )
+
+    expect_warning(
+        suppressMessages(methylSigReadData(
+            fileList = files,
+            pData = pData,
+            assembly = NA,
+            destranded = TRUE,
+            maxCount = 500,
+            minCount = 10,
+            filterSNPs = TRUE,
+            num.cores = 1,
+            fileType = 'cytosineReport')),
+        'Leaving assembly as NA will give the resulting'
+    )
+
+    expect_warning(
+        suppressMessages(methylSigReadData(
+            fileList = files,
+            pData = pData,
+            assembly = 'hg1',
+            destranded = TRUE,
+            maxCount = 500,
+            minCount = 10,
+            filterSNPs = TRUE,
+            num.cores = 1,
+            fileType = 'cytosineReport')),
+        'is not supported by GenomeInfoDb::fetchExtendedChromInfoFromUCSC'
+    )
+
+    data = suppressWarnings(suppressMessages(
+        methylSigReadData(
+            fileList = files,
+            pData = pData,
+            assembly = NA,
+            destranded = TRUE,
+            maxCount = 500,
+            minCount = 10,
+            filterSNPs = TRUE,
+            num.cores = 1,
+            fileType = 'cytosineReport')
+    ))
+    expect_true(is.na(seqlengths(data)))
+    expect_true(is.na(genome(data)))
+})
+
+test_that('data coverage and M matrices are as expected', {
+    data = methylSigReadData(
         fileList = files,
         pData = pData,
         assembly = 'hg19',
@@ -122,12 +181,13 @@ test_that('data1 coverage and M matrices are as expected', {
         num.cores = 1,
         fileType = 'cytosineReport')
 
-    expect_true(all(as.matrix(bsseq::getCoverage(data1, type = 'Cov')) == result1_cov))
-    expect_true(all(as.matrix(bsseq::getCoverage(data1, type = 'M')) == result1_M))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result1_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result1_M))
+    expect_true(all(genome(data) == 'hg19'))
 })
 
-test_that('data2 coverage and M matrices are as expected', {
-    data2 = methylSigReadData(
+test_that('data coverage and M matrices are as expected', {
+    data = methylSigReadData(
         fileList = files,
         pData = pData,
         assembly = 'hg19',
@@ -138,12 +198,13 @@ test_that('data2 coverage and M matrices are as expected', {
         num.cores = 1,
         fileType = 'cytosineReport')
 
-    expect_true(all(as.matrix(bsseq::getCoverage(data2, type = 'Cov')) == result2_cov))
-    expect_true(all(as.matrix(bsseq::getCoverage(data2, type = 'M')) == result2_M))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result2_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result2_M))
+    expect_true(all(genome(data) == 'hg19'))
 })
 
-test_that('data3 coverage and M matrices are as expected', {
-    data3 = methylSigReadData(
+test_that('data coverage and M matrices are as expected', {
+    data = methylSigReadData(
         fileList = files,
         pData = pData,
         assembly = 'hg19',
@@ -154,12 +215,13 @@ test_that('data3 coverage and M matrices are as expected', {
         num.cores = 1,
         fileType = 'cytosineReport')
 
-    expect_true(all(as.matrix(bsseq::getCoverage(data3, type = 'Cov')) == result3_cov))
-    expect_true(all(as.matrix(bsseq::getCoverage(data3, type = 'M')) == result3_M))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result3_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result3_M))
+    expect_true(all(genome(data) == 'hg19'))
 })
 
-test_that('data3 coverage and M matrices are as expected', {
-    data4 = methylSigReadData(
+test_that('data coverage and M matrices are as expected', {
+    data = methylSigReadData(
         fileList = files,
         pData = pData,
         assembly = 'hg19',
@@ -170,6 +232,7 @@ test_that('data3 coverage and M matrices are as expected', {
         num.cores = 1,
         fileType = 'cytosineReport')
 
-    expect_true(all(as.matrix(bsseq::getCoverage(data4, type = 'Cov')) == result4_cov))
-    expect_true(all(as.matrix(bsseq::getCoverage(data4, type = 'M')) == result4_M))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result4_cov))
+    expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result4_M))
+    expect_true(all(genome(data) == 'hg19'))
 })

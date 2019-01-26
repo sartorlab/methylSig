@@ -21,6 +21,7 @@ test_that('Test with intercept', {
 
     expect_match(class(result_dss), 'GRanges')
     expect_match(S4Vectors::metadata(result_dss)$method, 'methylSigDSS')
+    expect_true(all(genome(result_dss) == 'hg19'))
 })
 
 # test_that('Test without intercept', {
@@ -64,6 +65,7 @@ test_that('Test multiple formula terms', {
     expect_match(class(result_dss), 'GRanges')
     expect_true('meth.2' %in% colnames(GenomicRanges::mcols(result_dss)))
     expect_match(S4Vectors::metadata(result_dss)$method, 'methylSigDSS')
+    expect_true(all(genome(result_dss) == 'hg19'))
 })
 
 # test_that('Test alternate formula', {

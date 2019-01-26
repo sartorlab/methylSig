@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' methylSig_weightFunc(0.5)
-#' 
+#'
 #' @export
 methylSig_weightFunc <- function(u) (1-u^2)^3
 
@@ -424,6 +424,10 @@ methylSigCalc = function(
     )
 
     S4Vectors::metadata(results_gr) = results_metadata
+
+    ############################################################################
+
+    seqinfo(results_gr) = merge(seqinfo(results_gr), seqinfo(meth))
 
     return(results_gr)
 }

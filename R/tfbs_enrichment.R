@@ -84,5 +84,7 @@ methylSig.tfbsEnrichTest <- function(myDiff, dmcList, tfbsInfo) {
 
     by_tf = subset(by_tf, !is.na(by_tf$pvalue))
 
+    by_tf = by_tf[order(by_tf$pvalue), ]
+
     return(by_tf)
 }
