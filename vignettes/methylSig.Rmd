@@ -68,8 +68,7 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 1,
-    fileType = 'cytosineReport')
+    num.cores = 1)
 
 print(meth)
 ```

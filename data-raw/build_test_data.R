@@ -39,8 +39,7 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 4,
-    fileType = 'cytosineReport')
+    num.cores = 4)
 
 tiled_meth = methylSigTile(meth = meth, tiles = NULL, win.size = 1000)
 

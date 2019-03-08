@@ -10,7 +10,7 @@
 #' @param minCount A number indicating the minimum coverage count to be included.
 #' @param filterSNPs A logical value indicating whether or not to filter out C > T SNPs based on the 1000 Genomes Project. NOTE: Only supported when \code{assembly = 'hg19'}.
 #' @param num.cores Number of cores to be used in reading files. Default is 1.
-#' @param fileType The format of the input file. Either \code{cov} or \code{cytosineReport}. One of the outputs of the Bismark Methylation Extractor.
+#' @param fileType Deprecated. No longer used in \code{bsseq::read.bismark}.
 #' @param verbose A logical value indicating whether \code{bsseq::read.bismark} shoud print progress. Default TRUE.
 #'
 #' @return A \code{BSseq-class} object.
@@ -43,8 +43,7 @@
 #'     maxCount = 500,
 #'     minCount = 10,
 #'     filterSNPs = TRUE,
-#'     num.cores = 1,
-#'     fileType = 'cytosineReport')
+#'     num.cores = 1)
 #'
 #' @export
 methylSigReadData = function(
@@ -61,16 +60,14 @@ methylSigReadData = function(
     # NOTE: The cytosine report is 1-based, and GRanges is also 1-based. The result,
     # of bsseq::read.bismark() is 1-based. We are 1-based y'all!
 
-    fileType = match.arg(fileType)
-
     # Read
     bs = bsseq::read.bismark(
         files = fileList,
-        sampleNames = rownames(pData),
+        colData = pData,
         rmZeroCov = TRUE,
         strandCollapse = destranded,
-        fileType = fileType,
-        mc.cores = num.cores,
+        BPPARAM = BiocParallel::MulticoreParam(workers = num.cores),
+        nThread = 1,
         verbose = verbose)
 
     # Assign Seqinfo to bs
@@ -132,7 +129,13 @@ methylSigReadData = function(
     }
 
     # Rebuild the BSseq object after altering the Cov and M counts
-    bs = bsseq::BSseq(gr = GenomicRanges::granges(bs), M = m, Cov = cov, pData = pData, rmZeroCov = TRUE)
+    bs = bsseq::BSseq(
+        gr = GenomicRanges::granges(bs),
+        M = m,
+        Cov = cov,
+        pData = pData,
+        sampleNames = rownames(pData),
+        rmZeroCov = TRUE)
 
     bs = sort(bs, ignore.strand = TRUE)
 

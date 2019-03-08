@@ -120,8 +120,7 @@ test_that('Test messages/warnings and trivial seqinfo', {
             maxCount = 500,
             minCount = 10,
             filterSNPs = TRUE,
-            num.cores = 1,
-            fileType = 'cytosineReport')),
+            num.cores = 1)),
         'Skipping SNP filtering'
     )
 
@@ -134,8 +133,7 @@ test_that('Test messages/warnings and trivial seqinfo', {
             maxCount = 500,
             minCount = 10,
             filterSNPs = TRUE,
-            num.cores = 1,
-            fileType = 'cytosineReport')),
+            num.cores = 1)),
         'Leaving assembly as NA will give the resulting'
     )
 
@@ -148,8 +146,7 @@ test_that('Test messages/warnings and trivial seqinfo', {
             maxCount = 500,
             minCount = 10,
             filterSNPs = TRUE,
-            num.cores = 1,
-            fileType = 'cytosineReport')),
+            num.cores = 1)),
         'is not supported by GenomeInfoDb::fetchExtendedChromInfoFromUCSC'
     )
 
@@ -162,8 +159,7 @@ test_that('Test messages/warnings and trivial seqinfo', {
             maxCount = 500,
             minCount = 10,
             filterSNPs = TRUE,
-            num.cores = 1,
-            fileType = 'cytosineReport')
+            num.cores = 1)
     ))
     expect_true(is.na(seqlengths(data)))
     expect_true(is.na(genome(data)))
@@ -178,8 +174,7 @@ test_that('data coverage and M matrices are as expected', {
         maxCount = 500,
         minCount = 10,
         filterSNPs = TRUE,
-        num.cores = 1,
-        fileType = 'cytosineReport')
+        num.cores = 1)
 
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result1_cov))
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result1_M))
@@ -195,8 +190,7 @@ test_that('data coverage and M matrices are as expected', {
         maxCount = 500,
         minCount = 10,
         filterSNPs = FALSE,
-        num.cores = 1,
-        fileType = 'cytosineReport')
+        num.cores = 1)
 
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result2_cov))
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result2_M))
@@ -212,8 +206,7 @@ test_that('data coverage and M matrices are as expected', {
         maxCount = 500,
         minCount = 10,
         filterSNPs = TRUE,
-        num.cores = 1,
-        fileType = 'cytosineReport')
+        num.cores = 1)
 
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result3_cov))
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result3_M))
@@ -229,8 +222,7 @@ test_that('data coverage and M matrices are as expected', {
         maxCount = 500,
         minCount = 10,
         filterSNPs = FALSE,
-        num.cores = 1,
-        fileType = 'cytosineReport')
+        num.cores = 1)
 
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'Cov')) == result4_cov))
     expect_true(all(as.matrix(bsseq::getCoverage(data, type = 'M')) == result4_M))

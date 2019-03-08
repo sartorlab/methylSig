@@ -2,7 +2,7 @@
 
 language: r
 r:
-  - 3.4
+  - bioc-release
 sudo: false
 cache: packages
 bioc_required: true
