@@ -25,9 +25,9 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
     # Check for tiles possibilities
     if(is.null(tiles)) {
         # If the seqlengths aren't defined, remind the user to create a custom GenomeInfoDb::Seqinfo and assign it to meth
-        if(any(is.na(GenomeInfoDb::seqlengths(meth)))) {
-            stop("The seqinfo for 'meth' is ill-defined, with seqlengths being NA. In order to use the methylSigTile function, you should create a custom GenomeInfoDb::Seqinfo and assign it to 'meth'.")
-        }
+        # if(any(is.na(GenomeInfoDb::seqlengths(meth)))) {
+        #     stop("The seqinfo for 'meth' is ill-defined, with seqlengths being NA. In order to use the methylSigTile function, you should create a custom GenomeInfoDb::Seqinfo and assign it to 'meth'.")
+        # }
 
         seqlevels_in_use = seqlengths(meth)[seqlevelsInUse(meth)]
         tiles = GenomicRanges::tileGenome(seqlevels_in_use, tilewidth = win.size, cut.last.tile.in.chrom = TRUE)

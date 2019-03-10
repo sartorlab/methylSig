@@ -203,8 +203,6 @@ Finally, users can provide tiling regions as a `GRanges` object. If we wanted to
 
 ```{r}
 ### Test on CpG islands
-library(annotatr)
-
 cpg_islands = annotatr::build_annotations(genome = 'hg19', annotations = 'hg19_cpg_islands')
 
 cpg_island_meth = methylSigTile(meth, tiles = cpg_islands)
