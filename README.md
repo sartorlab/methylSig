@@ -12,7 +12,7 @@ MethylSig is a method for testing for differentially methylated cytosines (DMCs)
 
 `methylSig` is available on GitHub at <http://www.github.com/sartorlab/methylSig>. Please use the appropriate branch for your version of R / Bioconductor:
 
-## R <= 3.4.4 and Bioconductor 3.6
+## R 3.4 and Bioconductor 3.6
 
 ```{r, eval=FALSE}
 devtools::install_github('sartorlab/methylSig@R3.4_Bioc3.6')
