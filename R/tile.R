@@ -50,7 +50,13 @@ methylSigTile <- function(meth, tiles = NULL, win.size = 200) {
 	tiled_Cov = as.matrix(bsseq::getCoverage(BSseq = meth, regions = tiles, what = "perRegionTotal", type = 'Cov'))
 	tiled_Cov[is.na(tiled_Cov)] = 0
 
-	tiled_bsseq = bsseq::BSseq(gr = tiles, M = tiled_M, Cov = tiled_Cov, pData = bsseq::pData(meth), rmZeroCov = TRUE)
+	tiled_bsseq = bsseq::BSseq(
+        gr = tiles,
+        M = tiled_M,
+        Cov = tiled_Cov,
+        pData = bsseq::pData(meth),
+        sampleNames = rownames(bsseq::pData(meth)),
+        rmZeroCov = TRUE)
 
     S4Vectors::metadata(tiled_bsseq) = S4Vectors::metadata(meth)
     S4Vectors::metadata(tiled_bsseq)$tile = TRUE
