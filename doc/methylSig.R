@@ -3,7 +3,10 @@ library(methylSig)
 library(rtracklayer)
 
 ## ---- eval=FALSE-----------------------------------------------------------
-#  devtools::install_github('sartorlab/methylSig')
+#  devtools::install_github('sartorlab/methylSig@R3.4_Bioc3.6')
+
+## ---- eval=FALSE-----------------------------------------------------------
+#  devtools::install_github('sartorlab/methylSig@R3.5_Bioc3.8')
 
 ## --------------------------------------------------------------------------
 # The following bismark cytosine reports are included in inst/extdata
@@ -33,8 +36,7 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 1,
-    fileType = 'cytosineReport')
+    num.cores = 1)
 
 print(meth)
 

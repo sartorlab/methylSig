@@ -10,11 +10,22 @@ MethylSig is a method for testing for differentially methylated cytosines (DMCs)
 
 ## Installation
 
-MethylSig is not currently on CRAN or Bioconductor. Installation is easiest with [devtools](http://cran.r-project.org/web/packages/devtools/index.html).
+`methylSig` is available on GitHub at <http://www.github.com/sartorlab/methylSig>. Please use the appropriate branch for your version of R / Bioconductor:
 
-```R
-library(devtools)
-install_github('sartorlab/methylSig')
+## R <= 3.4.4 and Bioconductor 3.6
+
+```{r, eval=FALSE}
+devtools::install_github('sartorlab/methylSig@R3.4_Bioc3.6')
+```
+
+## R 3.5 and Bioconductor 3.7
+
+Forthcoming.
+
+## R 3.5 and Bioconductor 3.8
+
+```{r, eval=FALSE}
+devtools::install_github('sartorlab/methylSig@R3.5_Bioc3.8')
 ```
 
 ## Citation

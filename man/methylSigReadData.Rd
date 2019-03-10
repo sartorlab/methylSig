@@ -25,7 +25,7 @@ methylSigReadData(fileList, pData, assembly = NA, destranded = TRUE,
 
 \item{num.cores}{Number of cores to be used in reading files. Default is 1.}
 
-\item{fileType}{The format of the input file. Either \code{cov} or \code{cytosineReport}. One of the outputs of the Bismark Methylation Extractor.}
+\item{fileType}{Deprecated. No longer used in \code{bsseq::read.bismark}.}
 
 \item{verbose}{A logical value indicating whether \code{bsseq::read.bismark} shoud print progress. Default TRUE.}
 }
@@ -61,8 +61,7 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 1,
-    fileType = 'cytosineReport')
+    num.cores = 1)
 
 }
 \seealso{
