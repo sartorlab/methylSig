@@ -39,7 +39,7 @@ meth = methylSigReadData(
     maxCount = 500,
     minCount = 10,
     filterSNPs = TRUE,
-    num.cores = 4)
+    num.cores = 2)
 
 tiled_meth = methylSigTile(meth = meth, tiles = NULL, win.size = 1000)
 
