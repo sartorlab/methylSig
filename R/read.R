@@ -135,7 +135,11 @@ methylSigReadData = function(
         Cov = cov,
         pData = pData,
         sampleNames = rownames(pData),
-        rmZeroCov = TRUE)
+        rmZeroCov = FALSE)
+
+    nonzero_idx = rowSums(cov) != 0
+
+    bs = bs[nonzero_idx]
 
     bs = sort(bs, ignore.strand = TRUE)
 
