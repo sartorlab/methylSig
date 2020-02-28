@@ -1,8 +1,0 @@
-^Meta$
-^doc$
-^\.travis\.yml$
-^.*\.git$
-^data-raw$
-README\.md
-^\.Rprofile$
-^benchmarks$
