@@ -21,7 +21,9 @@ Description: MethylSig is a package for testing for
 Depends:
     R (>= 3.6)
 Imports:
-    bsseq
+    bsseq,
+    GenomicRanges,
+    methods
 Suggests:
     knitr,
     rmarkdown,

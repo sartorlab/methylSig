@@ -22,6 +22,8 @@
 #' region_enrichment_diff()
 #'
 #' @import bsseq
+#' @import GenomicRanges
+#' @importFrom methods is
 #'
 #' @docType package
 #' @name methylSig
