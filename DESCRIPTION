@@ -1,0 +1,36 @@
+Package: methylSig
+Title: MethylSig: Differential Methylation Testing for WGBS and RRBS Data
+Version: 0.99.0
+Date: 2020-02-28
+Authors@R:
+    c(person(given = "Yongseok",
+             family = "Park",
+             role = "aut",
+             email = "yongpark@pitt.edu"),
+      person(given = "Raymond G.",
+             family = "Cavalcante",
+             role = c("aut", "cre"),
+             email = "rcavalca@umich.edu"))
+Description: MethylSig is a package for testing for
+    differentially methylated cytosines (DMCs) or regions (DMRs) in
+    whole-genome bisulfite sequencing (WGBS) or reduced representation
+    bisulfite sequencing (RRBS) experiments.  MethylSig uses a beta
+    binomial model to test for significant differences between groups of
+    samples. Several options exist for either site-specific or sliding
+    window tests, and variance estimation.
+Depends:
+    R (>= 3.6)
+Imports:
+    bsseq
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat
+License: GPL-3
+BugReports: https://github.com/sartorlab/methylSig/issues
+biocViews: DNAMethylation, DifferentialMethylation, Epigenetics,
+    Regression, MethylSeq
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
+RoxygenNote: 7.0.2

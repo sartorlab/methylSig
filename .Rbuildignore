@@ -1,0 +1,5 @@
+^README\.md$
+^\.travis\.yml$
+^\.git$
+^\.gitignore$
+^data-raw$
