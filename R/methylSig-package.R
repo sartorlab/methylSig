@@ -22,6 +22,7 @@
 #' region_enrichment_diff()
 #'
 #' @import bsseq
+#' @import GenomeInfoDb
 #' @import GenomicRanges
 #' @import IRanges
 #' @importFrom methods is

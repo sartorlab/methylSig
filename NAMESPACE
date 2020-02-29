@@ -2,6 +2,8 @@
 
 export(filter_loci_by_coverage)
 export(tile_by_regions)
+export(tile_by_windows)
+import(GenomeInfoDb)
 import(GenomicRanges)
 import(IRanges)
 import(bsseq)

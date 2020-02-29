@@ -2,7 +2,7 @@
 % Please edit documentation in R/tile_by_regions.R
 \name{tile_by_regions}
 \alias{tile_by_regions}
-\title{Filter BSseq object by coverage}
+\title{Group cytosine / CpG level data into regions based on genomic regions}
 \usage{
 tile_by_regions(bs, gr)
 }
@@ -18,7 +18,7 @@ A \code{BSseq} object with loci of regions matching \code{gr}. Coverage and meth
 An optional function to aggregate cytosine / CpG level data into regions based on a \code{GRanges} set of genomic regions.
 }
 \examples{
-data(bsseq_cov_with_strand, package = 'methylSig')
+data(bsseq_stranded, package = 'methylSig')
 regions = GenomicRanges::GRanges(
     seqnames = c('chr1','chr1','chr1'),
     ranges = IRanges::IRanges(
@@ -26,6 +26,6 @@ regions = GenomicRanges::GRanges(
         end = c(30,70,80)
     )
 )
-tiled = tile_by_regions(bs = bsseq_cov_with_strand, gr = regions)
+tiled = tile_by_regions(bs = bsseq_stranded, gr = regions)
 
 }

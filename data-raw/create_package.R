@@ -39,7 +39,9 @@ build_ignore_files = c('README.md', '.travis.yml', '.git', '.gitignore')
 use_build_ignore(files = build_ignore_files)
 
 # Data
-use_data_raw(name = 'create_test_data')
+use_data_raw(name = '01-create_cov_files')
+use_data_raw(name = '02-create_bsseq_rda')
+use_data_raw(name = '03-create_internal_rda')
 # source('/Projects/methylSig/data-raw/create_test_data.R')
 
 # Documentation

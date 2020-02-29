@@ -1,4 +1,4 @@
-#' Filter BSseq object by coverage
+#' Group cytosine / CpG level data into regions based on genomic regions
 #'
 #' An optional function to aggregate cytosine / CpG level data into regions based on a \code{GRanges} set of genomic regions.
 #'
@@ -8,7 +8,7 @@
 #' @return A \code{BSseq} object with loci of regions matching \code{gr}. Coverage and methylation read count matrices are aggregated by the sums of the cytosines / CpGs in the regions per sample.
 #'
 #' @examples
-#' data(bsseq_cov_with_strand, package = 'methylSig')
+#' data(bsseq_stranded, package = 'methylSig')
 #' regions = GenomicRanges::GRanges(
 #'     seqnames = c('chr1','chr1','chr1'),
 #'     ranges = IRanges::IRanges(
@@ -16,7 +16,7 @@
 #'         end = c(30,70,80)
 #'     )
 #' )
-#' tiled = tile_by_regions(bs = bsseq_cov_with_strand, gr = regions)
+#' tiled = tile_by_regions(bs = bsseq_stranded, gr = regions)
 #'
 #' @export
 tile_by_regions = function(bs, gr) {
@@ -40,6 +40,11 @@ tile_by_regions = function(bs, gr) {
     }
 
     meth = bsseq::getCoverage(bs, regions = gr, type = 'M', what = 'perRegionTotal')
+
+    # Set all NA entries to 0 so bsseq::BSseq doesn't throw an error
+    # These will likely end up removed in filter_loci_by_group_coverage()
+    cov[is.na(cov)] = 0
+    meth[is.na(meth)] = 0
 
     bs = bsseq::BSseq(
         Cov = cov,

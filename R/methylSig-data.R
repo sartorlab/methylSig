@@ -3,17 +3,17 @@
 #' Data contains 11 methylation loci and 2 samples
 #'
 #' @format A BSseq object
-#' @source data-raw/create_test_data.R
+#' @source data-raw/02-create_bsseq_rda.R
 #' @examples
-#' data(bsseq_cov_with_strand, package = 'methylSig')
-'bsseq_cov_with_strand'
+#' data(bsseq_stranded, package = 'methylSig')
+'bsseq_stranded'
 
 #' BSseq object read from destranded coverage files
 #'
 #' Data contains 6 methylation loci and 2 samples
 #'
 #' @format A BSseq object
-#' @source data-raw/create_test_data.R
+#' @source data-raw/02-create_bsseq_rda.R
 #' @examples
-#' data(bsseq_cov_without_strand, package = 'methylSig')
-'bsseq_cov_without_strand'
+#' data(bsseq_destranded, package = 'methylSig')
+'bsseq_destranded'

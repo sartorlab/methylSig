@@ -7,27 +7,27 @@ test_that('BSseq class check', {
 
 test_that('min_count numeric check', {
     expect_error(
-        filter_loci_by_coverage(bsseq_cov_with_strand, min_count = 'a'),
+        filter_loci_by_coverage(bsseq_stranded, min_count = 'a'),
         'min_count must be an integer'
     )
 })
 
 test_that('max_count numeric check', {
     expect_error(
-        filter_loci_by_coverage(bsseq_cov_with_strand, max_count = 'a'),
+        filter_loci_by_coverage(bsseq_stranded, max_count = 'a'),
         'max_count must be an integer'
     )
 })
 
 test_that('min_count less than max_count check', {
     expect_error(
-        filter_loci_by_coverage(bsseq_cov_with_strand, min_count = 600 ),
+        filter_loci_by_coverage(bsseq_stranded, min_count = 600 ),
         'min_count not less than max_count'
     )
 })
 
 test_that('correct set to 0 check', {
-    bs = filter_loci_by_coverage(bsseq_cov_with_strand, min_count = 10, max_count = 500)
+    bs = filter_loci_by_coverage(bsseq_stranded, min_count = 10, max_count = 500)
     bs_cov = bsseq::getCoverage(bs, type = 'Cov')
     bs_meth = bsseq::getCoverage(bs, type = 'M')
 

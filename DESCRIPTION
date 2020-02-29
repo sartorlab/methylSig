@@ -23,6 +23,7 @@ Depends:
 Imports:
     bsseq,
     IRanges,
+    GenomeInfoDb,
     GenomicRanges,
     methods
 Suggests:
