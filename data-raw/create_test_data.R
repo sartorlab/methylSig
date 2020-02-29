@@ -1,8 +1,12 @@
 library(bsseq)
+library(GenomicRanges)
 
 dir.create('inst/extdata', recursive = TRUE)
 
 ########################################
+
+#---------CG-------------CG-------------CG------------------C--------------CG
+#---------GC-------------GC-------------GC------------------G--------------GC
 
 gr1 = GRanges(
     seqnames = rep.int('chr1', 9),
@@ -24,6 +28,9 @@ meth1 = matrix(
 
 ########################################
 
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+#---------GC-------------GC-------------GC-------GC---------G--------------GC
+
 gr2 = GRanges(
     seqnames = rep.int('chr1', 11),
     ranges = IRanges(
@@ -44,6 +51,8 @@ meth2 = matrix(
 
 ########################################
 
+#---------C--------------C--------------C-------------------C--------------C-
+
 gr3 = GRanges(
     seqnames = rep.int('chr1', 5),
     ranges = IRanges(
@@ -62,6 +71,8 @@ meth3 = matrix(
 )
 
 ########################################
+
+#---------C--------------C--------------C--------C----------C--------------C-
 
 gr4 = GRanges(
     seqnames = rep.int('chr1', 6),
@@ -110,7 +121,30 @@ bsseq4 = BSseq(
     sampleNames = 'test4'
 )
 
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 coverage
+#         5              30             10       0          40             1000
+#          5              70             20       0                         1500
+# test2 coverage
+#         10             50             15       5          20             100
+#          10             50             35       5                         200
+# test1 methylation
+#         4              0              9        0          35             900
+#          4              5              19       0                         1400
+# test2 methylation
+#         9              1              14       5          15             99
+#          9              5              34       5                         199
 bsseq_with_strand = combine(bsseq1, bsseq2)
+
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 coverage
+#         10             100            30       0          40             2500
+# test2 coverage
+#         20             100            50       10         20             300
+# test1 methylation
+#         8              5              28       0          35             2300
+# test2 methylation
+#         18             6              48       10         15             298
 bsseq_without_strand = combine(bsseq3, bsseq4)
 
 ########################################
@@ -191,28 +225,28 @@ write.table(
 
 bsseq_cov_with_strand = read.bismark(
     files = c(bis_cov_file1, bis_cov_file2),
-    colData = DataFrame(row.names = c('test1','test2')),
+    colData = data.frame(row.names = c('test1','test2')),
     rmZeroCov = FALSE,
     strandCollapse = FALSE
 )
 
 bsseq_cov_without_strand = read.bismark(
     files = c(bis_cov_file3, bis_cov_file4),
-    colData = DataFrame(row.names = c('test3','test4')),
+    colData = data.frame(row.names = c('test3','test4')),
     rmZeroCov = FALSE,
     strandCollapse = FALSE
 )
 
-# bsseq_report_nodestrand = read.bismark(
+# bsseq_report_with_strand = read.bismark(
 #     files = c(bis_report_file1, bis_report_file2),
-#     colData = DataFrame(row.names = c('test1','test2')),
+#     colData = data.frame(row.names = c('test1','test2')),
 #     rmZeroCov = FALSE,
 #     strandCollapse = FALSE
 # )
 #
-# bsseq_report_destrand = read.bismark(
+# bsseq_report_without_strand = read.bismark(
 #     files = c(bis_report_file1, bis_report_file2),
-#     colData = DataFrame(row.names = c('test1','test2')),
+#     colData = data.frame(row.names = c('test1','test2')),
 #     rmZeroCov = FALSE,
 #     strandCollapse = TRUE
 # )
@@ -222,5 +256,399 @@ usethis::use_data(
     bsseq_cov_without_strand)
 
 # usethis::use_data(
-#     bsseq_report_nodestrand,
-#     bsseq_report_destrand)
+#     bsseq_report_with_strand,
+#     bsseq_report_without_strand)
+
+########################################
+
+#----[---------]---------[--------------]----[---------]--------------[---------]
+tile_regions_gr1 = GRanges(
+    seqnames = c('chr1','chr1','chr1','chr1'),
+    ranges = IRanges(
+        start = c(5,25,45,70),
+        end = c(15,40,55,80)
+    )
+)
+
+### bsseq_cov_with_strand
+## coverage
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 coverage
+#         5              30             10       0          40             1000
+#          5              70             20       0                         1500
+# test2 coverage
+#         10             50             15       5          20             100
+#          10             50             35       5                         200
+#----[---------]---------[--------------]----[---------]--------------[---------]
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr1) coverage
+#        10                     110             0                         2500
+#        20                     115             10                        300
+
+## methylation
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 methylation
+#         4              0              9        0          35             900
+#          4              5              19       0                         1400
+# test2 methylation
+#         9              1              14       5          15             99
+#          9              5              34       5                         199
+#----[---------]---------[--------------]----[---------]--------------[---------]
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr1) methylation
+#        8                     14               0                         2300
+#        18                    20               10                        298
+
+bsseq_with_strand_tile_gr1 = BSseq(
+    gr = tile_regions_gr1,
+    Cov = matrix(c(10,110,0,2500,20,115,10,300), ncol = 2),
+    M = matrix(c(8,14,0,2300,18,20,10,298), ncol = 2),
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+### bsseq_cov_without_strand
+## coverage
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 coverage
+#         10             100            30       0          40             2500
+# test2 coverage
+#         20             100            50       10         20             300
+#----[---------]---------[--------------]----[---------]--------------[---------]
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr1)
+#         10                    130               0                        2500
+#         20                    150               10                       300
+
+## methylation
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 methylation
+#         8              5              28       0          35             2300
+# test2 methylation
+#         18             6              48       10         15             298
+#----[---------]---------[--------------]----[---------]--------------[---------]
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr1)
+#         8                    33               0                        2300
+#         18                   54               10                       298
+
+bsseq_without_strand_tile_gr1 = BSseq(
+    gr = tile_regions_gr1,
+    Cov = matrix(c(10,130,0,2500,20,150,10,300), ncol = 2),
+    M = matrix(c(8,33,0,2300,18,54,10,298), ncol = 2),
+    pData = data.frame(row.names = c('test3','test4')),
+    sampleNames = c('test3','test4')
+)
+
+########################################
+#----[------------------------]----[----------------------------------]----[----]
+tile_regions_gr2 = GRanges(
+    seqnames = c('chr1','chr1','chr1'),
+    ranges = IRanges(
+        start = c(5,35,75),
+        end = c(30,70,80)
+    )
+)
+
+### bsseq_cov_with_strand
+## coverage
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 coverage
+#         5              30             10       0          40             1000
+#          5              70             20       0                         1500
+# test2 coverage
+#         10             50             15       5          20             100
+#          10             50             35       5                         200
+#----[------------------------]----[----------------------------------]----[----]
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr2) coverage
+#           110                                 70                          2500
+#           120                                 80                          300
+
+## methylation
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 methylation
+#         4              0              9        0          35             900
+#          4              5              19       0                         1400
+# test2 methylation
+#         9              1              14       5          15             99
+#          9              5              34       5                         199
+#----[------------------------]----[----------------------------------]----[----]
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr2) methylation
+#           13                                 63                            2300
+#           24                                 73                            298
+bsseq_with_strand_tile_gr2 = BSseq(
+    gr = tile_regions_gr2,
+    Cov = matrix(c(110,70,2500,120,80,300), ncol = 2),
+    M = matrix(c(13,63,2300,24,73,298), ncol = 2),
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+### bsseq_cov_without_strand
+## coverage
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 coverage
+#         10             100            30       0          40             2500
+# test2 coverage
+#         20             100            50       10         20             300
+#----[------------------------]----[----------------------------------]----[----]
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr2)
+#           110                                 70                          2500
+#           120                                 80                          300
+
+## methylation
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 methylation
+#         8              5              28       0          35             2300
+# test2 methylation
+#         18             6              48       10         15             298
+#----[------------------------]----[----------------------------------]----[----]
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr2)
+#           13                                 63                            2300
+#           24                                 73                            298
+bsseq_without_strand_tile_gr2 = BSseq(
+    gr = tile_regions_gr2,
+    Cov = matrix(c(110,70,2500,120,80,300), ncol = 2),
+    M = matrix(c(13,63,2300,24,73,298), ncol = 2),
+    pData = data.frame(row.names = c('test3','test4')),
+    sampleNames = c('test3','test4')
+)
+
+########################################
+#----[--------------------------------------------------------------------------]
+tile_regions_gr3 = GRanges(
+    seqnames = c('chr1'),
+    ranges = IRanges(
+        start = c(5),
+        end = c(80)
+    )
+)
+
+### bsseq_cov_with_strand
+## coverage
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 coverage
+#         5              30             10       0          40             1000
+#          5              70             20       0                         1500
+# test2 coverage
+#         10             50             15       5          20             100
+#          10             50             35       5                         200
+#----[--------------------------------------------------------------------------]
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr3) coverage
+#                                       2680
+#                                       500
+
+## methylation
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 methylation
+#         4              0              9        0          35             900
+#          4              5              19       0                         1400
+# test2 methylation
+#         9              1              14       5          15             99
+#          9              5              34       5                         199
+#----[--------------------------------------------------------------------------]
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr3) methylation
+#                                       2376
+#                                       395
+bsseq_with_strand_tile_gr3 = BSseq(
+    gr = tile_regions_gr3,
+    Cov = matrix(c(2680,500), ncol = 2),
+    M = matrix(c(2376,395), ncol = 2),
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+### bsseq_cov_without_strand
+## coverage
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 coverage
+#         10             100            30       0          40             2500
+# test2 coverage
+#         20             100            50       10         20             300
+#----[--------------------------------------------------------------------------]
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr3)
+#                                       2680
+#                                       500
+
+## methylation
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 methylation
+#         8              5              28       0          35             2300
+# test2 methylation
+#         18             6              48       10         15             298
+#----[--------------------------------------------------------------------------]
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr3)
+#                                       2376
+#                                       395
+bsseq_without_strand_tile_gr3 = BSseq(
+    gr = tile_regions_gr3,
+    Cov = matrix(c(2680,500), ncol = 2),
+    M = matrix(c(2376,395), ncol = 2),
+    pData = data.frame(row.names = c('test3','test4')),
+    sampleNames = c('test3','test4')
+)
+
+########################################
+#----[--------------]------------------------------------------------------------
+tile_regions_gr4 = GRanges(
+    seqnames = c('chr1'),
+    ranges = IRanges(
+        start = c(5),
+        end = c(20)
+    )
+)
+
+### bsseq_cov_with_strand
+## coverage
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 coverage
+#         5              30             10       0          40             1000
+#          5              70             20       0                         1500
+# test2 coverage
+#         10             50             15       5          20             100
+#          10             50             35       5                         200
+#----[--------------]------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr4) coverage
+#          10
+#          20
+
+## methylation
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 methylation
+#         4              0              9        0          35             900
+#          4              5              19       0                         1400
+# test2 methylation
+#         9              1              14       5          15             99
+#          9              5              34       5                         199
+#----[--------------]------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr4) methylation
+#          8
+#          18
+bsseq_with_strand_tile_gr4 = BSseq(
+    gr = tile_regions_gr4,
+    Cov = matrix(c(10,20), ncol = 2),
+    M = matrix(c(8,18), ncol = 2),
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+### bsseq_cov_without_strand
+## coverage
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 coverage
+#         10             100            30       0          40             2500
+# test2 coverage
+#         20             100            50       10         20             300
+#----[--------------]------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr4)
+#          10
+#          20
+
+## methylation
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 methylation
+#         8              5              28       0          35             2300
+# test2 methylation
+#         18             6              48       10         15             298
+#----[--------------]------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr4)
+#          8
+#          18
+bsseq_without_strand_tile_gr4 = BSseq(
+    gr = tile_regions_gr4,
+    Cov = matrix(c(10,20), ncol = 2),
+    M = matrix(c(8,18), ncol = 2),
+    pData = data.frame(row.names = c('test3','test4')),
+    sampleNames = c('test3','test4')
+)
+
+########################################
+#----[---]-----------------------------------------------------------------------
+tile_regions_gr5 = GRanges(
+    seqnames = c('chr1'),
+    ranges = IRanges(
+        start = c(5),
+        end = c(9)
+    )
+)
+
+### bsseq_cov_with_strand
+## coverage
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 coverage
+#         5              30             10       0          40             1000
+#          5              70             20       0                         1500
+# test2 coverage
+#         10             50             15       5          20             100
+#          10             50             35       5                         200
+#----[---]-----------------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr5) coverage
+#
+#
+
+## methylation
+#---------CG-------------CG-------------CG-------CG---------C--------------CG
+# test1 methylation
+#         4              0              9        0          35             900
+#          4              5              19       0                         1400
+# test2 methylation
+#         9              1              14       5          15             99
+#          9              5              34       5                         199
+#----[---]-----------------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_with_strand, gr = tile_regions_gr5) methylation
+#
+#
+bsseq_with_strand_tile_gr5 = BSseq(
+    gr = tile_regions_gr5,
+    Cov = matrix(c(0,0), ncol = 2),
+    M = matrix(c(0,0), ncol = 2),
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+### bsseq_cov_without_strand
+## coverage
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 coverage
+#         10             100            30       0          40             2500
+# test2 coverage
+#         20             100            50       10         20             300
+#----[---]-----------------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr5)
+#
+#
+
+## methylation
+#---------C--------------C--------------C--------C----------C--------------C-
+# test1 methylation
+#         8              5              28       0          35             2300
+# test2 methylation
+#         18             6              48       10         15             298
+#----[---]-----------------------------------------------------------------------
+# tile_by_regions(bs = bsseq_cov_without_strand, gr = tile_regions_gr5)
+#
+#
+bsseq_without_strand_tile_gr5 = BSseq(
+    gr = tile_regions_gr5,
+    Cov = matrix(c(0,0), ncol = 2),
+    M = matrix(c(0,0), ncol = 2),
+    pData = data.frame(row.names = c('test3','test4')),
+    sampleNames = c('test3','test4')
+)
+
+########################################
+
+usethis::use_data(
+    tile_regions_gr1,
+    tile_regions_gr2,
+    tile_regions_gr3,
+    tile_regions_gr4,
+    tile_regions_gr5,
+    bsseq_with_strand_tile_gr1,
+    bsseq_without_strand_tile_gr1,
+    bsseq_with_strand_tile_gr2,
+    bsseq_without_strand_tile_gr2,
+    bsseq_with_strand_tile_gr3,
+    bsseq_without_strand_tile_gr3,
+    bsseq_with_strand_tile_gr4,
+    bsseq_without_strand_tile_gr4,
+    bsseq_with_strand_tile_gr5,
+    bsseq_without_strand_tile_gr5,
+    internal = TRUE,
+    overwrite = TRUE)

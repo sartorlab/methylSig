@@ -23,6 +23,7 @@
 #'
 #' @import bsseq
 #' @import GenomicRanges
+#' @import IRanges
 #' @importFrom methods is
 #'
 #' @docType package

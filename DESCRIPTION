@@ -22,12 +22,14 @@ Depends:
     R (>= 3.6)
 Imports:
     bsseq,
+    IRanges,
     GenomicRanges,
     methods
 Suggests:
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    covr
 License: GPL-3
 BugReports: https://github.com/sartorlab/methylSig/issues
 biocViews: DNAMethylation, DifferentialMethylation, Epigenetics,

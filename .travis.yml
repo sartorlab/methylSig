@@ -5,3 +5,5 @@ r:
     - release
     - devel
 cache: packages
+after_success:
+    - Rscript -e 'covr::coveralls()'

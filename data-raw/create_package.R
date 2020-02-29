@@ -52,6 +52,9 @@ use_vignette(name = 'using-methylSig', title = 'Using methylSig')
 use_travis()
 use_travis_badge(ext = 'org')
 
+# Coverage
+use_coverage(type = 'coveralls')
+
 # Testing
 use_testthat()
 
