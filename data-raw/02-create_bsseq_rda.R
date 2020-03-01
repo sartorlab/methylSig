@@ -1,9 +1,14 @@
 library(bsseq)
+library(GenomicRanges)
+
+########################################
 
 bis_cov_file1 = './inst/extdata/bis_cov1.cov'
 bis_cov_file2 = './inst/extdata/bis_cov2.cov'
 bis_cov_file3 = './inst/extdata/bis_cov3.cov'
 bis_cov_file4 = './inst/extdata/bis_cov4.cov'
+
+########################################
 
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
 # test1 coverage
@@ -25,6 +30,8 @@ bsseq_stranded = read.bismark(
     strandCollapse = FALSE
 )
 
+########################################
+
 #---------C--------------C--------------C---------C---------C--------------C-
 # test1 coverage
 #         10             100            30        0         40             2500
@@ -41,6 +48,49 @@ bsseq_destranded = read.bismark(
     strandCollapse = FALSE
 )
 
+########################################
+
+cov = matrix(c(
+    10,20,30,90,
+    40,50,60,100
+), ncol = 2)
+
+meth = matrix(c(
+    10,20,30,90,
+    40,50,60,100
+), ncol = 2)
+
+gr = GRanges(
+    seqnames = c('chr1','chr1','chr1','chr2'),
+    ranges = IRanges(
+        start = c(10, 20, 30, 10),
+        end = c(10, 20, 30, 10)
+    )
+)
+
+#---------C---------C---------C
+# test1 coverage / methylation
+#          10        20        30
+# test2 coverage / methylation
+#          40        50        60
+#---------C
+# test1 coverage / methylation
+#          90
+# test2 coverage / methylation
+#          100
+
+bsseq_multichrom = BSseq(
+    Cov = cov,
+    M = meth,
+    gr = gr,
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+########################################
+
 usethis::use_data(
     bsseq_stranded,
-    bsseq_destranded)
+    bsseq_destranded,
+    bsseq_multichrom,
+    overwrite = TRUE)

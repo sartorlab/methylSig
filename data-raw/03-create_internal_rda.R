@@ -62,6 +62,13 @@ win25_destranded_gr = GenomicRanges::tileGenome(
     tilewidth = 25,
     cut.last.tile.in.chrom = TRUE)
 
+#[-----------------------][-----------------------][---]
+#[-----------------------][---]
+seqlengths = c('chr1' = 55, 'chr2' = 35)
+win25_multichrom_gr = GenomicRanges::tileGenome(
+    seqlengths = seqlengths,
+    tilewidth = 25,
+    cut.last.tile.in.chrom = TRUE)
 
 ################################################################################
 # gr_tiles1
@@ -625,6 +632,43 @@ bsseq_destranded_win25 = BSseq(
 )
 
 ################################################################################
+# win25_multichrom_gr
+################################################################################
+
+#[-----------------------][-----------------------][---]
+#---------C---------C---------C
+# test1 coverage / methylation
+#          10        20        30
+# test2 coverage / methylation
+#          40        50        60
+#[-----------------------][-----------------------][---]
+#---------C---------C---------C
+
+#[-----------------------][---]
+#---------C
+# test1 coverage / methylation
+#          90
+# test2 coverage / methylation
+#          100
+#[-----------------------][---]
+#---------C
+
+multichrom_cov25 = matrix(c(
+    30,30,0,90,0,
+    90,60,0,100,0
+), ncol = 2)
+
+multichrom_meth25 = multichrom_cov25
+
+bsseq_multichrom_win25 = BSseq(
+    gr = win25_multichrom_gr,
+    Cov = multichrom_cov25,
+    M = multichrom_meth25,
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+################################################################################
 
 usethis::use_data(
     gr_tiles1,
@@ -634,6 +678,7 @@ usethis::use_data(
     gr_tiles5,
     win25_stranded_gr,
     win25_destranded_gr,
+    win25_multichrom_gr,
     bsseq_stranded_tiled1,
     bsseq_destranded_tiled1,
     bsseq_stranded_tiled2,
@@ -646,5 +691,6 @@ usethis::use_data(
     bsseq_destranded_tiled5,
     bsseq_stranded_win25,
     bsseq_destranded_win25,
+    bsseq_multichrom_win25,
     internal = TRUE,
     overwrite = TRUE)

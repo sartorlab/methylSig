@@ -17,3 +17,13 @@
 #' @examples
 #' data(bsseq_destranded, package = 'methylSig')
 'bsseq_destranded'
+
+#' BSseq object with loci on multiple chromosomes
+#'
+#' Data contains 4 methylation loci for 2 samples on 2 chromosomes
+#'
+#' @format A BSseq object
+#' @source data-raw/02-create_bsseq_rda.R
+#' @examples
+#' data(bsseq_multichrom, package = 'methylSig')
+'bsseq_multichrom'

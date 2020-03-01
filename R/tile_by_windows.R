@@ -27,7 +27,9 @@ tile_by_windows = function(bs, win_size = 200) {
         # Determine maximum position per chromosome in use, and add win_size
         seqlevels_in_use = GenomeInfoDb::seqlevelsInUse(bs)
         seqlengths = vapply(seqlevels_in_use, function(chr) {
-            max(end(granges(bs))) + win_size
+            gr_tmp = granges(bs)
+            chr_length = max(end(gr_tmp[seqnames(gr_tmp) == chr])) + win_size
+            return(chr_length)
         }, 1)
 
         gr = GenomicRanges::tileGenome(

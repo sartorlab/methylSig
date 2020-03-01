@@ -61,3 +61,21 @@ test_that('correct tiling destranded win25', {
         all(is.na(seqlengths(test)))
     )
 })
+
+test_that('correct tiling multichrom multichrom25', {
+    test = tile_by_windows(bs = bsseq_multichrom, win_size = 25)
+
+    expect_equivalent(
+        bsseq::getCoverage(test, type = 'Cov'),
+        bsseq::getCoverage(bsseq_multichrom_win25, type = 'Cov')
+    )
+
+    expect_equivalent(
+        bsseq::getCoverage(test, type = 'M'),
+        bsseq::getCoverage(bsseq_multichrom_win25, type = 'M')
+    )
+
+    expect_true(
+        all(is.na(seqlengths(test)))
+    )
+})
