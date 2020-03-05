@@ -49,7 +49,7 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
 
     # Check valid factor names in group_column of pData(bs)
     if (!(all(names(min_samples_per_group) %in% pData(bs)[, group_column]))) {
-        stop(sprintf('Not all names of min_sample_per_group are in group_column: %s',
+        stop(sprintf('Not all names of min_samples_per_group are in group_column: %s',
             paste(setdiff(names(min_samples_per_group), pData(bs)[, group_column]), collapse = ', ') ))
     }
 
