@@ -22,11 +22,14 @@ Depends:
     R (>= 3.6)
 Imports:
     bsseq,
+    DelayedArray,
+    DelayedMatrixStats,
     IRanges,
     GenomeInfoDb,
     GenomicRanges,
     methods
 Suggests:
+    bsseqData,
     knitr,
     rmarkdown,
     testthat,

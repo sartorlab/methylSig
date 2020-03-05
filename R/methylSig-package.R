@@ -22,6 +22,8 @@
 #' region_enrichment_diff()
 #'
 #' @import bsseq
+#' @import DelayedArray
+#' @import DelayedMatrixStats
 #' @import GenomeInfoDb
 #' @import GenomicRanges
 #' @import IRanges
