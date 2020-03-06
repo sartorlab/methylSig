@@ -65,43 +65,29 @@
 
 #' Calculates differential methylation statistics using a Beta-binomial approach.
 #'
-#' The function calculates differential methylation statistics between two groups of samples. This is the main function of the methylSig package, and the method most users should use to test for DMCs or DMRs. The function uses a Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group.
+#' The function calculates differential methylation statistics between two groups of samples using a beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. The function can be applied to a \code{BSseq} object subjected to \code{filter_loci_by_coverage()}, \code{filter_loci_by_snps()}, \code{filter_loci_by_group_coverage()} or any combination thereof. Moreover, the function can be applied to a \code{BSseq} object which has been tiled with \code{tile_by_regions()} or \code{tile_by_windows()}.
 #'
-#' The function calculates differential methylation statistics between two groups of samples. The function uses Beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. Users who wish to tile their data and test for differentially methylated regions (DMRs) instead DMCs should first use the \code{\link{methylSigTile}} function before using this function.
-#'
-#' @param bs
-#' @param group_column
-#' @param comparison_groups
-#' @param disp_groups
-#' @param local_window_size
-#' @param local_weight_function A weight kernel function. The input of this function is from -1 to 1. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. Function value and range of parameter for weight function should be from 0 to 1.
+#' @param bs a \code{BSseq} object.
+#' @param group_column a \code{character} string indicating the column of \code{pData(bs)} to use for determining group membership.
+#' @param comparison_groups a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{group_column} for the comparison.
+#' @param disp_groups a named \code{logical} vector indicating whether to use one, the other, or both of the \code{comparison_groups} to calculate the dispersion.
+#' @param local_window_size an \code{integer} indicating the size of the window for use in determining local information to improve mean and dispersion parameter estimations. In addition to a the distance constraint, a maximum of 5 loci upstream and downstream of the locus are used. The default is \code{0}, indicating no local information is used.
+#' @param local_weight_function A weight kernel function. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. The domain of any given weight function should be [-1,1], and the range should be [0,1].
 #' @param t_approx A \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{t_approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.
-#' @param n_cores An integer denoting how many cores should be used for differential methylation calculations.
+#' @param n_cores An \code{integer} denoting how many cores should be used for differential methylation calculations.
 #'
 #' @return A \code{GRanges} object containing the following \code{mcols}:
 #' \describe{
 #'   \item{disp_est}{ The disp est. }
 #'   \item{log_like_rat}{ The log likelihood ratio. }
 #'   \item{df}{ Degrees of freedom used when \code{t_approx = TRUE}. }
-#'   \item{meth_est_control}{ Methylation est for control. Groups correspond to the levels in the column used for the group_column in \code{pdata(bs)}. }
-#'   \item{meth_est_case}{ Methylation est for case. }
+#'   \item{meth_est_control}{ Methylation estimate for control. }
+#'   \item{meth_est_case}{ Methylation estimate for case. }
 #'   \item{meth_diff}{ The difference \code{meth_est_case - meth_est_control}. }
-#'   \item{direction}{ The group for which the CpG/region is hyper-methylated. Groups correspond to the levels in the column used for the group_column in \code{pdata(bs)}. }
+#'   \item{direction}{ The group for which the lcous is hyper-methylated. }
 #'   \item{pvalue}{ The p-value from the t-test (\code{t_approx = TRUE}) or the Chi-Square test (\code{t_approx = FALSE}). }
 #'   \item{fdr}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 #' }
-#'
-#' @examples
-#' utils::data(sample_data, package = 'methylSig')
-#'
-#' result = diff_methylsig(
-#'     bs = bs,
-#'     group_column = 'Type',
-#'     comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
-#'     disp_groups = c('cancer' = TRUE, 'normal' = TRUE),
-#'     local_window_size = 0,
-#'     t_approx = TRUE,
-#'     n_cores = 1)
 #'
 #' @export
 diff_methylsig = function(bs, group_column, comparison_groups, disp_groups, local_window_size = 0, local_weight_function, t_approx = TRUE, n_cores = 1) {
@@ -202,6 +188,7 @@ diff_methylsig = function(bs, group_column, comparison_groups, disp_groups, loca
     }
 
     #####################################
+
     num_loci = length(bs)
     gr = granges(bs)
 
@@ -214,7 +201,7 @@ diff_methylsig = function(bs, group_column, comparison_groups, disp_groups, loca
     meth_est[, control_idx] = base::rowSums(meth_mat[, control_idx]) / (base::rowSums(cov_mat[, control_idx]) + 1e-100)
 
     #####################################
-    # Go through each valid locus
+
     result = do.call(rbind, mclapply(seq_along(gr), function(locus_idx){
 
         if(local_window_size != 0) {
@@ -379,7 +366,7 @@ diff_methylsig = function(bs, group_column, comparison_groups, disp_groups, loca
 
     # Build GRanges version of result
     result_gr = gr
-    S4Vectors::mcols(result_gr) = result
+    mcols(result_gr) = result
 
     if(t_approx) {
          result_gr$pvalue = stats::pt(-sqrt(pmax(result_gr$log_like_rat, 0)), result_gr$df) * 2
@@ -408,20 +395,7 @@ diff_methylsig = function(bs, group_column, comparison_groups, disp_groups, loca
         'fdr'
     )
 
-    S4Vectors::mcols(result_gr) = S4Vectors::mcols(result_gr)[, col_order]
-
-    results_metadata = list(
-        method = 'diff_methylsig',
-        group_column = group_column,
-        disp_groups = disp_groups,
-        local_window_size = local_window_size,
-        local_weight_function,
-        t_approx = t_approx
-    )
-
-    S4Vectors::metadata(result_gr) = results_metadata
-
-    ############################################################################
+    mcols(result_gr) = mcols(result_gr)[, col_order]
 
     return(result_gr)
 }
