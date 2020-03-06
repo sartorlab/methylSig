@@ -14,21 +14,24 @@ expected_meth_cancer3_normal3 = bsseq::getCoverage(small_test, type = 'M')[c(3,8
 test_that('bs missing check', {
     expect_error(
         filter_loci_by_group_coverage(),
-        'Must pass bs as a BSseq object'
+        'Must pass bs as a BSseq object',
+        fixed = TRUE
     )
 })
 
 test_that('group_column missing check', {
     expect_error(
         filter_loci_by_group_coverage(bs = small_test),
-        'Must pass group_column as a character string'
+        'Must pass group_column as a character string',
+        fixed = TRUE
     )
 })
 
 test_that('min_samples_per_group missing check', {
     expect_error(
         filter_loci_by_group_coverage(bs = small_test, group_column = 'Type'),
-        'Must pass min_samples_per_group as a named integer vector'
+        'Must pass min_samples_per_group as a named integer vector',
+        fixed = TRUE
     )
 })
 
@@ -38,7 +41,8 @@ test_that('bs type check', {
             bs = 'a',
             group_column = 'Type',
             c('cancer' = 3, 'normal' = 3)),
-        'bs must be class BSseq'
+        'bs must be class BSseq',
+        fixed = TRUE
     )
 })
 
@@ -48,7 +52,8 @@ test_that('group_column type check', {
             bs = small_test,
             group_column = 6,
             c('cancer' = 3, 'normal' = 3)),
-        'group_column must be a character string'
+        'group_column must be a character string',
+        fixed = TRUE
     )
 })
 
@@ -58,7 +63,8 @@ test_that('min_samples_per_group type check', {
             bs = small_test,
             group_column = 'Type',
             c('cancer' = 'a', 'normal' = 3)),
-        'min_samples_per_group must be a named integer vector'
+        'min_samples_per_group must be a named integer vector',
+        fixed = TRUE
     )
 })
 
@@ -68,7 +74,8 @@ test_that('Valid group_column name check', {
             bs = small_test,
             group_column = 'blue',
             c('cancer' = 3, 'normal' = 3)),
-        'group_column: blue not in column names of pData' # () seem to be a problem
+        'group_column: blue not in column names of pData', # () seem to be a problem
+        fixed = TRUE
     )
 })
 
@@ -78,7 +85,8 @@ test_that('Valid factor name check', {
             bs = small_test,
             group_column = 'Type',
             c('blue' = 3, 'normal' = 3)),
-        'Not all names of min_sample_per_group are in group_column'
+        'Not all names of min_samples_per_group are in group_column',
+        fixed = TRUE
     )
 })
 

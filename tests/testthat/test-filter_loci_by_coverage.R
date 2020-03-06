@@ -1,28 +1,32 @@
 test_that('BSseq class check', {
     expect_error(
         filter_loci_by_coverage(5),
-        'bs must be class BSseq'
+        'bs must be class BSseq',
+        fixed = TRUE
     )
 })
 
 test_that('min_count numeric check', {
     expect_error(
         filter_loci_by_coverage(bsseq_stranded, min_count = 'a'),
-        'min_count must be an integer'
+        'min_count must be an integer',
+        fixed = TRUE
     )
 })
 
 test_that('max_count numeric check', {
     expect_error(
         filter_loci_by_coverage(bsseq_stranded, max_count = 'a'),
-        'max_count must be an integer'
+        'max_count must be an integer',
+        fixed = TRUE
     )
 })
 
 test_that('min_count less than max_count check', {
     expect_error(
         filter_loci_by_coverage(bsseq_stranded, min_count = 600 ),
-        'min_count not less than max_count'
+        'min_count not less than max_count',
+        fixed = TRUE
     )
 })
 

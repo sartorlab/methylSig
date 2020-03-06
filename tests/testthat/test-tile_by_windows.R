@@ -1,21 +1,24 @@
 test_that('bs missing check', {
     expect_error(
         tile_by_windows(),
-        'Must pass bs as a BSseq object'
+        'Must pass bs as a BSseq object',
+        fixed = TRUE
     )
 })
 
 test_that('bs class check', {
     expect_error(
         tile_by_windows(bs = '5', win_size = 200),
-        'bs must be class BSseq'
+        'bs must be class BSseq',
+        fixed = TRUE
     )
 })
 
 test_that('win_size class check', {
     expect_error(
         tile_by_windows(bs = bsseq_stranded, win_size = TRUE),
-        'win_size must be an integer'
+        'win_size must be an integer',
+        fixed = TRUE
     )
 })
 

@@ -1,28 +1,32 @@
 test_that('bs missing check', {
     expect_error(
         tile_by_regions(),
-        'Must pass bs as a BSseq object'
+        'Must pass bs as a BSseq object',
+        fixed = TRUE
     )
 })
 
 test_that('gr missing check', {
     expect_error(
         tile_by_regions(bs = bsseq_stranded),
-        'Must pass gr as a GRanges object'
+        'Must pass gr as a GRanges object',
+        fixed = TRUE
     )
 })
 
 test_that('bs class check', {
     expect_error(
         tile_by_regions(bs = '5', gr = gr_tiles1),
-        'bs must be class BSseq'
+        'bs must be class BSseq',
+        fixed = TRUE
     )
 })
 
 test_that('gr class check', {
     expect_error(
         tile_by_regions(bs = bsseq_stranded, gr = '5'),
-        'gr must be class GRanges'
+        'gr must be class GRanges',
+        fixed = TRUE
     )
 })
 
@@ -156,6 +160,7 @@ test_that('correct tiling destranded gr4', {
 test_that('error tiling destranded gr5', {
     expect_error(
         tile_by_regions(bs = bsseq_destranded, gr = gr_tiles5),
-        'No regions overlap between bs and gr'
+        'No regions overlap between bs and gr',
+        fixed = TRUE
     )
 })
