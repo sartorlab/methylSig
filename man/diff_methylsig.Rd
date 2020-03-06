@@ -22,7 +22,7 @@ diff_methylsig(
 
 \item{comparison_groups}{a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{group_column} for the comparison.}
 
-\item{disp_groups}{a named \code{logical} vector indicating whether to use one, the other, or both of the \code{comparison_groups} to calculate the dispersion.}
+\item{disp_groups}{a named \code{logical} vector indicating the whether to use \code{case}, \code{control}, or both to estimate the dispersion.}
 
 \item{local_window_size}{an \code{integer} indicating the size of the window for use in determining local information to improve mean and dispersion parameter estimations. In addition to a the distance constraint, a maximum of 5 loci upstream and downstream of the locus are used. The default is \code{0}, indicating no local information is used.}
 
@@ -35,17 +35,37 @@ diff_methylsig(
 \value{
 A \code{GRanges} object containing the following \code{mcols}:
 \describe{
-  \item{disp_est}{ The disp est. }
-  \item{log_like_rat}{ The log likelihood ratio. }
-  \item{df}{ Degrees of freedom used when \code{t_approx = TRUE}. }
-  \item{meth_est_control}{ Methylation estimate for control. }
-  \item{meth_est_case}{ Methylation estimate for case. }
-  \item{meth_diff}{ The difference \code{meth_est_case - meth_est_control}. }
-  \item{direction}{ The group for which the lcous is hyper-methylated. }
-  \item{pvalue}{ The p-value from the t-test (\code{t_approx = TRUE}) or the Chi-Square test (\code{t_approx = FALSE}). }
-  \item{fdr}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
+  \item{meth_case:}{ Methylation estimate for case. }
+  \item{meth_control:}{ Methylation estimate for control. }
+  \item{meth_diff:}{ The difference \code{meth_case - meth_control}. }
+  \item{direction:}{ The group for which the lcous is hyper-methylated. Note, this is not subject to significance thresholds. }
+  \item{pvalue:}{ The p-value from the t-test (\code{t_approx = TRUE}) or the Chi-Square test (\code{t_approx = FALSE}). }
+  \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
+  \item{disp_est:}{ The dispersion estimate. }
+  \item{log_lik_ratio:}{ The log likelihood ratio. }
+  \item{df:}{ Degrees of freedom used when \code{t_approx = TRUE}. }
 }
 }
 \description{
 The function calculates differential methylation statistics between two groups of samples using a beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. The function can be applied to a \code{BSseq} object subjected to \code{filter_loci_by_coverage()}, \code{filter_loci_by_snps()}, \code{filter_loci_by_group_coverage()} or any combination thereof. Moreover, the function can be applied to a \code{BSseq} object which has been tiled with \code{tile_by_regions()} or \code{tile_by_windows()}.
+}
+\examples{
+data(BS.cancer.ex, package = 'bsseqData')
+
+bs = filter_loci_by_group_coverage(
+    bs = BS.cancer.ex,
+    group_column = 'Type',
+    c('cancer' = 2, 'normal' = 2))
+
+small_test = bs[1:50]
+
+diff_gr = diff_methylsig(
+    bs = small_test,
+    group_column = 'Type',
+    comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+    disp_groups = c('case' = TRUE, 'control' = TRUE),
+    local_window_size = 0,
+    t_approx = TRUE,
+    n_cores = 1)
+
 }

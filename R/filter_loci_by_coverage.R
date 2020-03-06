@@ -20,6 +20,7 @@
 #' test = filter_loci_by_coverage(bs = test, min_count = 10, max_count = 500)
 #' @export
 filter_loci_by_coverage = function(bs, min_count = 5, max_count = 500) {
+
     if (!is(bs, 'BSseq')) {
         stop('bs must be class BSseq. See bsseq::read.bismark() or bsseq::BSseq().')
     }
@@ -32,6 +33,8 @@ filter_loci_by_coverage = function(bs, min_count = 5, max_count = 500) {
     if (!(min_count < max_count)) {
         stop('min_count not less than max_count')
     }
+
+    #####################################
 
     cov = bsseq::getCoverage(bs, type = 'Cov')
     meth = bsseq::getCoverage(bs, type = 'M')

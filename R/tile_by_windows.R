@@ -14,6 +14,7 @@
 #'
 #' @export
 tile_by_windows = function(bs, win_size = 200) {
+
         if (missing(bs)) {
             stop('Must pass bs as a BSseq object.')
         }
@@ -23,6 +24,8 @@ tile_by_windows = function(bs, win_size = 200) {
         if (!is(win_size, 'numeric')) {
             stop('win_size must be an integer')
         }
+
+        #####################################
 
         # Determine maximum position per chromosome in use, and add win_size
         seqlevels_in_use = GenomeInfoDb::seqlevelsInUse(bs)

@@ -19,6 +19,7 @@
 #'
 #' @export
 filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group) {
+
     # Check missing
     if (missing(bs)) {
         stop('Must pass bs as a BSseq object.')
@@ -29,6 +30,8 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
     if (missing(min_samples_per_group)) {
         stop('Must pass min_samples_per_group as a named integer vector.')
     }
+
+    #####################################
 
     # Check types
     if (!is(bs, 'BSseq')) {
@@ -41,6 +44,8 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
         stop('min_samples_per_group must be a named integer vector.')
     }
 
+    #####################################
+
     # Check valid group_column name
     if (!(group_column %in% colnames(pData(bs)))) {
         stop(sprintf('group_column: %s not in column names of pData(bs): %s',
@@ -52,6 +57,8 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
         stop(sprintf('Not all names of min_samples_per_group are in group_column: %s',
             paste(setdiff(names(min_samples_per_group), pData(bs)[, group_column]), collapse = ', ') ))
     }
+
+    #####################################
 
     # Extract sample names belonging to each group given. NOTE, min_sample_per_group
     # allows users to give more than two groups, and will require all group

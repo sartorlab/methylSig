@@ -20,6 +20,7 @@
 #'
 #' @export
 tile_by_regions = function(bs, gr) {
+
     if (missing(bs)) {
         stop('Must pass bs as a BSseq object.')
     }
@@ -32,6 +33,8 @@ tile_by_regions = function(bs, gr) {
     if (!is(gr, 'GRanges')) {
         stop('gr must be class GRanges.')
     }
+
+    #####################################
 
     cov = bsseq::getCoverage(bs, regions = gr, type = 'Cov', what = 'perRegionTotal')
 

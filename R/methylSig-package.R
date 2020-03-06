@@ -27,6 +27,7 @@
 #' @import GenomeInfoDb
 #' @import GenomicRanges
 #' @import IRanges
+#' @import parallel
 #' @importFrom methods is
 #'
 #' @docType package

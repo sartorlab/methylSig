@@ -27,7 +27,8 @@ Imports:
     IRanges,
     GenomeInfoDb,
     GenomicRanges,
-    methods
+    methods,
+    parallel
 Suggests:
     bsseqData,
     knitr,
