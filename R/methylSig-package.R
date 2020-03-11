@@ -24,11 +24,14 @@
 #' @import bsseq
 #' @import DelayedArray
 #' @import DelayedMatrixStats
+#' @import DSS
 #' @import GenomeInfoDb
 #' @import GenomicRanges
 #' @import IRanges
 #' @import parallel
 #' @importFrom methods is
+#' @importFrom stats as.formula
+#' @importFrom stats formula
 #'
 #' @docType package
 #' @name methylSig

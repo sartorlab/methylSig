@@ -24,16 +24,18 @@ Imports:
     bsseq,
     DelayedArray,
     DelayedMatrixStats,
+    DSS,
     IRanges,
     GenomeInfoDb,
     GenomicRanges,
     methods,
-    parallel
+    parallel,
+    stats
 Suggests:
     bsseqData,
     knitr,
     rmarkdown,
-    testthat,
+    testthat (>= 2.1.0),
     covr
 License: GPL-3
 BugReports: https://github.com/sartorlab/methylSig/issues

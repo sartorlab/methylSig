@@ -239,6 +239,7 @@ diff_methylsig = function(
     meth_mat = as.matrix(bsseq::getCoverage(bs, type = 'M'))
 
     # Estimate meth per locus within each group. The same value is used for all samples within the same group.
+    # Note, the approach is to sum reads over all samples per group per locus
     meth_est = matrix(0, ncol = ncol(bs), nrow = nrow(bs))
     meth_est[, case_idx] = base::rowSums(meth_mat[, case_idx]) / (base::rowSums(cov_mat[, case_idx]) + 1e-100)
     meth_est[, control_idx] = base::rowSums(meth_mat[, control_idx]) / (base::rowSums(cov_mat[, control_idx]) + 1e-100)
