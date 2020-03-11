@@ -41,5 +41,4 @@ diff_fit = diff_dss_fit(
     design = bsseq::pData(bs),
     formula = '~ Type')
 
-
 }

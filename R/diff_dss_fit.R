@@ -30,7 +30,6 @@
 #'     design = bsseq::pData(bs),
 #'     formula = '~ Type')
 #'
-#'
 #' @export
 diff_dss_fit = function(
     bs,

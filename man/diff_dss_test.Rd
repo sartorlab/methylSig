@@ -26,3 +26,24 @@ A \code{GRanges} object containing the following \code{mcols}:
 \description{
 This function is a wrapper for \code{DSS::DMLfit.multiFactor} and \code{DSS::DMLtest.multiFactor} with the added feature of reporting methylation rates alongside the test results via the \code{methylation_group_column} and \code{methylation_groups} parameters. See documentation below.
 }
+\examples{
+data(BS.cancer.ex, package = 'bsseqData')
+
+bs = filter_loci_by_group_coverage(
+    bs = BS.cancer.ex,
+    group_column = 'Type',
+    c('cancer' = 2, 'normal' = 2))
+
+small_test = bs[1:50]
+
+diff_fit = diff_dss_fit(
+    bs = small_test,
+    design = bsseq::pData(bs),
+    formula = '~ Type')
+
+result = diff_dss_test(
+    diff_fit = diff_fit,
+    contrast = matrix(c(0,1), ncol = 1)
+)
+
+}

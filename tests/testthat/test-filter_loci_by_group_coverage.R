@@ -11,6 +11,8 @@ expected_meth_cancer2_normal3 = bsseq::getCoverage(small_test, type = 'M')[c(3,8
 expected_cov_cancer3_normal3 = bsseq::getCoverage(small_test, type = 'Cov')[c(3,8), ]
 expected_meth_cancer3_normal3 = bsseq::getCoverage(small_test, type = 'M')[c(3,8), ]
 
+#####################################
+
 test_that('bs missing check', {
     expect_error(
         filter_loci_by_group_coverage(),
@@ -34,6 +36,8 @@ test_that('min_samples_per_group missing check', {
         fixed = TRUE
     )
 })
+
+#####################################
 
 test_that('bs type check', {
     expect_error(
@@ -68,6 +72,8 @@ test_that('min_samples_per_group type check', {
     )
 })
 
+#####################################
+
 test_that('Valid group_column name check', {
     expect_error(
         filter_loci_by_group_coverage(
@@ -99,6 +105,8 @@ test_that('All loci removed check', {
         'Thresholds for the following groups were too strict'
     )
 })
+
+#####################################
 
 test_that('Test cancer 2 normal 2', {
     test = filter_loci_by_group_coverage(

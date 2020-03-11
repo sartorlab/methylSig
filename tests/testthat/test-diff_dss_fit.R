@@ -7,20 +7,6 @@ bs = filter_loci_by_group_coverage(
 
 small_test = bs[1:50]
 
-# diff_fit = diff_dss_fit(
-#     bs = small_test,
-#     design = pData(bs),
-#     formula = '~ Type')
-#
-# diff_fit = diff_dss_fit(
-#     bs = small_test,
-#     formula = '~ Type')
-#
-# diff_fit = diff_dss_fit(
-#     bs = small_test,
-#     design = pData(bs),
-#     formula = as.formula('~ Type'))
-
 #####################################
 
 test_that('bs missing check', {
@@ -85,3 +71,19 @@ test_that('design message check', {
         fixed = TRUE
     )
 })
+
+#####################################
+
+# diff_fit = diff_dss_fit(
+#     bs = small_test,
+#     design = pData(bs),
+#     formula = '~ Type')
+#
+# diff_fit = diff_dss_fit(
+#     bs = small_test,
+#     formula = '~ Type')
+#
+# diff_fit = diff_dss_fit(
+#     bs = small_test,
+#     design = pData(bs),
+#     formula = as.formula('~ Type'))
