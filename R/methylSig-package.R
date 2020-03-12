@@ -32,6 +32,9 @@
 #' @importFrom methods is
 #' @importFrom stats as.formula
 #' @importFrom stats formula
+#' @importFrom stats pchisq
+#' @importFrom stats pt
+#' @importFrom stats p.adjust
 #'
 #' @docType package
 #' @name methylSig
