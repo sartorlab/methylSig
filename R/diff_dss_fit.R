@@ -2,8 +2,8 @@
 #'
 #' This function is a wrapper for \code{DSS::DMLfit.multiFactor}.
 #'
-#' @param bs a \code{BSseq-class} object to calculate differential methylation statistics.
-#' @param design a \code{data.frame} or \code{DataFrame} for experimental design. Should contain as many rows as there are columns (samples) in \code{bs}. If omitted, will default to \code{pData(bs)}.
+#' @param bs a \code{BSseq} object to calculate differential methylation statistics.
+#' @param design a \code{data.frame} or \code{DataFrame} for experimental design. Should contain as many rows as there are columns (samples) in \code{bs}, and the order of the rows should match the columns of \code{bs}. If omitted, will default to \code{pData(bs)}.
 #' @param formula a formula for the linear model. It should refer to column names from \code{design}. NOTE: The intercept is included by default if omitted. One can omit the intercept with a formula such as \code{'~ 0 + group'}. For clarity, it helps to include the intercept explicitly as in \code{'~ 1 + group'}.
 #'
 #' @return A \code{list} object with:
@@ -11,7 +11,7 @@
 #'     \item{gr:}{ a \code{GRanges} object with loci fit. }
 #'     \item{design:}{ the \code{data.frame} input as the experimental design. }
 #'     \item{formula:}{ the \code{formula} representing the model. Can be \code{character} or \code{formula}. }
-#'     \item{X:}{ the design \code{matrix} used in regression based on the \code{design} and \code{formula}. This should be consulted to determine the appropriate contrast to use in \code{dss_fit_test}. }
+#'     \item{X:}{ the design \code{matrix} used in regression based on the \code{design} and \code{formula}. This should be consulted to determine the appropriate contrast to use in \code{dss_fit_test()}. }
 #'     \item{fit:}{ a \code{list} with model fitting results. It has components \code{beta}, the estimated coefficients, and \code{var.beta} the estimated variance/covariance matrix for \code{beta}. }
 #' }
 #'

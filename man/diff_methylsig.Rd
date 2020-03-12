@@ -28,9 +28,9 @@ diff_methylsig(
 
 \item{local_weight_function}{A weight kernel function. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. The domain of any given weight function should be [-1,1], and the range should be [0,1].}
 
-\item{t_approx}{A \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{t_approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.}
+\item{t_approx}{a \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{t_approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.}
 
-\item{n_cores}{An \code{integer} denoting how many cores should be used for differential methylation calculations.}
+\item{n_cores}{an \code{integer} denoting how many cores should be used for differential methylation calculations.}
 }
 \value{
 A \code{GRanges} object containing the following \code{mcols}:

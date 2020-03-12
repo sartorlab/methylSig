@@ -74,16 +74,32 @@ test_that('design message check', {
 
 #####################################
 
-# diff_fit = diff_dss_fit(
-#     bs = small_test,
-#     design = pData(bs),
-#     formula = '~ Type')
-#
-# diff_fit = diff_dss_fit(
-#     bs = small_test,
-#     formula = '~ Type')
-#
-# diff_fit = diff_dss_fit(
-#     bs = small_test,
-#     design = pData(bs),
-#     formula = as.formula('~ Type'))
+test_that('Valid return character formula check', {
+    diff_fit = diff_dss_fit(
+        bs = small_test,
+        design = pData(bs),
+        formula = '~ Type')
+
+    expect_true(is(diff_fit, 'list'))
+    expect_true(all(c('gr', 'design', 'formula', 'X', 'fit') %in% names(diff_fit)))
+})
+
+test_that('Valid return formula formula check', {
+    diff_fit = diff_dss_fit(
+        bs = small_test,
+        design = pData(bs),
+        formula = as.formula('~ Type'))
+
+    expect_true(is(diff_fit, 'list'))
+    expect_true(all(c('gr', 'design', 'formula', 'X', 'fit') %in% names(diff_fit)))
+})
+
+test_that('Valid return more complex model check', {
+    diff_fit = diff_dss_fit(
+        bs = small_test,
+        design = pData(bs),
+        formula = as.formula('~ Type + Pair'))
+
+    expect_true(is(diff_fit, 'list'))
+    expect_true(all(c('gr', 'design', 'formula', 'X', 'fit') %in% names(diff_fit)))
+})

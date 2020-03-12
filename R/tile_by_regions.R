@@ -36,13 +36,13 @@ tile_by_regions = function(bs, gr) {
 
     #####################################
 
-    cov = bsseq::getCoverage(bs, regions = gr, type = 'Cov', what = 'perRegionTotal')
+    cov = DelayedArray::DelayedArray(bsseq::getCoverage(bs, regions = gr, type = 'Cov', what = 'perRegionTotal'))
 
     if (all(is.na(cov))) {
         stop('No regions overlap between bs and gr')
     }
 
-    meth = bsseq::getCoverage(bs, regions = gr, type = 'M', what = 'perRegionTotal')
+    meth = DelayedArray::DelayedArray(bsseq::getCoverage(bs, regions = gr, type = 'M', what = 'perRegionTotal'))
 
     # Set all NA entries to 0 so bsseq::BSseq doesn't throw an error
     # These will likely end up removed in filter_loci_by_group_coverage()

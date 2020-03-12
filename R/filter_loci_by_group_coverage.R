@@ -81,7 +81,7 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
         DelayedMatrixStats::rowSums2(
             x = logical_cov_mat,
             cols = group_samples[[group]],
-            value = TRUE) >= min_samples_per_group[group]
+            value = TRUE, na.rm = TRUE) >= min_samples_per_group[group]
     })
     names(keep_group_loci) = names(min_samples_per_group)
 

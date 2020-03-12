@@ -275,7 +275,7 @@ test_that('Test 1', {
         t_approx = TRUE,
         n_cores = 1)
 
-    expect_equal(2+2, 4)
+    expect_true(is(diff_gr, 'GRanges'))
 })
 
 test_that('Check dropped loci message', {
@@ -303,7 +303,7 @@ test_that('Test 2', {
         t_approx = TRUE,
         n_cores = 1)
 
-    expect_equal(2+2, 4)
+    expect_true(is(diff_gr, 'GRanges'))
 })
 
 test_that('Test 3', {
@@ -316,7 +316,7 @@ test_that('Test 3', {
         t_approx = TRUE,
         n_cores = 1)
 
-    expect_equal(2+2, 4)
+    expect_true(is(diff_gr, 'GRanges'))
 })
 
 test_that('Test 4', {
@@ -329,7 +329,7 @@ test_that('Test 4', {
         t_approx = TRUE,
         n_cores = 1)
 
-    expect_equal(2+2, 4)
+    expect_true(is(diff_gr, 'GRanges'))
 })
 
 test_that('Test 5', {
@@ -342,7 +342,7 @@ test_that('Test 5', {
         t_approx = FALSE,
         n_cores = 1)
 
-    expect_equal(2+2, 4)
+    expect_true(is(diff_gr, 'GRanges'))
 })
 
 test_that('Test 6', {
@@ -355,5 +355,5 @@ test_that('Test 6', {
         t_approx = TRUE,
         n_cores = 1)
 
-    expect_equal(2+2, 4)
+    expect_true(is(diff_gr, 'GRanges'))
 })

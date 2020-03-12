@@ -1,17 +1,18 @@
 #' Calculates differential methylation statistics under general experimental design
 #'
-#' This function is a wrapper for \code{DSS::DMLfit.multiFactor} and \code{DSS::DMLtest.multiFactor} with the added feature of reporting methylation rates alongside the test results via the \code{methylation_group_column} and \code{methylation_groups} parameters. See documentation below.
+#' This function is a wrapper for \code{DSS::DMLtest.multiFactor} with the added feature of reporting methylation rates alongside the test results via the \code{methylation_group_column} and \code{methylation_groups} parameters. See documentation below.
 #'
-#' @param diff_fit a \code{BSseq-class} object to calculate differential methylation statistics.
-#' @param contrast a contrast matrix for hypothesis testing. The number of rows should match the number of columns \code{design}.
-#' @param methylation_group_column a thing.
-#' @param methylation_groups a thing.
+#' @param bs a \code{BSseq}, the same used used to create \code{diff_fit}.
+#' @param diff_fit a \code{list} object output by \code{diff_dss_fit()}.
+#' @param contrast a contrast matrix for hypothesis testing. The number of rows should match the number of columns \code{design}. Consult \code{diff_fit$X} to ensure the contrast correponds to the intended test.
+#' @param methylation_group_column Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the top and bottom 25 percentiles of the covariate, and the mean methlyation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.
+#' @param methylation_groups Optionally, a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. If specified, must also specify \code{methylation_group_column}.
 #'
 #' @return A \code{GRanges} object containing the following \code{mcols}:
 #' \describe{
-#'   \item{stat}{ The test statistic }
-#'   \item{pvalue}{ p-values }
-#'   \item{fdr}{ Degrees of freedom used when \code{T.approx = TRUE}. }
+#'   \item{stat:}{ The test statistic. }
+#'   \item{pvalue:}{ The p-value. }
+#'   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 #' }
 #'
 #' @examples
@@ -30,20 +31,33 @@
 #'     formula = '~ Type')
 #'
 #' result = diff_dss_test(
+#'     bs = small_test,
 #'     diff_fit = diff_fit,
 #'     contrast = matrix(c(0,1), ncol = 1)
 #' )
 #'
+#' result_with_meth = diff_dss_test(
+#'     bs = small_test,
+#'     diff_fit = diff_fit,
+#'     contrast = matrix(c(0,1), ncol = 1),
+#'     methylation_group_column = 'Type',
+#'     methylation_groups = c('case' = 'cancer', 'control' = 'normal')
+#' )
+#'
 #' @export
 diff_dss_test = function(
+    bs,
     diff_fit,
     contrast,
-    methylation_group_column,
-    methylation_groups) {
+    methylation_group_column = NA,
+    methylation_groups = NA) {
 
     #####################################
 
     # Check missing
+    if (missing(bs)) {
+        stop('Must pass bs as a BSseq object.')
+    }
     if (missing(diff_fit)) {
         stop('Must pass diff_fit, the result of diff_dss_fit().')
     }
@@ -52,6 +66,11 @@ diff_dss_test = function(
     }
 
     #####################################
+
+    # Check validity of bs
+    if (!is(bs, 'BSseq')) {
+        stop('bs must be class BSseq.')
+    }
 
     # Check validity of diff_fit
     if (!is(diff_fit, 'list')) {
@@ -63,7 +82,7 @@ diff_dss_test = function(
     }
 
     # Check validity of methylation_group_column
-    if (!missing(methylation_group_column)) {
+    if (!is.na(methylation_group_column)) {
         if (!(is(methylation_group_column, 'character') && length(methylation_group_column) == 1)) {
             stop('methylation_group_column must be a character string.')
         }
@@ -75,9 +94,9 @@ diff_dss_test = function(
     }
 
     # Check validity of methylation_groups
-    if (!missing(methylation_groups)) {
+    if (!all(is.na(methylation_groups))) {
 
-        if (missing(methylation_group_column)) {
+        if (is.na(methylation_group_column)) {
             stop('If methylation_groups is specified, so must methylation_group_column.')
         }
 
@@ -101,10 +120,88 @@ diff_dss_test = function(
         DMLfit = diff_fit,
         Contrast = contrast)
 
-    # Create the GRanges return object and harmonize column names with methylSigCalc()
     result_gr = diff_fit$gr
-    mcols(result_gr) = result[,c('stat','pvals','fdrs')]
+    mcols(result_gr) = result[ ,c('stat','pvals','fdrs')]
     colnames(mcols(result_gr)) = c('stat','pvalue','fdr')
+
+    #####################################
+
+    # If a methylation_group_column is given, retrieve methylation rates
+    if (!is.na(methylation_group_column)) {
+
+        # Assign correct case_idx and control_idx based on whether the
+        # methylation_group_column is character/factor or numeric
+        pdata = diff_fit$design
+
+        if (is(pdata[, methylation_group_column], 'character') || is(pdata[, methylation_group_column], 'factor')) {
+
+            case = methylation_groups['case']
+            control = methylation_groups['control']
+
+            case_idx = which(pdata[, methylation_group_column] == case)
+            control_idx = which(pdata[, methylation_group_column] == control)
+
+        } else if (is(pdata[, methylation_group_column], 'numeric')) {
+
+            # Order of return is 25%, 75%
+            # So we want <= quantiles[1] and >= quantiles[2]
+            quantiles = quantile(
+                x = pdata[, methylation_group_column],
+                probs = c(0.25, 0.75),
+                na.rm = TRUE
+            )
+
+            case_idx = which(pdata[, methylation_group_column] <= quantiles[1])
+            control_idx = which(pdata[, methylation_group_column] >= quantiles[2])
+
+        }
+
+        # Subset bs by what was fit
+        result_bs = subsetByOverlaps(bs, diff_fit$gr)
+
+        cov_reads_mat = bsseq::getCoverage(bs, type = 'Cov')
+        meth_reads_mat = bsseq::getCoverage(bs, type = 'M')
+
+        # Compute case, control, and methylation difference
+        case_meth = (DelayedMatrixStats::rowSums2(
+            x = meth_reads_mat,
+            cols = case_idx,
+            value = TRUE, na.rm = TRUE) / DelayedMatrixStats::rowSums2(
+                                                x = cov_reads_mat,
+                                                cols = case_idx,
+                                                value = TRUE, na.rm = TRUE))
+
+        control_meth = (DelayedMatrixStats::rowSums2(
+            x = meth_reads_mat,
+            cols = control_idx,
+            value = TRUE, na.rm = TRUE) / DelayedMatrixStats::rowSums2(
+                                                x = cov_reads_mat,
+                                                cols = control_idx,
+                                                value = TRUE, na.rm = TRUE))
+        meth_diff = case_meth - control_meth
+
+        result_gr$case_meth = round(case_meth * 100, 2)
+        result_gr$control_meth = round(control_meth * 100, 2)
+        result_gr$meth_diff = round(meth_diff * 100, 2)
+
+        col_order = c(
+            'case_meth',
+            'control_meth',
+            'meth_diff',
+            'stat',
+            'pvalue',
+            'fdr'
+        )
+        mcols(result_gr) = mcols(result_gr)[, col_order]
+
+    }
+
+    # Remove NA tests and indicate how many failed as in diff_methylsig()
+    na_idx = is.na(result_gr$stat)
+    if (any(na_idx)) {
+        result_gr = result_gr[!na_idx]
+        message(sprintf('%s loci were dropped due to insufficient degrees of freedom.', sum(na_idx)))
+    }
 
     return(result_gr)
 }

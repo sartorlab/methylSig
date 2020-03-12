@@ -1,4 +1,5 @@
 library(bsseq)
+library(DelayedArray)
 library(GenomicRanges)
 
 ################################################################################
@@ -88,10 +89,10 @@ win25_multichrom_gr = GenomicRanges::tileGenome(
 #        10                     110             0                         2500
 #        20                     115             10                        300
 
-stranded_cov1 = matrix(c(
+stranded_cov1 = DelayedArray::DelayedArray(matrix(c(
     10,110,0,2500,
     20,115,10,300
-), ncol = 2)
+), ncol = 2))
 
 #----[---------]---------[--------------]----[---------]--------------[---------]
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
@@ -107,10 +108,10 @@ stranded_cov1 = matrix(c(
 #        8                     14               0                         2300
 #        18                    20               10                        298
 
-stranded_meth1 = matrix(c(
+stranded_meth1 = DelayedArray::DelayedArray(matrix(c(
     8,14,0,2300,
     18,20,10,298
-), ncol = 2)
+), ncol = 2))
 
 bsseq_stranded_tiled1 = BSseq(
     gr = gr_tiles1,
@@ -134,10 +135,10 @@ bsseq_stranded_tiled1 = BSseq(
 #        10                     130             0                         2500
 #        20                     150             10                        300
 
-destranded_cov1 = matrix(c(
+destranded_cov1 = DelayedArray::DelayedArray(matrix(c(
     10,130,0,2500,
     20,150,10,300
-), ncol = 2)
+), ncol = 2))
 
 #----[---------]---------[--------------]----[---------]--------------[---------]
 #---------C--------------C--------------C---------C---------C--------------C-
@@ -151,10 +152,10 @@ destranded_cov1 = matrix(c(
 #        8                     14               0                         2300
 #        18                    54               10                        298
 
-destranded_meth1 = matrix(c(
+destranded_meth1 = DelayedArray::DelayedArray(matrix(c(
     8,33,0,2300,
     18,54,10,298
-), ncol = 2)
+), ncol = 2))
 
 bsseq_destranded_tiled1 = BSseq(
     gr = gr_tiles1,
@@ -182,10 +183,10 @@ bsseq_destranded_tiled1 = BSseq(
 #                  110                              70                      2500
 #                  120                              80                      300
 
-stranded_cov2 = matrix(c(
+stranded_cov2 = DelayedArray::DelayedArray(matrix(c(
     110,70,2500,
     120,80,300
-), ncol = 2)
+), ncol = 2))
 
 #----[------------------------]----[----------------------------------]----[----]
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
@@ -201,10 +202,10 @@ stranded_cov2 = matrix(c(
 #                  13                              63                       2300
 #                  24                              73                       298
 
-stranded_meth2 = matrix(c(
+stranded_meth2 = DelayedArray::DelayedArray(matrix(c(
     13,63,2300,
     24,73,298
-), ncol = 2)
+), ncol = 2))
 
 bsseq_stranded_tiled2 = BSseq(
     gr = gr_tiles2,
@@ -228,10 +229,10 @@ bsseq_stranded_tiled2 = BSseq(
 #                  110                              70                      2500
 #                  120                              80                      300
 
-destranded_cov2 = matrix(c(
+destranded_cov2 = DelayedArray::DelayedArray(matrix(c(
     110,70,2500,
     120,80,300
-), ncol = 2)
+), ncol = 2))
 
 #----[------------------------]----[----------------------------------]----[----]
 #---------C--------------C--------------C---------C---------C--------------C-
@@ -245,10 +246,10 @@ destranded_cov2 = matrix(c(
 #                  13                              63                       2300
 #                  24                              73                       298
 
-destranded_meth2 = matrix(c(
+destranded_meth2 = DelayedArray::DelayedArray(matrix(c(
     13,63,2300,
     24,73,298
-), ncol = 2)
+), ncol = 2))
 
 bsseq_destranded_tiled2 = BSseq(
     gr = gr_tiles2,
@@ -275,10 +276,10 @@ bsseq_destranded_tiled2 = BSseq(
 # tile_by_regions(bs = bsseq_stranded, gr = gr_tiles3) coverage
 #                                       2680
 #                                       500
-stranded_cov3 = matrix(c(
+stranded_cov3 = DelayedArray::DelayedArray(matrix(c(
     2680,
     500
-), ncol = 2)
+), ncol = 2))
 
 #----[--------------------------------------------------------------------------]
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
@@ -294,10 +295,10 @@ stranded_cov3 = matrix(c(
 #                                       2376
 #                                       395
 
-stranded_meth3 = matrix(c(
+stranded_meth3 = DelayedArray::DelayedArray(matrix(c(
     2376,
     395
-), ncol = 2)
+), ncol = 2))
 
 bsseq_stranded_tiled3 = BSseq(
     gr = gr_tiles3,
@@ -321,10 +322,10 @@ bsseq_stranded_tiled3 = BSseq(
 #                                       2680
 #                                       500
 
-destranded_cov3 = matrix(c(
+destranded_cov3 = DelayedArray::DelayedArray(matrix(c(
     2680,
     500
-), ncol = 2)
+), ncol = 2))
 
 #----[------------------------]----[----------------------------------]----[----]
 #---------C--------------C--------------C---------C---------C--------------C-
@@ -338,10 +339,10 @@ destranded_cov3 = matrix(c(
 #                                       2376
 #                                       395
 
-destranded_meth3 = matrix(c(
+destranded_meth3 = DelayedArray::DelayedArray(matrix(c(
     2376,
     395
-), ncol = 2)
+), ncol = 2))
 
 bsseq_destranded_tiled3 = BSseq(
     gr = gr_tiles3,
@@ -368,10 +369,10 @@ bsseq_destranded_tiled3 = BSseq(
 # tile_by_regions(bs = bsseq_stranded, gr = gr_tiles4) coverage
 #         10
 #         20
-stranded_cov4 = matrix(c(
+stranded_cov4 = DelayedArray::DelayedArray(matrix(c(
     10,
     20
-), ncol = 2)
+), ncol = 2))
 
 #----[--------------]------------------------------------------------------------
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
@@ -387,10 +388,10 @@ stranded_cov4 = matrix(c(
 #         8
 #         18
 
-stranded_meth4 = matrix(c(
+stranded_meth4 = DelayedArray::DelayedArray(matrix(c(
     8,
     18
-), ncol = 2)
+), ncol = 2))
 
 bsseq_stranded_tiled4 = BSseq(
     gr = gr_tiles4,
@@ -414,10 +415,10 @@ bsseq_stranded_tiled4 = BSseq(
 #         10
 #         20
 
-destranded_cov4 = matrix(c(
+destranded_cov4 = DelayedArray::DelayedArray(matrix(c(
     10,
     20
-), ncol = 2)
+), ncol = 2))
 
 #----[--------------]------------------------------------------------------------
 #---------C--------------C--------------C---------C---------C--------------C-
@@ -431,10 +432,10 @@ destranded_cov4 = matrix(c(
 #         8
 #         18
 
-destranded_meth4 = matrix(c(
+destranded_meth4 = DelayedArray::DelayedArray(matrix(c(
     8,
     18
-), ncol = 2)
+), ncol = 2))
 
 bsseq_destranded_tiled4 = BSseq(
     gr = gr_tiles4,
@@ -461,10 +462,10 @@ bsseq_destranded_tiled4 = BSseq(
 # tile_by_regions(bs = bsseq_stranded, gr = gr_tiles5) coverage
 #      0
 #      0
-stranded_cov5 = matrix(c(
+stranded_cov5 = DelayedArray::DelayedArray(matrix(c(
     0,
     0
-), ncol = 2)
+), ncol = 2))
 
 #----[---]-----------------------------------------------------------------------
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
@@ -480,10 +481,10 @@ stranded_cov5 = matrix(c(
 #      0
 #      0
 
-stranded_meth5 = matrix(c(
+stranded_meth5 = DelayedArray::DelayedArray(matrix(c(
     0,
     0
-), ncol = 2)
+), ncol = 2))
 
 bsseq_stranded_tiled5 = BSseq(
     gr = gr_tiles5,
@@ -507,10 +508,10 @@ bsseq_stranded_tiled5 = BSseq(
 #      0
 #      0
 
-destranded_cov5 = matrix(c(
+destranded_cov5 = DelayedArray::DelayedArray(matrix(c(
     0,
     0
-), ncol = 2)
+), ncol = 2))
 
 #----[---]-----------------------------------------------------------------------
 #---------C--------------C--------------C---------C---------C--------------C-
@@ -524,10 +525,10 @@ destranded_cov5 = matrix(c(
 #      0
 #      0
 
-destranded_meth5 = matrix(c(
+destranded_meth5 = DelayedArray::DelayedArray(matrix(c(
     0,
     0
-), ncol = 2)
+), ncol = 2))
 
 bsseq_destranded_tiled5 = BSseq(
     gr = gr_tiles5,
@@ -555,10 +556,10 @@ bsseq_destranded_tiled5 = BSseq(
 #           40                     100                      1040                       1500           0
 #           70                     105                      125                        200            0
 
-stranded_cov25 = matrix(c(
+stranded_cov25 = DelayedArray::DelayedArray(matrix(c(
     40,100,1040,1500,0,
     70,105,125,200,0
-), ncol = 2)
+), ncol = 2))
 
 #[-----------------------][-----------------------][-----------------------][-----------------------][]
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
@@ -574,10 +575,10 @@ stranded_cov25 = matrix(c(
 #           8                       33                       935                        1400          0
 #           19                      58                       119                        199           0
 
-stranded_meth25 = matrix(c(
+stranded_meth25 = DelayedArray::DelayedArray(matrix(c(
     8,33,935,1400,0,
     19,58,119,199,0
-), ncol = 2)
+), ncol = 2))
 
 bsseq_stranded_win25 = BSseq(
     gr = win25_stranded_gr,
@@ -601,10 +602,10 @@ bsseq_stranded_win25 = BSseq(
 #           110                     30                      2540                        0
 #           120                     60                      320                         0
 
-destranded_cov25 = matrix(c(
+destranded_cov25 = DelayedArray::DelayedArray(matrix(c(
     110,30,2540,0,
     120,60,320,0
-), ncol = 2)
+), ncol = 2))
 
 #[-----------------------][-----------------------][-----------------------][-----------------------]
 #---------C--------------C--------------C---------C---------C--------------C-
@@ -618,10 +619,10 @@ destranded_cov25 = matrix(c(
 #           13                     28                      2335                         0
 #           24                     58                      313                          0
 
-destranded_meth25 = matrix(c(
+destranded_meth25 = DelayedArray::DelayedArray(matrix(c(
     13,28,2335,0,
     24,58,313,0
-), ncol = 2)
+), ncol = 2))
 
 bsseq_destranded_win25 = BSseq(
     gr = win25_destranded_gr,
@@ -653,10 +654,10 @@ bsseq_destranded_win25 = BSseq(
 #[-----------------------][---]
 #---------C
 
-multichrom_cov25 = matrix(c(
+multichrom_cov25 = DelayedArray::DelayedArray(matrix(c(
     30,30,0,90,0,
     90,60,0,100,0
-), ncol = 2)
+), ncol = 2))
 
 multichrom_meth25 = multichrom_cov25
 
