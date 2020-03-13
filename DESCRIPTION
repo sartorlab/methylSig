@@ -30,7 +30,8 @@ Imports:
     GenomicRanges,
     methods,
     parallel,
-    stats
+    stats,
+    S4Vectors
 Suggests:
     bsseqData,
     knitr,

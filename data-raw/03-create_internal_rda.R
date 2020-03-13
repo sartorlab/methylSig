@@ -4,6 +4,8 @@ library(GenomicRanges)
 
 ################################################################################
 
+# Use for tile_by_regions() tests
+# Use for filter_loci_by_location() tests
 #----[---------]---------[--------------]----[---------]--------------[---------]
 gr_tiles1 = GRanges(
     seqnames = c('chr1','chr1','chr1','chr1'),
@@ -13,6 +15,7 @@ gr_tiles1 = GRanges(
     )
 )
 
+# Use for tiling tests
 #----[------------------------]----[----------------------------------]----[----]
 gr_tiles2 = GRanges(
     seqnames = c('chr1','chr1','chr1'),
@@ -22,6 +25,8 @@ gr_tiles2 = GRanges(
     )
 )
 
+# Use for tiling tests
+# Use for filter_loci_by_location() tests (expect an error from removing all)
 #----[--------------------------------------------------------------------------]
 gr_tiles3 = GRanges(
     seqnames = c('chr1'),
@@ -31,6 +36,8 @@ gr_tiles3 = GRanges(
     )
 )
 
+# Use for tiling tests
+# Use for filter_loci_by_location() tests
 #----[--------------]------------------------------------------------------------
 gr_tiles4 = GRanges(
     seqnames = c('chr1'),
@@ -40,6 +47,8 @@ gr_tiles4 = GRanges(
     )
 )
 
+# Use for tiling tests
+# Use for filter_loci_by_location() tests (expect nothing filtered)
 #----[---]-----------------------------------------------------------------------
 gr_tiles5 = GRanges(
     seqnames = c('chr1'),
@@ -96,6 +105,25 @@ stranded_cov1 = DelayedArray::DelayedArray(matrix(c(
 
 #----[---------]---------[--------------]----[---------]--------------[---------]
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
+# test1 coverage
+#         5              30             10        0         40             1000
+#          5              70             20        0                        1500
+# test2 coverage
+#         10             50             15        5         20             100
+#          10             50             35        5                        200
+#----[---------]---------[--------------]----[---------]--------------[---------]
+#---------CG-------------CG-------------CG--------CG--------C--------------CG
+# filter_loci_by_location(bs = bsseq_stranded, gr = gr_tiles1) coverage
+#                                        20                 40
+#                                        35                 20
+
+filter_cov1 = DelayedArray::DelayedArray(matrix(c(
+    20,40,
+    35,20
+), ncol = 2))
+
+#----[---------]---------[--------------]----[---------]--------------[---------]
+#---------CG-------------CG-------------CG--------CG--------C--------------CG
 # test1 methylation
 #         4              0              9         0         35             900
 #          4              5              19        0                        1400
@@ -113,10 +141,37 @@ stranded_meth1 = DelayedArray::DelayedArray(matrix(c(
     18,20,10,298
 ), ncol = 2))
 
+#----[---------]---------[--------------]----[---------]--------------[---------]
+#---------CG-------------CG-------------CG--------CG--------C--------------CG
+# test1 methylation
+#         4              0              9         0         35             900
+#          4              5              19        0                        1400
+# test2 methylation
+#         9              1              14        5         15             99
+#          9              5              34        5                        199
+#----[---------]---------[--------------]----[---------]--------------[---------]
+#---------CG-------------CG-------------CG--------CG--------C--------------CG
+# filter_loci_by_location(bs = bsseq_stranded, gr = gr_tiles1) methylation
+#                                        19                 35
+#                                        34                 15
+
+filter_meth1 = DelayedArray::DelayedArray(matrix(c(
+    19,35,
+    34,15
+), ncol = 2))
+
 bsseq_stranded_tiled1 = BSseq(
     gr = gr_tiles1,
     Cov = stranded_cov1,
     M = stranded_meth1,
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+filter_loc_tiles1 = BSseq(
+    gr = granges(bsseq_stranded[c(6,9)]),
+    Cov = filter_cov1,
+    M = filter_meth1,
     pData = data.frame(row.names = c('test1','test2')),
     sampleNames = c('test1','test2')
 )
@@ -374,6 +429,11 @@ stranded_cov4 = DelayedArray::DelayedArray(matrix(c(
     20
 ), ncol = 2))
 
+filter_cov4 = DelayedArray::DelayedArray(matrix(c(
+    30,70,10,20,0,0,40,1000,1500,
+    50,50,15,35,5,5,20,100,200
+), ncol = 2))
+
 #----[--------------]------------------------------------------------------------
 #---------CG-------------CG-------------CG--------CG--------C--------------CG
 # test1 methylation
@@ -393,10 +453,23 @@ stranded_meth4 = DelayedArray::DelayedArray(matrix(c(
     18
 ), ncol = 2))
 
+filter_meth4 = DelayedArray::DelayedArray(matrix(c(
+    0,5,9,19,0,0,35,900,1400,
+    1,5,14,34,5,5,15,99,199
+), ncol = 2))
+
 bsseq_stranded_tiled4 = BSseq(
     gr = gr_tiles4,
     Cov = stranded_cov4,
     M = stranded_meth4,
+    pData = data.frame(row.names = c('test1','test2')),
+    sampleNames = c('test1','test2')
+)
+
+filter_loc_tiles4 = BSseq(
+    gr = granges(bsseq_stranded[-c(1,2)]),
+    Cov = filter_cov4,
+    M = filter_meth4,
     pData = data.frame(row.names = c('test1','test2')),
     sampleNames = c('test1','test2')
 )
@@ -537,6 +610,8 @@ bsseq_destranded_tiled5 = BSseq(
     pData = data.frame(row.names = c('test3','test4')),
     sampleNames = c('test3','test4')
 )
+
+filter_loc_tiles5 = bsseq_stranded
 
 ################################################################################
 # win25_gr
@@ -682,14 +757,17 @@ usethis::use_data(
     win25_multichrom_gr,
     bsseq_stranded_tiled1,
     bsseq_destranded_tiled1,
+    filter_loc_tiles1,
     bsseq_stranded_tiled2,
     bsseq_destranded_tiled2,
     bsseq_stranded_tiled3,
     bsseq_destranded_tiled3,
     bsseq_stranded_tiled4,
     bsseq_destranded_tiled4,
+    filter_loc_tiles4,
     bsseq_stranded_tiled5,
     bsseq_destranded_tiled5,
+    filter_loc_tiles5,
     bsseq_stranded_win25,
     bsseq_destranded_win25,
     bsseq_multichrom_win25,

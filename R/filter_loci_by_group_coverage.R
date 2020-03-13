@@ -85,7 +85,7 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
     })
     names(keep_group_loci) = names(min_samples_per_group)
 
-    # A entry-wise and will give loci matching all group thresholds
+    # Entry-wise and() and will give loci matching all group thresholds
     keep_loci = Reduce(`&`, keep_group_loci)
 
     # Check that there are some loci to keep. Say which groups were too strict.

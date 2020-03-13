@@ -30,6 +30,7 @@ test_that('gr class check', {
     )
 })
 
+#####################################
 
 test_that('correct tiling stranded gr1', {
     test = tile_by_regions(bs = bsseq_stranded, gr = gr_tiles1)

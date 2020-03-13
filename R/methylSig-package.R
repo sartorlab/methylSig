@@ -29,6 +29,7 @@
 #' @import GenomicRanges
 #' @import IRanges
 #' @import parallel
+#' @import S4Vectors
 #' @importFrom methods is
 #' @importFrom stats as.formula
 #' @importFrom stats formula
