@@ -27,3 +27,13 @@
 #' @examples
 #' data(bsseq_multichrom, package = 'methylSig')
 'bsseq_multichrom'
+
+#' GRanges object with collapsed promoters on chr21 and chr22
+#'
+#' Data contains 1466 promoters for use in the vignette
+#'
+#' @format A GRanges object
+#' @source data-raw/02-create_bsseq_rda.R
+#' @examples
+#' data(promoters_gr, package = 'methylSig')
+'promoters_gr'

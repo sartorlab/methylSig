@@ -48,6 +48,7 @@ use_readme_md()
 use_news_md()
 use_package_doc()
 use_vignette(name = 'using-methylSig', title = 'Using methylSig')
+use_vignette(name = 'updating-methylSig-code', title = 'Updating methylSig code')
 
 # Travis
 use_travis()

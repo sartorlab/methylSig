@@ -89,8 +89,18 @@ bsseq_multichrom = BSseq(
 
 ########################################
 
+# Extract chr21 and chr22 hg19 promoters
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb = TxDb.Hsapiens.UCSC.hg19.knownGene
+seqlevels(txdb) = c('chr21', 'chr22')
+promoters_gr = promoters(txdb, upstream=1000, downstream=400)
+promoters_gr = reduce(promoters_gr)
+
+########################################
+
 usethis::use_data(
     bsseq_stranded,
     bsseq_destranded,
     bsseq_multichrom,
+    promoters_gr,
     overwrite = TRUE)

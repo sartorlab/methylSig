@@ -72,7 +72,7 @@
 #' @param comparison_groups a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{group_column} for the comparison.
 #' @param disp_groups a named \code{logical} vector indicating the whether to use \code{case}, \code{control}, or both to estimate the dispersion.
 #' @param local_window_size an \code{integer} indicating the size of the window for use in determining local information to improve mean and dispersion parameter estimations. In addition to a the distance constraint, a maximum of 5 loci upstream and downstream of the locus are used. The default is \code{0}, indicating no local information is used.
-#' @param local_weight_function A weight kernel function. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. The domain of any given weight function should be [-1,1], and the range should be [0,1].
+#' @param local_weight_function a weight kernel function. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. The domain of any given weight function should be [-1,1], and the range should be [0,1].
 #' @param t_approx a \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{t_approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.
 #' @param n_cores an \code{integer} denoting how many cores should be used for differential methylation calculations.
 #'
