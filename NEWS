@@ -1,0 +1,16 @@
+Changes in 0.99.0 (2020-03-23)
++ Refactor functions and workflow from pre-0.99.0 releases
+  o methylSigReadData() replaced with the functions:
+    o bsseq::read.bismark()
+    o filter_loci_by_coverage()
+    o filter_loci_by_location()
+  o methylSigTile() replaced with the functions:
+    o tile_by_regions()
+    o tile_by_windows()
+  o Differential testing should be preceded with:
+    o filter_loci_by_group_coverage()
+  o binomialDiffCalc() is replaced by diff_binomial()
+  o methylSigCalc() is replaced by diff_methylSig()
+  o methylSigDSS() is replaced by diff_dss_fit() and diff_dss_test()
++ See "Using methylSig" vignette for full example.
++ See "Updating methylSig Code" vignette for how to retrofit pre-0.99.0 code.

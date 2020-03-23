@@ -1,0 +1,226 @@
+---
+title: "Updating methylSig code"
+author: "Raymond G. Cavalcante"
+date: "`r Sys.Date()`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Updating methylSig code}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>"
+)
+```
+
+```{r setup}
+library(methylSig)
+```
+
+# Introduction
+
+The purpose of this vignette is to show users how to retrofit their `methylSig` < 0.99.0 code to work with the refactor in version 0.99.0 and later.
+
+# Reading Data
+
+## Old methylSig
+
+In versions < 0.99.0 of `methylSig`, the `methylSigReadData()` function read Bismark coverage files, Bismark genome-wide CpG reports, or MethylDackel bedGraphs. Additionally, users could destrand the data, filter by coverage, and filter SNPs.
+
+```{r eval = FALSE}
+meth = methylSigReadData(
+    fileList = files,
+    pData = pData,
+    assembly = 'hg19',
+    destranded = TRUE,
+    maxCount = 500,
+    minCount = 10,
+    filterSNPs = TRUE,
+    num.cores = 1,
+    fileType = 'cytosineReport')
+```
+
+## New methylSig
+
+In versions >= 0.99.0 of `methylSig`, the user should read data with `bsseq::read.bismark()` and then apply functions that were once bundled within `methylSigReadData()`.
+
+```{r read}
+files = c(
+    system.file('extdata', 'bis_cov1.cov', package='methylSig'),
+    system.file('extdata', 'bis_cov2.cov', package='methylSig')
+)
+
+bsseq_stranded = bsseq::read.bismark(
+    files = files,
+    colData = data.frame(row.names = c('test1','test2')),
+    rmZeroCov = FALSE,
+    strandCollapse = FALSE
+)
+```
+
+After reading data, filter by coverage. Note, we are changing our dataset to something we can use with the downstream functions.
+
+```{r filter_by_coverage}
+# Load data for use in the rest of the vignette
+data(BS.cancer.ex, package = 'bsseqData')
+bs = BS.cancer.ex[1:10000]
+
+bs = filter_loci_by_coverage(bs, min_count = 5, max_count = 500)
+```
+
+If the locations of C-to-T and G-to-A SNPs are known, or some other set of location should be removed:
+
+```{r filter_by_location}
+# Construct GRanges object
+remove_gr = GenomicRanges::GRanges(
+    seqnames = c('chr21', 'chr21', 'chr21'),
+    ranges = IRanges::IRanges(
+        start = c(9411552, 9411784, 9412099),
+        end = c(9411552, 9411784, 9412099)
+    )
+)
+
+bs = filter_loci_by_location(bs = bs, gr = remove_gr)
+```
+
+# Tiling Data
+
+## Old methylSig
+
+In versions < 0.99.0 of `methylSig`, the `methylSigTile()` function combined aggregating CpG data over pre-defined tiles and genomic windows.
+
+```{r eval = FALSE}
+# For genomic windows, tiles = NULL
+windowed_meth = methylSigTile(meth, tiles = NULL, win.size = 10000)
+
+# For pre-defined tiles, tiles should be a GRanges object.
+```
+
+## New methylSig
+
+In versions >= 0.99.0 of `methylSig`, tiling is separated into two functions, `tile_by_regions()` and `tile_by_windows()`. Users should chooose one or the other.
+
+```{r tile_by_windows}
+windowed_bs = tile_by_windows(bs = bs, win_size = 10000)
+```
+
+```{r tile_by_regions}
+# Collapsed promoters on chr21 and chr22
+data(promoters_gr, package = 'methylSig')
+
+promoters_bs = tile_by_regions(bs = bs, gr = promoters_gr)
+```
+
+# Testing
+
+## MethylSig Test
+
+### Old methylSig
+
+In versions < 0.99.0 of `methylSig`, the `methylSigCalc` function had a `min.per.group` parameter to determine how many samples per group had to have coverage in order to be tested.
+
+```{r eval = FALSE}
+result = methylSigCalc(
+    meth = meth,
+    comparison = 'DR_vs_DS',
+    dispersion = 'both',
+    local.info = FALSE,
+    local.winsize = 200,
+    min.per.group = c(3,3),
+    weightFunc = methylSig_weightFunc,
+    T.approx = TRUE,
+    num.cores = 1)
+```
+
+### New methylSig
+
+In versions >= 0.99.0 of `methylSig`, the `min.per.group` functionality is performed by a separate function `filter_loci_by_group_coverage()`. Also note the change in form to define dispersion calculations, and the use of local information.
+
+```{r filter_by_group_coverage}
+# Look a the phenotype data for bs
+bsseq::pData(bs)
+
+# Require at least two samples from cancer and two samples from normal
+bs = filter_loci_by_group_coverage(
+    bs = bs,
+    group_column = 'Type',
+    c('cancer' = 2, 'normal' = 2))
+```
+
+After removing loci with insufficient information, we can now use the `diff_methylsig()` test.
+
+```{r diff_methylsig}
+# Test cancer versus normal with dispersion from both groups
+diff_gr = diff_methylsig(
+    bs = bs,
+    group_column = 'Type',
+    comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+    disp_groups = c('case' = TRUE, 'control' = TRUE),
+    local_window_size = 0,
+    t_approx = TRUE,
+    n_cores = 1)
+```
+
+## DSS Test
+
+### Old methylSig
+
+In versions < 0.99.0 of `methylSig`, the `methylSigDSS` function also had a `min.per.group` parameter to determine how many samples per group had to have coverage. Users also couldn't specify which methylation groups to recover. The form of `design`, `formula`, and `contrast`, remain the same in versions >= 0.99.0.
+
+```{r eval = FALSE}
+contrast = matrix(c(0,1), ncol = 1)
+result_dss = methylSigDSS(
+    meth = meth,
+    design = design1,
+    formula = '~ group',
+    contrast = contrast,
+    group.term = 'group',
+    min.per.group=c(3,3))
+```
+
+### New methylSig
+
+In versions >= 0.99.0 of `methylSig`, the single `methylSigDSS()` function is replaced by a fit function `diff_dss_fit()` and a test functiotn `diff_dss_test()`. As with `diff_methylsig()`, users should ensure enough samples have sufficient coverage with the `filter_loci_by_group_coverage()` function. The `design` and `formula` are unchanged in their forms.
+
+If a continuous covariate is to be tested, `filter_loci_by_group_coverage()` should be skipped, as there are no groups. In prior versions of `methylSigDSS()`, this was not possible, and the group constraints were incorrectly applied prior to testing on a continuous covariate.
+
+```{r filter_by_group_coverage2, eval = FALSE}
+# IF NOT DONE PREVIOUSLY
+# Require at least two samples from cancer and two samples from normal
+bs = filter_loci_by_group_coverage(
+    bs = bs,
+    group_column = 'Type',
+    c('cancer' = 2, 'normal' = 2))
+```
+
+```{r diff_dss_fit_simple}
+# Test the simplest model with an intercept and Type
+diff_fit_simple = diff_dss_fit(
+    bs = bs,
+    design = bsseq::pData(bs),
+    formula = as.formula('~ Type'))
+```
+
+The `contrast` parameter is also changed in its form. Note the, additional parameters to specify how to recover group methylation. `methylation_group_column` and `methylation_groups` should be specified for group versus group comparisons. For continuous covariates, `methylation_group_column` is sufficient, and the samples will be grouped into top/bottom 25 percentile based on the continuous covariate column name given in `methylation_group_column`.
+
+```{r diff_dss_test_simple}
+# Test the simplest model for cancer vs normal
+# Note, 2 rows corresponds to 2 columns in diff_fit_simple$X
+simple_contrast = matrix(c(0,1), ncol = 1)
+
+diff_simple_gr = diff_dss_test(
+    bs = bs,
+    diff_fit = diff_fit_simple,
+    contrast = simple_contrast,
+    methylation_group_column = 'Type',
+    methylation_groups = c('case' = 'cancer', 'control' = 'normal'))
+```
+
+# Session Info
+
+```{r sessionInfo}
+sessionInfo()
+```

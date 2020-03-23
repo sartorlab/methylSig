@@ -1,43 +1,49 @@
 Package: methylSig
-Type: Package
-Title: a whole genome DNA methylation analysis pipeline
-Version: 0.5.2
-Date: 2019-01-26
-Authors@R: c(
-    person("Yongseok", "Park", email = "yongpark@pitt.edu", role = c("aut")),
-    person("Raymond G.", "Cavalcante", email = "rcavalca@umich.edu", role = c("aut", "cre")))
-Description: MethylSig is a method for testing for differentially methylated
-    cytosines (DMCs) or regions (DMRs) in whole-genome bisulfite sequencing (bis-
-    seq) or reduced representation bisulfite sequencing (RRBS) experiments.
-    MethylSig uses a beta binomial model to test for significant differences
-    between groups of samples. Several options exist for either site-specific
-    or sliding window tests, combining strands, and for variance estimation.
-    It allows annotating the resulting regions to multiple genome features, and
-    visualizing the results for chosen genomic regions along with supporting genomic
-    information.
-biocViews: DNAMethylation, DifferentialMethylation, Epigenetics, Regression, MethylSeq
-License: GPL-3
-BugReports: https://github.com/sartorlab/methylSig/issues
+Title: MethylSig: Differential Methylation Testing for WGBS and RRBS Data
+Version: 0.99.0
+Date: 2020-03-20
+Authors@R:
+    c(person(given = "Yongseok",
+             family = "Park",
+             role = "aut",
+             email = "yongpark@pitt.edu"),
+      person(given = "Raymond G.",
+             family = "Cavalcante",
+             role = c("aut", "cre"),
+             email = "rcavalca@umich.edu"))
+Description: MethylSig is a package for testing for
+    differentially methylated cytosines (DMCs) or regions (DMRs) in
+    whole-genome bisulfite sequencing (WGBS) or reduced representation
+    bisulfite sequencing (RRBS) experiments.  MethylSig uses a beta
+    binomial model to test for significant differences between groups of
+    samples. Several options exist for either site-specific or sliding
+    window tests, and variance estimation.
 Depends:
-    R (>= 3.4)
+    R (>= 3.6)
 Imports:
-    annotatr,
-    BiocGenerics,
-    boot,
     bsseq,
     DelayedArray,
+    DelayedMatrixStats,
     DSS,
+    IRanges,
     GenomeInfoDb,
     GenomicRanges,
     methods,
     parallel,
+    stats,
     S4Vectors
 Suggests:
     BiocStyle,
-    gplots,
-    testthat,
+    bsseqData,
     knitr,
     rmarkdown,
-    rtracklayer
+    testthat (>= 2.1.0),
+    covr
+License: GPL-3
+BugReports: https://github.com/sartorlab/methylSig/issues
+biocViews: DNAMethylation, DifferentialMethylation, Epigenetics,
+    Regression, MethylSeq
+Encoding: UTF-8
+LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

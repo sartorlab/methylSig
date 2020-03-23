@@ -1,8 +1,7 @@
-^Meta$
-^doc$
+^README\.md$
 ^\.travis\.yml$
-^.*\.git$
+^\.git$
+^\.gitignore$
 ^data-raw$
-README\.md
-^\.Rprofile$
-^benchmarks$
+^doc$
+^Meta$
