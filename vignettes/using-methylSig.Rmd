@@ -164,7 +164,7 @@ promoters_bs = tile_by_regions(bs = bs, gr = promoters_gr)
 
 Each returns a `GRanges` object with tested loci and the corresponding statistics and methylation levels (if applicable). See the documentation for each function for more information (`?diff_binomial`, `?diff_methylsig`, `?diff_dss_fit`, and `?diff_dss_test`).
 
-### Filtering by Coverage in Minimum Number of Samples per Group
+### Filtering by Coverage in a Minimum Number of Samples
 
 Prior to applying any test function, loci without a minimum number of samples having appropriate coverage should be removed to avoid testing loci where one sample dominates the test.
 
@@ -217,15 +217,24 @@ diff_gr
 
 The `DSS` style test is in two stages similar to tests in the `edgeR` or `limma` R/Bioconductor packages. The first stage is a fit, and the second stage is a test on a contrast.
 
+First we add a numerical covariate to the `pData(bs)` so that we can give an example of such a test.
+
+```{r add_numerical_covariate}
+bsseq::pData(bs)$num_covariate = c(84, 96, 93, 10, 18, 9)
+```
+
 #### Model Fitting
 
+Fit the simplest group versus group model on just the type.
+
 ```{r diff_dss_fit_simple}
-# Test the simplest model with an intercept and Type
 diff_fit_simple = diff_dss_fit(
     bs = bs,
     design = bsseq::pData(bs),
     formula = as.formula('~ Type'))
 ```
+
+Fit a paired model where cancer and normal samples are paired by patient.
 
 ```{r diff_dss_fit_paired}
 # Paired-test
@@ -233,6 +242,16 @@ diff_fit_paired = diff_dss_fit(
     bs = bs,
     design = bsseq::pData(bs),
     formula = '~ Type + Pair')
+```
+
+Fit a model on the numerical covariate.
+
+```{r diff_dss_fit_num}
+# Numerical covariate test
+diff_fit_num = diff_dss_fit(
+    bs = bs,
+    design = bsseq::pData(bs),
+    formula = '~ num_covariate')
 ```
 
 The result of `diff_dss_fit()` is a `list` with the following structure with elements:
@@ -251,6 +270,8 @@ Prior to calling `diff_fit_test()`, it may help to look at the model matrix used
 diff_fit_simple$X
 
 diff_fit_paired$X
+
+diff_fit_num$X
 ```
 
 The contrast passed to `diff_fit_test()` should be a column vector or a matrix whose rows correspond to the columns of the model matrix above. See the [DSS user guide](http://bioconductor.org/packages/release/bioc/vignettes/DSS/inst/doc/DSS.html#34_dmldmr_detection_from_general_experimental_design) for more information.
@@ -263,11 +284,16 @@ simple_contrast = matrix(c(0,1), ncol = 1)
 # Test the paired model for cancer vs normal
 # Note, 4 rows corresponds to 4 columns in diff_fit_paired$X
 paired_contrast = matrix(c(0,1,0,0), ncol = 1)
+
+# Test the numerical covariate
+num_contrast = matrix(c(0,1), ncol = 1)
 ```
 
 #### Testing
 
 The `diff_fit_test()` function enables the recovery of group methylation rates via the optional `methylation_group_column` and `methylation_groups` parameters.
+
+The simple, group versus group, test.
 
 ```{r diff_dss_test_simple}
 diff_simple_gr = diff_dss_test(
@@ -280,6 +306,8 @@ diff_simple_gr = diff_dss_test(
 diff_simple_gr
 ```
 
+The paired test.
+
 ```{r diff_dss_test_paired}
 diff_paired_gr = diff_dss_test(
     bs = bs,
@@ -289,6 +317,18 @@ diff_paired_gr = diff_dss_test(
     methylation_groups = c('case' = 'cancer', 'control' = 'normal'))
 
 diff_paired_gr
+```
+
+The numerical covariate test. Note, here the `methylation_groups` parameter is omitted because there are no groups. By giving the numerical covariate column, we will group samples by the top/bottom 25 percentile over the covariate, and compute mean methylation within those groups of samples.
+
+```{r diff_dss_test_num}
+diff_num_gr = diff_dss_test(
+    bs = bs,
+    diff_fit = diff_fit_num,
+    contrast = num_contrast,
+    methylation_group_column = 'num_covariate')
+
+diff_num_gr
 ```
 
 # Session Info

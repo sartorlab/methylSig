@@ -11,8 +11,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -101,7 +101,7 @@ windowed_meth = methylSigTile(meth, tiles = NULL, win.size = 10000)
 
 ## New methylSig
 
-In versions >= 0.99.0 of `methylSig`, tiling is separated into two functions, `tile_by_regions()` and `tile_by_windows()`.
+In versions >= 0.99.0 of `methylSig`, tiling is separated into two functions, `tile_by_regions()` and `tile_by_windows()`. Users should chooose one or the other.
 
 ```{r tile_by_windows}
 windowed_bs = tile_by_windows(bs = bs, win_size = 10000)
@@ -120,7 +120,7 @@ promoters_bs = tile_by_regions(bs = bs, gr = promoters_gr)
 
 ### Old methylSig
 
-In versions < 0.99.0 of `methylSig`, the `methylSigCalc` function had a `min.per.group` parameter to determine how many samples per group had to have coverage.
+In versions < 0.99.0 of `methylSig`, the `methylSigCalc` function had a `min.per.group` parameter to determine how many samples per group had to have coverage in order to be tested.
 
 ```{r eval = FALSE}
 result = methylSigCalc(
@@ -149,6 +149,8 @@ bs = filter_loci_by_group_coverage(
     group_column = 'Type',
     c('cancer' = 2, 'normal' = 2))
 ```
+
+After removing loci with insufficient information, we can now use the `diff_methylsig()` test.
 
 ```{r diff_methylsig}
 # Test cancer versus normal with dispersion from both groups
