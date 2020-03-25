@@ -65,7 +65,7 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
     # minimums are satisfied. Likely, it will most often be the case that
     # there will only be two groups
     group_samples = lapply(names(min_samples_per_group), function(f){
-        rownames(pData(bs)[pData(bs)[, group_column] == f, ])
+        pData(bs)[, group_column] == f
     })
     names(group_samples) = names(min_samples_per_group)
 
@@ -90,7 +90,7 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
 
     # Check that there are some loci to keep. Say which groups were too strict.
     if(!any(keep_loci)) {
-        zero_groups = sapply(keep_group_loci, sum, USE.NAMES = TRUE) == 0
+        zero_groups = vapply(keep_group_loci, sum, 1, USE.NAMES = TRUE) == 0
 
         stop(sprintf('Thresholds for the following groups were too strict: %s.
             Relax thresholds for these groups and try filtering again.',

@@ -12,7 +12,7 @@
             sum( indicator_t * ((1 - mu) * (digamma( ((1 - mu) * phi) + local_t + 1e-100) - digamma( ((1-mu) * phi) + 1e-100))) ) -
             sum( indicator_ct * (digamma(phi + local_c + local_t + 1e-100) - digamma(phi)) )
     } else {
-        for(g in 1:ncol(local_c)) {
+        for(g in seq(ncol(local_c))) {
             derivative = derivative +
                 sum( indicator_c[,g] * (weight * mu[,g] * (digamma(mu[,g] * phi + local_c[,g] + 1e-100) - digamma(mu[,g] * phi + 1e-100))) ) +
                 sum( indicator_t[,g] * (weight * (1 - mu[,g]) * (digamma((1 - mu[,g]) * phi + local_t[,g] + 1e-100) - digamma((1 - mu[,g]) * phi + 1e-100))) ) -
@@ -33,7 +33,7 @@
             sum( indicator_c * (digamma(mu * phi + local_c + 1e-100) - digamma(mu * phi + 1e-100)) ) -
             sum( indicator_t * (digamma((1 - mu) * phi + local_t + 1e-100) - digamma((1 - mu) * phi + 1e-100)) )
     } else {
-        for(g in 1:ncol(local_c)) {
+        for(g in seq(ncol(local_c))) {
             derivative = derivative +
                 sum( indicator_c[,g] * (weight * (digamma(mu * phi + local_c[,g]+ 1e-100) - digamma(mu * phi + 1e-100))) ) -
                 sum( indicator_t[,g] * (weight * (digamma((1 - mu) * phi + local_t[,g] + 1e-100) - digamma((1 - mu) * phi + 1e-100))) )
@@ -53,7 +53,7 @@
             sum( indicator_c * (lgamma(mu * phi + local_c + 1e-100) - lgamma(mu * phi + 1e-100)) ) +
             sum( indicator_t * (lgamma((1 - mu) * phi + local_t + 1e-100) - lgamma((1 - mu) * phi + 1e-100)) )
     } else {
-        for(g in 1:ncol(local_c)) {
+        for(g in seq(ncol(local_c))) {
             llik = llik +
                 sum( indicator_c[,g] * (weight * (lgamma(mu * phi + local_c[,g] + 1e-100) - lgamma(mu * phi + 1e-100))) ) +
                 sum( indicator_t[,g] * (weight * (lgamma((1 - mu) * phi + local_t[,g] + 1e-100) - lgamma((1 - mu) + 1e-100))) )
@@ -97,7 +97,7 @@
 #'     group_column = 'Type',
 #'     c('cancer' = 2, 'normal' = 2))
 #'
-#' small_test = bs[1:50]
+#' small_test = bs[seq(50)]
 #'
 #' diff_gr = diff_methylsig(
 #'     bs = small_test,
@@ -432,7 +432,7 @@ diff_methylsig = function(
     if(t_approx) {
          result_gr$pvalue = stats::pt(-sqrt(pmax(result_gr$log_lik_ratio, 0)), result_gr$df) * 2
     } else {
-         result_gr$pvalue = stats::pchisq(pmax(result_gr$log_lik_ratio, 0), 1, lower.tail = F)
+         result_gr$pvalue = stats::pchisq(pmax(result_gr$log_lik_ratio, 0), 1, lower.tail = FALSE)
     }
 
     # Calculate meth_diff and set very small differences to 0

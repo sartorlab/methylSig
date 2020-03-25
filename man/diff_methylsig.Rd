@@ -57,7 +57,7 @@ bs = filter_loci_by_group_coverage(
     group_column = 'Type',
     c('cancer' = 2, 'normal' = 2))
 
-small_test = bs[1:50]
+small_test = bs[seq(50)]
 
 diff_gr = diff_methylsig(
     bs = small_test,
