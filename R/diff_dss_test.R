@@ -163,7 +163,7 @@ diff_dss_test = function(
         meth_reads_mat = bsseq::getCoverage(bs, type = 'M')
 
         # Compute case, control, and methylation difference
-        case_meth = (DelayedMatrixStats::rowSums2(
+        meth_case = (DelayedMatrixStats::rowSums2(
             x = meth_reads_mat,
             cols = case_idx,
             value = TRUE, na.rm = TRUE) / DelayedMatrixStats::rowSums2(
@@ -171,22 +171,22 @@ diff_dss_test = function(
                                                 cols = case_idx,
                                                 value = TRUE, na.rm = TRUE))
 
-        control_meth = (DelayedMatrixStats::rowSums2(
+        meth_control = (DelayedMatrixStats::rowSums2(
             x = meth_reads_mat,
             cols = control_idx,
             value = TRUE, na.rm = TRUE) / DelayedMatrixStats::rowSums2(
                                                 x = cov_reads_mat,
                                                 cols = control_idx,
                                                 value = TRUE, na.rm = TRUE))
-        meth_diff = case_meth - control_meth
+        meth_diff = meth_case - meth_control
 
-        result_gr$case_meth = round(case_meth * 100, 2)
-        result_gr$control_meth = round(control_meth * 100, 2)
+        result_gr$meth_case = round(meth_case * 100, 2)
+        result_gr$meth_control = round(meth_control * 100, 2)
         result_gr$meth_diff = round(meth_diff * 100, 2)
 
         col_order = c(
-            'case_meth',
-            'control_meth',
+            'meth_case',
+            'meth_control',
             'meth_diff',
             'stat',
             'pvalue',
