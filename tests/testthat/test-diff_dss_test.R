@@ -204,7 +204,7 @@ test_that('Valid return, more complex model, methylation check', {
 })
 
 test_that('Valid return, numerical covariate model, percentile methylation check', {
-    diff_fit4 = diff_dss_fit(
+    diff_fit = diff_dss_fit(
         bs = small_test,
         design = pData(small_test),
         formula = '~ num_cov')

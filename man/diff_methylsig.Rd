@@ -38,7 +38,7 @@ A \code{GRanges} object containing the following \code{mcols}:
   \item{meth_case:}{ Methylation estimate for case. }
   \item{meth_control:}{ Methylation estimate for control. }
   \item{meth_diff:}{ The difference \code{meth_case - meth_control}. }
-  \item{direction:}{ The group for which the lcous is hyper-methylated. Note, this is not subject to significance thresholds. }
+  \item{direction:}{ The group for which the locus is hyper-methylated. Note, this is not subject to significance thresholds. }
   \item{pvalue:}{ The p-value from the t-test (\code{t_approx = TRUE}) or the Chi-Square test (\code{t_approx = FALSE}). }
   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
   \item{disp_est:}{ The dispersion estimate. }

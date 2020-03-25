@@ -30,6 +30,13 @@ A \code{GRanges} object containing the following \code{mcols}:
   \item{pvalue:}{ The p-value. }
   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 }
+If \code{methylation_group_column} is specified, also the following \code{mcols}:
+\describe{
+  \item{meth_case:}{ Methylation estimate for case. }
+  \item{meth_control:}{ Methylation estimate for control. }
+  \item{meth_diff:}{ The difference \code{meth_case - meth_control}. }
+  \item{direction:}{ The group for which the locus is hyper-methylated. Note, this is not subject to significance thresholds. }
+}
 }
 \description{
 This function is a wrapper for \code{DSS::DMLtest.multiFactor} with the added feature of reporting methylation rates alongside the test results via the \code{methylation_group_column} and \code{methylation_groups} parameters. See documentation below.

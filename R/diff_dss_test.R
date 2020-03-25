@@ -14,6 +14,13 @@
 #'   \item{pvalue:}{ The p-value. }
 #'   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 #' }
+#' If \code{methylation_group_column} is specified, also the following \code{mcols}:
+#' \describe{
+#'   \item{meth_case:}{ Methylation estimate for case. }
+#'   \item{meth_control:}{ Methylation estimate for control. }
+#'   \item{meth_diff:}{ The difference \code{meth_case - meth_control}. }
+#'   \item{direction:}{ The group for which the locus is hyper-methylated. Note, this is not subject to significance thresholds. }
+#' }
 #'
 #' @examples
 #' data(BS.cancer.ex, package = 'bsseqData')
@@ -151,6 +158,9 @@ diff_dss_test = function(
                 na.rm = TRUE
             )
 
+            case = 'Hyper'
+            control = 'Hypo'
+
             case_idx = which(pdata[, methylation_group_column] <= quantiles[1])
             control_idx = which(pdata[, methylation_group_column] >= quantiles[2])
 
@@ -184,10 +194,13 @@ diff_dss_test = function(
         result_gr$meth_control = round(meth_control * 100, 2)
         result_gr$meth_diff = round(meth_diff * 100, 2)
 
+        result_gr$direction = ifelse(result_gr$meth_diff >= 0, case, control)
+
         col_order = c(
             'meth_case',
             'meth_control',
             'meth_diff',
+            'direction',
             'stat',
             'pvalue',
             'fdr'
