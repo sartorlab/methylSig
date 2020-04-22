@@ -4,7 +4,9 @@
 \name{bsseq_stranded}
 \alias{bsseq_stranded}
 \title{BSseq object read from stranded coverage files}
-\format{A BSseq object}
+\format{
+A BSseq object
+}
 \source{
 data-raw/02-create_bsseq_rda.R
 }

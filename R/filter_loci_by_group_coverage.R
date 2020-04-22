@@ -1,6 +1,8 @@
-#' Group cytosine / CpG level data into regions based on genomic regions
+#' Filter loci based on coverage threshold per sample per group
 #'
-#' An optional function to aggregate cytosine / CpG level data into regions based on a \code{GRanges} set of genomic regions.
+#' An optional function to remove loci not satisfying coverage thresholds from \code{filter_loci_by_coverage} in a minimum number of samples per group.
+#'
+#' The \code{filter_loci_by_coverage} function marked locus/sample pairs in the coverage matrix as 0 if said pair had coverage less than \code{minCount} or more than \code{maxCount}. This function enforces a threshold on the minimum number of samples per group required for a locus to be tested in downstream testing functions.
 #'
 #' @param bs a \code{BSseq} object.
 #' @param group_column a \code{character} string indicating the column of \code{pData(bs)} to use for determining group membership.

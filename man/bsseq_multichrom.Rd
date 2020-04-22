@@ -4,7 +4,9 @@
 \name{bsseq_multichrom}
 \alias{bsseq_multichrom}
 \title{BSseq object with loci on multiple chromosomes}
-\format{A BSseq object}
+\format{
+A BSseq object
+}
 \source{
 data-raw/02-create_bsseq_rda.R
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_loci_by_group_coverage.R
 \name{filter_loci_by_group_coverage}
 \alias{filter_loci_by_group_coverage}
-\title{Group cytosine / CpG level data into regions based on genomic regions}
+\title{Filter loci based on coverage threshold per sample per group}
 \usage{
 filter_loci_by_group_coverage(bs, group_column, min_samples_per_group)
 }
@@ -17,7 +17,10 @@ filter_loci_by_group_coverage(bs, group_column, min_samples_per_group)
 A \code{BSseq} object with only those loci having \code{min_samples_per_group}.
 }
 \description{
-An optional function to aggregate cytosine / CpG level data into regions based on a \code{GRanges} set of genomic regions.
+An optional function to remove loci not satisfying coverage thresholds from \code{filter_loci_by_coverage} in a minimum number of samples per group.
+}
+\details{
+The \code{filter_loci_by_coverage} function marked locus/sample pairs in the coverage matrix as 0 if said pair had coverage less than \code{minCount} or more than \code{maxCount}. This function enforces a threshold on the minimum number of samples per group required for a locus to be tested in downstream testing functions.
 }
 \examples{
 data(BS.cancer.ex, package = 'bsseqData')

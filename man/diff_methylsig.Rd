@@ -2,7 +2,7 @@
 % Please edit documentation in R/diff_methylsig.R
 \name{diff_methylsig}
 \alias{diff_methylsig}
-\title{Calculates differential methylation statistics using a Beta-binomial approach.}
+\title{Calculates differential methylation statistics using a Beta-binomial approach}
 \usage{
 diff_methylsig(
   bs,

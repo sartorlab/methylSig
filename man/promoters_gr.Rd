@@ -4,7 +4,9 @@
 \name{promoters_gr}
 \alias{promoters_gr}
 \title{GRanges object with collapsed promoters on chr21 and chr22}
-\format{A GRanges object}
+\format{
+A GRanges object
+}
 \source{
 data-raw/02-create_bsseq_rda.R
 }

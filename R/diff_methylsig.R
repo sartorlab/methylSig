@@ -63,7 +63,7 @@
     2*llik
 }
 
-#' Calculates differential methylation statistics using a Beta-binomial approach.
+#' Calculates differential methylation statistics using a Beta-binomial approach
 #'
 #' The function calculates differential methylation statistics between two groups of samples using a beta-binomial approach to calculate differential methylation statistics, accounting for variation among samples within each group. The function can be applied to a \code{BSseq} object subjected to \code{filter_loci_by_coverage()}, \code{filter_loci_by_snps()}, \code{filter_loci_by_group_coverage()} or any combination thereof. Moreover, the function can be applied to a \code{BSseq} object which has been tiled with \code{tile_by_regions()} or \code{tile_by_windows()}.
 #'
