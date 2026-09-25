@@ -71,10 +71,12 @@
 #' @param group_column a \code{character} string indicating the column of \code{pData(bs)} to use for determining group membership.
 #' @param comparison_groups a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{group_column} for the comparison.
 #' @param disp_groups a named \code{logical} vector indicating the whether to use \code{case}, \code{control}, or both to estimate the dispersion.
-#' @param local_window_size an \code{integer} indicating the size of the window for use in determining local information to improve mean and dispersion parameter estimations. In addition to a the distance constraint, a maximum of 5 loci upstream and downstream of the locus are used. The default is \code{0}, indicating no local information is used.
+#' @param local_window_size an \code{integer} indicating the size of the window for use in determining local information to improve mean and dispersion parameter estimations. In addition to a the distance constraint, a maximum of 5 loci upstream and downstream of the locus, on the same chromosome, are used. The default is \code{0}, indicating no local information is used. Which estimates use local information is set by \code{local_disp} and \code{local_meth}.
 #' @param local_weight_function a weight kernel function. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. The domain of any given weight function should be [-1,1], and the range should be [0,1].
 #' @param t_approx a \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{t_approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.
 #' @param n_cores an \code{integer} denoting how many cores should be used for differential methylation calculations.
+#' @param local_disp a \code{logical} value indicating whether to use local information for the dispersion estimate and the degrees of freedom, when \code{local_window_size > 0}. Default \code{TRUE}.
+#' @param local_meth a \code{logical} value indicating whether to use local information for the group methylation estimates and the likelihood ratio statistic, when \code{local_window_size > 0}. Default \code{TRUE}.
 #'
 #' @return A \code{GRanges} object containing the following \code{mcols}:
 #' \describe{
@@ -117,7 +119,9 @@ diff_methylsig = function(
     local_window_size = 0,
     local_weight_function,
     t_approx = TRUE,
-    n_cores = 1) {
+    n_cores = 1,
+    local_disp = TRUE,
+    local_meth = TRUE) {
 
     # Constants
     min_disp = 1e-6
@@ -176,6 +180,15 @@ diff_methylsig = function(
     if (!(is(n_cores, 'numeric') && length(n_cores) == 1)) {
         stop('n_cores must be an integer.')
     }
+    if (!(is(local_disp, 'logical') && length(local_disp) == 1 && !is.na(local_disp))) {
+        stop('local_disp must be TRUE/FALSE.')
+    }
+    if (!(is(local_meth, 'logical') && length(local_meth) == 1 && !is.na(local_meth))) {
+        stop('local_meth must be TRUE/FALSE.')
+    }
+    if (local_window_size > 0 && !local_disp && !local_meth) {
+        stop('local_window_size > 0 uses local information, so local_disp or local_meth must be TRUE.')
+    }
 
     #####################################
 
@@ -232,9 +245,11 @@ diff_methylsig = function(
 
     # Each locus has at most length(disp_groups_idx) - df_subtract degrees of
     # freedom (see below), and needs more than 1 to be tested. Local
-    # information can add degrees of freedom from nearby loci.
+    # information for dispersion can add degrees of freedom from nearby loci.
     df_subtract = ifelse(all(disp_groups), 2, 1)
-    min_disp_samples = ifelse(local_window_size == 0, df_subtract + 2, df_subtract + 1)
+    use_local_disp = local_window_size > 0 && local_disp
+    use_local_meth = local_window_size > 0 && local_meth
+    min_disp_samples = ifelse(use_local_disp, df_subtract + 1, df_subtract + 2)
     if (length(disp_groups_idx) < min_disp_samples) {
         stop(sprintf('Too few samples to estimate dispersion: disp_groups has %s samples, and at least %s are needed.',
             length(disp_groups_idx), min_disp_samples))
@@ -258,34 +273,28 @@ diff_methylsig = function(
 
     #####################################
 
-    result = do.call(rbind, parallel::mclapply(seq_along(gr), function(locus_idx){
+    # Collect the data for a locus and, with local information, the loci in
+    # its window. Returns the Cov, M, and unmethylated matrices and the rows of
+    # meth_est (rows are loci and columns are samples), and the loci weights.
+    .locus_data = function(locus_idx, use_local) {
+        local_loci_idx = locus_idx
+        local_weights = 1
 
-        ### Deal with local information (or not)
-        if(local_window_size != 0) {
+        if(use_local) {
             # Get the indices which are within the local_window_size on the same chromosome,
             # limited to 5 CpGs on either side. Only those neighbors are checked, so the time
             # per locus doesn't grow with the number of loci.
             # NOTE, local information is only used with cytosine/CpG resolution data so start() is valid.
             # If regions were allowed, we would have to pay attention to which side we're on and use start()/end()
             neighbor_idx = max(1, locus_idx - 5):min(num_loci, locus_idx + 5)
-            local_loci_idx = neighbor_idx[
+            window_idx = neighbor_idx[
                 abs(loci_start[neighbor_idx] - loci_start[locus_idx]) < local_window_size &
                 loci_chrom[neighbor_idx] == loci_chrom[locus_idx]]
 
-            if(length(local_loci_idx) == 1) {
-                # Do not use local information when there is only one local locus
-                local_loci_idx = locus_idx
-                local_weights = 1
+            # Do not use local information when there is only one local locus
+            if(length(window_idx) > 1) {
+                local_loci_idx = window_idx
 
-                # Collect Cov and M matrices for all the loci in the window
-                # Rows are loci and columns are samples
-                local_cov = matrix(cov_mat[local_loci_idx, ], nrow = 1)
-                local_meth = matrix(meth_mat[local_loci_idx, ], nrow = 1)
-                local_unmeth = local_cov - local_meth
-
-                # Collect the correct rows of meth_est
-                local_meth_est = matrix(meth_est[local_loci_idx, ], nrow = 1)
-            } else {
                 # We need to scale the loci in the window onto the interval [-1, 1] because
                 # that is the domain of the local_weight_function.
                 # This is a vector of the distances of the local loci to the loci of interest (domain)
@@ -294,37 +303,38 @@ diff_methylsig = function(
                 # Calculate the weights
                 # Each is a vector of values of the weight function (range)
                 local_weights = local_weight_function(local_loci_norm)
-
-                # Collect Cov and M matrices for all the loci in the window
-                # Rows are loci and columns are samples
-                local_cov = cov_mat[local_loci_idx, ]
-                local_meth = meth_mat[local_loci_idx, ]
-                local_unmeth = local_cov - local_meth
-
-                # Collect the correct rows of meth_est
-                local_meth_est = meth_est[local_loci_idx, ]
             }
+        }
+
+        local_cov = cov_mat[local_loci_idx, , drop = FALSE]
+        local_meth = meth_mat[local_loci_idx, , drop = FALSE]
+
+        return(list(
+            cov = local_cov,
+            meth = local_meth,
+            unmeth = local_cov - local_meth,
+            meth_est = meth_est[local_loci_idx, , drop = FALSE],
+            weights = local_weights))
+    }
+
+    result = do.call(rbind, parallel::mclapply(seq_along(gr), function(locus_idx){
+
+        ### Deal with local information (or not)
+        # Dispersion and degrees of freedom use disp_data, and group methylation
+        # and the likelihood ratio use meth_data
+        disp_data = .locus_data(locus_idx, use_local_disp)
+        if(use_local_disp == use_local_meth) {
+            meth_data = disp_data
         } else {
-            # Do not use local information when the local_window_size is 0
-            local_loci_idx = locus_idx
-            local_weights = 1
-
-            # Collect Cov and M matrices for all the loci in the window
-            # Rows are loci and columns are samples
-            local_cov = matrix(cov_mat[local_loci_idx, ], nrow = 1)
-            local_meth = matrix(meth_mat[local_loci_idx, ], nrow = 1)
-            local_unmeth = local_cov - local_meth
-
-            # Collect the correct rows of meth_est
-            local_meth_est = matrix(meth_est[local_loci_idx, ], nrow = 1)
+            meth_data = .locus_data(locus_idx, use_local_meth)
         }
 
         #####################################
 
         ### Compute the degrees of freedom for the locus
-        df = pmax(rowSums(local_cov[, disp_groups_idx, drop = FALSE] > 0) - df_subtract, 0)
+        df = pmax(rowSums(disp_data$cov[, disp_groups_idx, drop = FALSE] > 0) - df_subtract, 0)
         # Compute the degrees of freedom to be used in the test for differential methylation
-        df = sum(df * local_weights)
+        df = sum(df * disp_data$weights)
 
         #####################################
 
@@ -333,28 +343,28 @@ diff_methylsig = function(
             # This returns a singleton numeric
             if(.derivative_phi(
                 phi = max_inverse_disp,
-                local_c = local_meth[, disp_groups_idx, drop = FALSE],
-                local_t = local_unmeth[, disp_groups_idx, drop = FALSE],
-                mu = local_meth_est[, disp_groups_idx, drop = FALSE],
-                weight = local_weights) >= 0) {
+                local_c = disp_data$meth[, disp_groups_idx, drop = FALSE],
+                local_t = disp_data$unmeth[, disp_groups_idx, drop = FALSE],
+                mu = disp_data$meth_est[, disp_groups_idx, drop = FALSE],
+                weight = disp_data$weights) >= 0) {
 
                 disp_est = max_inverse_disp
             } else if(.derivative_phi(
                 phi = min_inverse_disp,
-                local_c = local_meth[, disp_groups_idx, drop = FALSE],
-                local_t = local_unmeth[, disp_groups_idx, drop = FALSE],
-                mu = local_meth_est[, disp_groups_idx, drop = FALSE],
-                weight = local_weights) <= 0){
+                local_c = disp_data$meth[, disp_groups_idx, drop = FALSE],
+                local_t = disp_data$unmeth[, disp_groups_idx, drop = FALSE],
+                mu = disp_data$meth_est[, disp_groups_idx, drop = FALSE],
+                weight = disp_data$weights) <= 0){
 
                 disp_est = min_inverse_disp
             } else {
                 disp_est = stats::uniroot(
                     f = .derivative_phi,
                     interval = c(min_inverse_disp, max_inverse_disp),
-                    local_meth[, disp_groups_idx, drop = FALSE],
-                    local_unmeth[, disp_groups_idx, drop = FALSE],
-                    local_meth_est[, disp_groups_idx, drop = FALSE],
-                    local_weights)$root
+                    disp_data$meth[, disp_groups_idx, drop = FALSE],
+                    disp_data$unmeth[, disp_groups_idx, drop = FALSE],
+                    disp_data$meth_est[, disp_groups_idx, drop = FALSE],
+                    disp_data$weights)$root
             }
 
             #####################################
@@ -364,10 +374,10 @@ diff_methylsig = function(
             group_meth_est_list = list(control_idx, case_idx, c(control_idx, case_idx))
             group_meth_est = rep(0, length(group_meth_est_list))
             for(group_idx in seq_along(group_meth_est_list)) {
-                if(sum(local_meth[, group_meth_est_list[[group_idx]], drop = FALSE]) == 0) {
+                if(sum(meth_data$meth[, group_meth_est_list[[group_idx]], drop = FALSE]) == 0) {
                     # If there are no local C reads, methylation is 0
                     group_meth_est[group_idx] = 0
-                } else if (sum(local_unmeth[, group_meth_est_list[[group_idx]], drop = FALSE]) == 0) {
+                } else if (sum(meth_data$unmeth[, group_meth_est_list[[group_idx]], drop = FALSE]) == 0) {
                     # If there are no local T reads, methylation is 1
                     group_meth_est[group_idx] = 1
                 } else {
@@ -375,10 +385,10 @@ diff_methylsig = function(
                     group_meth_est[group_idx] = stats::uniroot(
                         f = .derivative_mu,
                         interval = c(min_meth, max_meth),
-                        local_meth[, group_meth_est_list[[group_idx]], drop = FALSE],
-                        local_unmeth[, group_meth_est_list[[group_idx]], drop = FALSE],
+                        meth_data$meth[, group_meth_est_list[[group_idx]], drop = FALSE],
+                        meth_data$unmeth[, group_meth_est_list[[group_idx]], drop = FALSE],
                         disp_est,
-                        local_weights)$root
+                        meth_data$weights)$root
                 }
             }
 
@@ -389,21 +399,21 @@ diff_methylsig = function(
                 .log_likelihood(
                     mu = group_meth_est[1],
                     phi = disp_est,
-                    local_c = local_meth[, control_idx, drop = FALSE],
-                    local_t = local_unmeth[, control_idx, drop = FALSE],
-                    weight = local_weights) +
+                    local_c = meth_data$meth[, control_idx, drop = FALSE],
+                    local_t = meth_data$unmeth[, control_idx, drop = FALSE],
+                    weight = meth_data$weights) +
                 .log_likelihood(
                     mu = group_meth_est[2],
                     phi = disp_est,
-                    local_c = local_meth[, case_idx, drop = FALSE],
-                    local_t = local_unmeth[, case_idx, drop = FALSE],
-                    weight = local_weights) -
+                    local_c = meth_data$meth[, case_idx, drop = FALSE],
+                    local_t = meth_data$unmeth[, case_idx, drop = FALSE],
+                    weight = meth_data$weights) -
                 .log_likelihood(
                     mu = group_meth_est[3],
                     phi = disp_est,
-                    local_c = local_meth[, c(control_idx, case_idx), drop = FALSE],
-                    local_t = local_unmeth[, c(control_idx, case_idx), drop = FALSE],
-                    weight = local_weights)
+                    local_c = meth_data$meth[, c(control_idx, case_idx), drop = FALSE],
+                    local_t = meth_data$unmeth[, c(control_idx, case_idx), drop = FALSE],
+                    weight = meth_data$weights)
 
             #####################################
 

@@ -1,8 +1,14 @@
-CHANGES IN VERSION 1.25.3
+CHANGES IN VERSION 1.25.4
 -------------------------
 
 NEW FEATURES
 
+  o diff_methylsig() has local_disp and local_meth parameters, which choose
+    whether local information (local_window_size > 0) is used for the
+    dispersion estimate and degrees of freedom, the group methylation
+    estimates and likelihood ratio, or both (issue #47). Both are TRUE by
+    default, which gives the same results as before. These were the
+    local.disp and local.meth options of methylSigCalc() before 0.5.0.
   o diff_dss_test() has a covariate_percentiles parameter, which sets the
     percentiles used to group samples by a numerical methylation_group_column
     (issue #44). The default, c(25, 75), is the same grouping as before.
