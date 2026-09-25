@@ -37,14 +37,16 @@ test_that('gr class check', {
 test_that('correct filtering gr1', {
     test = filter_loci_by_location(bs = bsseq_stranded, gr = gr_tiles1)
 
-    expect_equivalent(
+    expect_equal(
         as.matrix(bsseq::getCoverage(test, type = 'Cov')),
-        as.matrix(bsseq::getCoverage(filter_loc_tiles1, type = 'Cov'))
+        as.matrix(bsseq::getCoverage(filter_loc_tiles1, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
+    expect_equal(
         as.matrix(bsseq::getCoverage(test, type = 'M')),
-        as.matrix(bsseq::getCoverage(filter_loc_tiles1, type = 'M'))
+        as.matrix(bsseq::getCoverage(filter_loc_tiles1, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
@@ -59,27 +61,31 @@ test_that('correct filtering gr3', {
 test_that('correct filtering gr4', {
     test = filter_loci_by_location(bs = bsseq_stranded, gr = gr_tiles4)
 
-    expect_equivalent(
+    expect_equal(
         as.matrix(bsseq::getCoverage(test, type = 'Cov')),
-        as.matrix(bsseq::getCoverage(filter_loc_tiles4, type = 'Cov'))
+        as.matrix(bsseq::getCoverage(filter_loc_tiles4, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
+    expect_equal(
         as.matrix(bsseq::getCoverage(test, type = 'M')),
-        as.matrix(bsseq::getCoverage(filter_loc_tiles4, type = 'M'))
+        as.matrix(bsseq::getCoverage(filter_loc_tiles4, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
 test_that('correct filtering gr5', {
     test = filter_loci_by_location(bs = bsseq_stranded, gr = gr_tiles5)
 
-    expect_equivalent(
+    expect_equal(
         as.matrix(bsseq::getCoverage(test, type = 'Cov')),
-        as.matrix(bsseq::getCoverage(filter_loc_tiles5, type = 'Cov'))
+        as.matrix(bsseq::getCoverage(filter_loc_tiles5, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
+    expect_equal(
         as.matrix(bsseq::getCoverage(test, type = 'M')),
-        as.matrix(bsseq::getCoverage(filter_loc_tiles5, type = 'M'))
+        as.matrix(bsseq::getCoverage(filter_loc_tiles5, type = 'M')),
+        ignore_attr = TRUE
     )
 })

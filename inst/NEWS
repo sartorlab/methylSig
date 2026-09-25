@@ -1,3 +1,12 @@
+CHANGES IN VERSION 1.25.6
+-------------------------
+
+INTERNAL CHANGES
+
+  o Move the tests to testthat 3rd edition. expect_equivalent() is replaced
+    with expect_equal(ignore_attr = TRUE), and the tiling tests compare the
+    Cov and M values as matrices, instead of the DelayedMatrix objects.
+
 CHANGES IN VERSION 1.25.5
 -------------------------
 

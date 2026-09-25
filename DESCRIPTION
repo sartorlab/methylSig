@@ -1,6 +1,6 @@
 Package: methylSig
 Title: MethylSig: Differential Methylation Testing for WGBS and RRBS Data
-Version: 1.25.5
+Version: 1.25.6
 Authors@R:
     c(person(given = "Yongseok",
              family = "Park",
@@ -36,7 +36,7 @@ Suggests:
     bsseqData,
     knitr,
     rmarkdown,
-    testthat (>= 2.1.0),
+    testthat (>= 3.0.0),
     covr
 License: GPL-3
 URL: https://github.com/sartorlab/methylSig
@@ -46,3 +46,4 @@ biocViews: DNAMethylation, DifferentialMethylation, Epigenetics,
 Encoding: UTF-8
 VignetteBuilder: knitr
 RoxygenNote: 7.1.0
+Config/testthat/edition: 3
