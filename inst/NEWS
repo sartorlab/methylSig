@@ -1,3 +1,22 @@
+CHANGES IN VERSION 1.25.2
+-------------------------
+
+BUG FIXES
+
+  o diff_methylsig() drops every locus it can't test because of too few
+    degrees of freedom. Before, only loci with df = 1 were dropped, and loci
+    with df = 0, e.g. tiles with no coverage, were returned with NA results
+    (issues #47 and #56).
+  o diff_methylsig() and diff_binomial() work with one sample in a group,
+    instead of failing with "'x' must be an array of at least two
+    dimensions" (issue #51). diff_methylsig() still needs enough samples in
+    disp_groups to estimate dispersion, and now says so with a clear error.
+  o diff_methylsig() with local information (local_window_size > 0) takes
+    time proportional to the number of loci. Before, each locus was compared
+    with every other locus, which made large data sets take hours or days
+    (issues #42 and #43). Results are the same, except that local information
+    no longer comes from loci on a different chromosome.
+
 CHANGES IN VERSION 1.25.1
 -------------------------
 

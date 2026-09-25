@@ -230,10 +230,22 @@ diff_methylsig = function(
         disp_groups_idx = control_idx
     }
 
+    # Each locus has at most length(disp_groups_idx) - df_subtract degrees of
+    # freedom (see below), and needs more than 1 to be tested. Local
+    # information can add degrees of freedom from nearby loci.
+    df_subtract = ifelse(all(disp_groups), 2, 1)
+    min_disp_samples = ifelse(local_window_size == 0, df_subtract + 2, df_subtract + 1)
+    if (length(disp_groups_idx) < min_disp_samples) {
+        stop(sprintf('Too few samples to estimate dispersion: disp_groups has %s samples, and at least %s are needed.',
+            length(disp_groups_idx), min_disp_samples))
+    }
+
     #####################################
 
     num_loci = length(bs)
     gr = granges(bs)
+    loci_start = start(gr)
+    loci_chrom = as.integer(seqnames(gr))
 
     cov_mat = as.matrix(bsseq::getCoverage(bs, type = 'Cov'))
     meth_mat = as.matrix(bsseq::getCoverage(bs, type = 'M'))
@@ -241,8 +253,8 @@ diff_methylsig = function(
     # Estimate meth per locus within each group. The same value is used for all samples within the same group.
     # Note, the approach is to sum reads over all samples per group per locus
     meth_est = matrix(0, ncol = ncol(bs), nrow = nrow(bs))
-    meth_est[, case_idx] = base::rowSums(meth_mat[, case_idx]) / (base::rowSums(cov_mat[, case_idx]) + 1e-100)
-    meth_est[, control_idx] = base::rowSums(meth_mat[, control_idx]) / (base::rowSums(cov_mat[, control_idx]) + 1e-100)
+    meth_est[, case_idx] = base::rowSums(meth_mat[, case_idx, drop = FALSE]) / (base::rowSums(cov_mat[, case_idx, drop = FALSE]) + 1e-100)
+    meth_est[, control_idx] = base::rowSums(meth_mat[, control_idx, drop = FALSE]) / (base::rowSums(cov_mat[, control_idx, drop = FALSE]) + 1e-100)
 
     #####################################
 
@@ -250,15 +262,15 @@ diff_methylsig = function(
 
         ### Deal with local information (or not)
         if(local_window_size != 0) {
-            # NOTE: It is much faster to work with subsets of the result of start()
-            # than it is to work with subsets of GRanges.
-
-            # Get the indices which are within the local_window_size, but also limit to 5 CpGs on either side
+            # Get the indices which are within the local_window_size on the same chromosome,
+            # limited to 5 CpGs on either side. Only those neighbors are checked, so the time
+            # per locus doesn't grow with the number of loci.
             # NOTE, local information is only used with cytosine/CpG resolution data so start() is valid.
             # If regions were allowed, we would have to pay attention to which side we're on and use start()/end()
-            local_loci_idx = intersect(
-                which(abs(start(gr)[locus_idx] - start(gr)) < local_window_size),
-                max(1, locus_idx - 5):min(num_loci, locus_idx + 5))
+            neighbor_idx = max(1, locus_idx - 5):min(num_loci, locus_idx + 5)
+            local_loci_idx = neighbor_idx[
+                abs(loci_start[neighbor_idx] - loci_start[locus_idx]) < local_window_size &
+                loci_chrom[neighbor_idx] == loci_chrom[locus_idx]]
 
             if(length(local_loci_idx) == 1) {
                 # Do not use local information when there is only one local locus
@@ -277,7 +289,7 @@ diff_methylsig = function(
                 # We need to scale the loci in the window onto the interval [-1, 1] because
                 # that is the domain of the local_weight_function.
                 # This is a vector of the distances of the local loci to the loci of interest (domain)
-                local_loci_norm = (start(gr)[local_loci_idx] - start(gr)[locus_idx]) / (local_window_size + 1)
+                local_loci_norm = (loci_start[local_loci_idx] - loci_start[locus_idx]) / (local_window_size + 1)
 
                 # Calculate the weights
                 # Each is a vector of values of the weight function (range)
@@ -310,11 +322,6 @@ diff_methylsig = function(
         #####################################
 
         ### Compute the degrees of freedom for the locus
-        if(all(disp_groups)) {
-            df_subtract = 2
-        } else {
-            df_subtract = 1
-        }
         df = pmax(rowSums(local_cov[, disp_groups_idx, drop = FALSE] > 0) - df_subtract, 0)
         # Compute the degrees of freedom to be used in the test for differential methylation
         df = sum(df * local_weights)
@@ -463,13 +470,13 @@ diff_methylsig = function(
 
     #####################################
 
-    # Check for NA results and indicate how many loci were dropped because of
-    # a lack of available degrees of freedom
-    insufficient_df = result_gr$df == 1
+    # Drop loci that weren't tested because they had too few degrees of freedom
+    # (df <= 1), which have NA results, and indicate how many
+    insufficient_df = is.na(result_gr$log_lik_ratio)
 
     if(sum(insufficient_df) > 0) {
         result_gr = result_gr[!insufficient_df]
-        message(sprintf('%s loci were dropped due to insufficient degrees of freedom (df = 1).', sum(insufficient_df)))
+        message(sprintf('%s loci were dropped due to insufficient degrees of freedom (df <= 1).', sum(insufficient_df)))
     }
 
     return(result_gr)
