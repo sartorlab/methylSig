@@ -1,0 +1,137 @@
+# Check methylSig with R CMD check and BiocCheck in the Bioconductor devel
+# container, as docker/check.sh does locally.
+#
+# Runs on pushes to devel and pull requests into devel, every Monday (to catch
+# breakage from changes in dependencies like bsseq, DSS, or DelayedArray between
+# pushes), and when run by hand from the Actions tab.
+#
+# Installed R packages are cached between runs (see the cache steps below). A
+# cache can be deleted by hand from the repository's Actions > Caches page.
+name: check
+
+on:
+  push:
+    branches: [devel]
+  pull_request:
+    branches: [devel]
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+# A newer push to the same branch or pull request cancels a check in progress
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container: ghcr.io/bioconductor/bioconductor:devel
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      R_LIBS_USER: /__w/_temp/R-library
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Get the R and Bioconductor versions
+        id: versions
+        run: |
+          mkdir -p "$R_LIBS_USER"
+          echo "r=$(Rscript -e 'cat(as.character(getRversion()))')" >> "$GITHUB_OUTPUT"
+          echo "bioc=$(Rscript -e 'cat(as.character(BiocManager::version()))')" >> "$GITHUB_OUTPUT"
+          echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+      # Reuse the installed dependencies within a week. Each week starts with a
+      # clean install, so nothing stale lingers, and every run updates any
+      # cached package with a newer release, e.g. a bug fix. Within a week,
+      # the newest cache is the starting point when DESCRIPTION changes.
+      - name: Restore the R package cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-${{ steps.versions.outputs.r }}-bioc-${{ steps.versions.outputs.bioc }}-${{ steps.versions.outputs.week }}-${{ hashFiles('DESCRIPTION') }}-${{ github.run_id }}
+          restore-keys: |
+            r-${{ steps.versions.outputs.r }}-bioc-${{ steps.versions.outputs.bioc }}-${{ steps.versions.outputs.week }}-${{ hashFiles('DESCRIPTION') }}-
+            r-${{ steps.versions.outputs.r }}-bioc-${{ steps.versions.outputs.bioc }}-${{ steps.versions.outputs.week }}-
+
+      - name: Install and update dependencies
+        id: install
+        run: Rscript docker/install_deps.R DESCRIPTION --update
+
+      # Save right after installing, so a failure in the checks below doesn't
+      # lose the install, and only when a package was installed or updated
+      - name: Save the R package cache
+        if: steps.install.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+
+      - name: R CMD build
+        run: R CMD build .
+
+      # Fail on warnings as well as errors, to keep the check clean
+      - name: R CMD check
+        run: |
+          status=0
+          R CMD check --no-manual methylSig_*.tar.gz || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::error::R CMD check failed"
+            exit "$status"
+          fi
+          if grep -qE '^Status:.*WARNING' methylSig.Rcheck/00check.log; then
+            echo "::error::R CMD check found warnings"
+            exit 1
+          fi
+
+      # BiocCheck downloads a small status file from bioconductor.org (e.g. to
+      # check for deprecated packages), and caches it. Keeping its cache for a
+      # week means most runs don't contact bioconductor.org for it at all.
+      - name: Restore the BiocCheck cache
+        id: bioccheck-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /github/home/.cache/R/BiocCheck
+          key: bioccheck-${{ steps.versions.outputs.bioc }}-${{ steps.versions.outputs.week }}
+
+      # bioconductor.org is sometimes down, which makes BiocCheck fail. Retry
+      # politely: 3 attempts in total, waiting 2 and then 4 minutes. A real
+      # BiocCheck error fails all 3 attempts.
+      - name: BiocCheck
+        run: |
+          for attempt in 1 2 3; do
+            if Rscript -e 'BiocCheck::BiocCheck(Sys.glob("methylSig_*.tar.gz"), `quit-with-status` = TRUE)'; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              wait=$((attempt * 120))
+              echo "::warning::BiocCheck failed (attempt $attempt of 3), retrying in $wait seconds in case bioconductor.org is down"
+              sleep "$wait"
+            fi
+          done
+          echo "::error::BiocCheck failed 3 times"
+          exit 1
+
+      - name: Save the BiocCheck cache
+        if: always() && steps.bioccheck-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: /github/home/.cache/R/BiocCheck
+          key: ${{ steps.bioccheck-cache.outputs.cache-primary-key }}
+
+      - name: Upload the check results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-results
+          path: |
+            methylSig.Rcheck
+            methylSig.BiocCheck

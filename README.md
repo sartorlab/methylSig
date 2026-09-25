@@ -1,8 +1,7 @@
 # methylSig
 
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.org/sartorlab/methylSig.svg?branch=master)](https://travis-ci.org/sartorlab/methylSig)
-[![Coveralls test coverage](https://coveralls.io/repos/github/sartorlab/methylSig/badge.svg)](https://coveralls.io/r/sartorlab/methylSig?branch=master)
+[![check](https://github.com/sartorlab/methylSig/actions/workflows/check.yml/badge.svg?branch=devel)](https://github.com/sartorlab/methylSig/actions/workflows/check.yml)
 <!-- badges: end -->
 
 # Introduction
@@ -13,11 +12,15 @@ DNA methylation plays critical roles in gene regulation and cellular specificati
 
 # Installation
 
-`methylSig` is available on GitHub at <http://www.github.com/sartorlab/methylSig>, and the easiest way to install it is as follows:
+`methylSig` is available from [Bioconductor](https://bioconductor.org/packages/methylSig), and can be installed as follows:
 
 ```{r install, eval=FALSE}
-devtools::install_github('sartorlab/methylSig')
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("methylSig")
 ```
+
+The development version, from Bioconductor devel, can be installed with `BiocManager::install("methylSig", version = "devel")`. Development happens on GitHub at <https://github.com/sartorlab/methylSig>.
 
 # Usage
 

@@ -1,7 +1,6 @@
 Package: methylSig
 Title: MethylSig: Differential Methylation Testing for WGBS and RRBS Data
-Version: 1.25.0
-Date: 2025-07-28
+Version: 1.25.1
 Authors@R:
     c(person(given = "Yongseok",
              family = "Park",
@@ -19,7 +18,7 @@ Description: MethylSig is a package for testing for
     samples. Several options exist for either site-specific or sliding
     window tests, and variance estimation.
 Depends:
-    R (>= 3.6)
+    R (>= 4.6.0)
 Imports:
     bsseq,
     DelayedArray,
