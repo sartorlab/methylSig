@@ -14,7 +14,7 @@ diff_dss_test(
 )
 }
 \arguments{
-\item{bs}{a \code{BSseq}, the same used used to create \code{diff_fit}.}
+\item{bs}{a \code{BSseq}, the same used to create \code{diff_fit}. When \code{methylation_group_column} is given, the methylation rates come from the loci of \code{bs} that match \code{diff_fit$gr}, so \code{bs} must have every fit locus and the same samples.}
 
 \item{diff_fit}{a \code{list} object output by \code{diff_dss_fit()}.}
 
@@ -22,7 +22,7 @@ diff_dss_test(
 
 \item{methylation_group_column}{Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the bottom and top percentiles of the covariate given by \code{covariate_percentiles}, and the mean methylation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.}
 
-\item{methylation_groups}{Optionally, a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. If specified, must also specify \code{methylation_group_column}.}
+\item{methylation_groups}{a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. Required when \code{methylation_group_column} is a \code{character} or \code{factor} column, and ignored, with a warning, when it is \code{numeric}. If specified, must also specify \code{methylation_group_column}.}
 
 \item{covariate_percentiles}{A \code{numeric} vector of two percentiles, from 0 to 100, used when \code{methylation_group_column} is \code{numeric}. Samples with covariate values at or below the first percentile are the case group, and samples at or above the second are the control group. Default \code{c(25, 75)}, the bottom and top 25 percent.}
 }

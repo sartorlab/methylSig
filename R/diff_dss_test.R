@@ -59,11 +59,11 @@
 #'
 #' This function is a wrapper for \code{DSS::DMLtest.multiFactor} with the added feature of reporting methylation rates alongside the test results via the \code{methylation_group_column} and \code{methylation_groups} parameters. See documentation below.
 #'
-#' @param bs a \code{BSseq}, the same used used to create \code{diff_fit}.
+#' @param bs a \code{BSseq}, the same used to create \code{diff_fit}. When \code{methylation_group_column} is given, the methylation rates come from the loci of \code{bs} that match \code{diff_fit$gr}, so \code{bs} must have every fit locus and the same samples.
 #' @param diff_fit a \code{list} object output by \code{diff_dss_fit()}.
 #' @param contrast a contrast for hypothesis testing: a numeric vector with one value per column of \code{diff_fit$X}, or a matrix with one row per column of \code{diff_fit$X} and one column per hypothesis. Unnamed values are in the order of the columns of \code{diff_fit$X}, and named values (or row names) are matched to them by name. If the contrast is the wrong size, the error lists the columns of \code{diff_fit$X} in order. A message says what the contrast tests, e.g. \code{Typenormal = 0}.
 #' @param methylation_group_column Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the bottom and top percentiles of the covariate given by \code{covariate_percentiles}, and the mean methylation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.
-#' @param methylation_groups Optionally, a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. If specified, must also specify \code{methylation_group_column}.
+#' @param methylation_groups a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. Required when \code{methylation_group_column} is a \code{character} or \code{factor} column, and ignored, with a warning, when it is \code{numeric}. If specified, must also specify \code{methylation_group_column}.
 #' @param covariate_percentiles A \code{numeric} vector of two percentiles, from 0 to 100, used when \code{methylation_group_column} is \code{numeric}. Samples with covariate values at or below the first percentile are the case group, and samples at or above the second are the control group. Default \code{c(25, 75)}, the bottom and top 25 percent.
 #'
 #' @return A \code{GRanges} object containing the following \code{mcols}:
@@ -148,7 +148,10 @@ diff_dss_test = function(
     }
 
     # Check validity of methylation_group_column
-    if (!is.na(methylation_group_column)) {
+    has_group_column = !(length(methylation_group_column) == 1 && is.na(methylation_group_column))
+    has_groups = !(length(methylation_groups) == 1 && is.na(methylation_groups))
+
+    if (has_group_column) {
         if (!(is(methylation_group_column, 'character') && length(methylation_group_column) == 1)) {
             stop('methylation_group_column must be a character string.')
         }
@@ -157,12 +160,44 @@ diff_dss_test = function(
             stop(sprintf('methylation_group_column: %s not in column names of diff_fit$design: %s',
                 methylation_group_column, paste(colnames(diff_fit$design), collapse = ', ')))
         }
+
+        # Groups come from methylation_groups for a character or factor
+        # column, and from covariate_percentiles for a numeric column
+        group_values = diff_fit$design[, methylation_group_column]
+        is_group_factor = is(group_values, 'character') || is(group_values, 'factor')
+
+        if (is_group_factor && !has_groups) {
+            stop(sprintf('methylation_group_column %s is a %s column, so methylation_groups must give its case and control values, e.g. c(case = "%s", control = "%s").',
+                methylation_group_column, class(group_values)[1],
+                unique(as.character(group_values))[1], unique(as.character(group_values))[2]))
+        }
+        if (!is_group_factor && !is(group_values, 'numeric')) {
+            stop(sprintf('methylation_group_column %s must be a character, factor, or numeric column of diff_fit$design, not %s.',
+                methylation_group_column, class(group_values)[1]))
+        }
+        if (!is_group_factor && has_groups) {
+            warning(sprintf('methylation_groups is ignored because methylation_group_column %s is numeric. Samples are grouped by covariate_percentiles.',
+                methylation_group_column))
+            has_groups = FALSE
+        }
+
+        # Methylation rates come from bs, so it must have the samples and the
+        # loci that were fit
+        if (ncol(bs) != nrow(diff_fit$design)) {
+            stop(sprintf('bs has %s samples, but diff_fit$design has %s rows. Use the bs given to diff_dss_fit().',
+                ncol(bs), nrow(diff_fit$design)))
+        }
+        fit_idx = match(diff_fit$gr, granges(bs))
+        if (anyNA(fit_idx)) {
+            stop(sprintf('%s of the %s loci in diff_fit$gr are not in bs. Use the bs given to diff_dss_fit().',
+                sum(is.na(fit_idx)), length(fit_idx)))
+        }
     }
 
     # Check validity of methylation_groups
-    if (!all(is.na(methylation_groups))) {
+    if (has_groups) {
 
-        if (is.na(methylation_group_column)) {
+        if (!has_group_column) {
             stop('If methylation_groups is specified, so must methylation_group_column.')
         }
 
@@ -205,13 +240,13 @@ diff_dss_test = function(
     #####################################
 
     # If a methylation_group_column is given, retrieve methylation rates
-    if (!is.na(methylation_group_column)) {
+    if (has_group_column) {
 
         # Assign correct case_idx and control_idx based on whether the
         # methylation_group_column is character/factor or numeric
         pdata = diff_fit$design
 
-        if (is(pdata[, methylation_group_column], 'character') || is(pdata[, methylation_group_column], 'factor')) {
+        if (is_group_factor) {
 
             case = methylation_groups['case']
             control = methylation_groups['control']
@@ -219,7 +254,7 @@ diff_dss_test = function(
             case_idx = which(pdata[, methylation_group_column] == case)
             control_idx = which(pdata[, methylation_group_column] == control)
 
-        } else if (is(pdata[, methylation_group_column], 'numeric')) {
+        } else {
 
             # Order of return is covariate_percentiles[1], covariate_percentiles[2]
             # So we want <= quantiles[1] and >= quantiles[2]
@@ -243,11 +278,11 @@ diff_dss_test = function(
 
         }
 
-        # Subset bs by what was fit
-        result_bs = subsetByOverlaps(bs, diff_fit$gr)
+        # Use the loci of bs that were fit, in the order of diff_fit$gr
+        result_bs = bs[fit_idx]
 
-        cov_reads_mat = bsseq::getCoverage(bs, type = 'Cov')
-        meth_reads_mat = bsseq::getCoverage(bs, type = 'M')
+        cov_reads_mat = bsseq::getCoverage(result_bs, type = 'Cov')
+        meth_reads_mat = bsseq::getCoverage(result_bs, type = 'M')
 
         # Compute case, control, and methylation difference
         meth_case = (DelayedMatrixStats::rowSums2(

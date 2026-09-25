@@ -1,3 +1,22 @@
+CHANGES IN VERSION 1.25.10
+--------------------------
+
+BUG FIXES
+
+  o diff_dss_test() takes the methylation rates from the loci of bs that
+    match diff_fit$gr, in that order. Before, it used every locus of bs, so a
+    bs with more loci than the fit gave an error, and a bs with the same
+    number of loci in another order gave rates for the wrong loci. It errors
+    if bs is missing fit loci or has a different number of samples than
+    diff_fit$design.
+  o diff_dss_test() errors when methylation_group_column is a character or
+    factor column and methylation_groups is missing. Before, meth_case,
+    meth_control, and meth_diff were all NaN, and direction was NA. A column
+    that isn't character, factor, or numeric (e.g. logical) gives a clear
+    error, instead of "object 'case_idx' not found", and methylation_groups
+    with a numeric column gives a warning that it is ignored.
+  o These checks happen before the test, instead of after it.
+
 CHANGES IN VERSION 1.25.9
 -------------------------
 
