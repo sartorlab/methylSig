@@ -110,16 +110,16 @@ diff_binomial = function(
 
     # Setup required quantities for the log_lik_ratio calculation
     unmeth_reads = rowSums(cov_mat - meth_mat, na.rm = TRUE)
-    unmeth_reads_control = rowSums(cov_mat[,control_idx] - meth_mat[,control_idx], na.rm = TRUE)
-    unmeth_reads_case = rowSums(cov_mat[,case_idx] - meth_mat[,case_idx], na.rm = TRUE)
+    unmeth_reads_control = rowSums(cov_mat[, control_idx, drop = FALSE] - meth_mat[, control_idx, drop = FALSE], na.rm = TRUE)
+    unmeth_reads_case = rowSums(cov_mat[, case_idx, drop = FALSE] - meth_mat[, case_idx, drop = FALSE], na.rm = TRUE)
 
     meth_reads = rowSums(meth_mat, na.rm = TRUE)
-    meth_reads_control = rowSums(meth_mat[,control_idx], na.rm = TRUE)
-    meth_reads_case = rowSums(meth_mat[,case_idx], na.rm = TRUE)
+    meth_reads_control = rowSums(meth_mat[, control_idx, drop = FALSE], na.rm = TRUE)
+    meth_reads_case = rowSums(meth_mat[, case_idx, drop = FALSE], na.rm = TRUE)
 
     cov = rowSums(cov_mat, na.rm = TRUE)
-    cov_control = rowSums(cov_mat[,control_idx], na.rm=TRUE)
-    cov_case = rowSums(cov_mat[,case_idx], na.rm=TRUE)
+    cov_control = rowSums(cov_mat[, control_idx, drop = FALSE], na.rm=TRUE)
+    cov_case = rowSums(cov_mat[, case_idx, drop = FALSE], na.rm=TRUE)
 
     log_lik_ratio = 2 * (meth_reads_control * log(meth_reads_control / cov_control + 1e-100)
                       + unmeth_reads_control * log(unmeth_reads_control / cov_control + 1e-100)

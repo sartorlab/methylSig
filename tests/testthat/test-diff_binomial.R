@@ -126,3 +126,13 @@ test_that('Test 2', {
 
     expect_true(is(diff_gr, 'GRanges'))
 })
+
+test_that('One sample in each group', {
+    diff_gr = diff_binomial(
+        bs = small_test[, c(1, 4)],
+        group_column = 'Type',
+        comparison_groups = c('case' = 'cancer', 'control' = 'normal'))
+
+    expect_true(is(diff_gr, 'GRanges'))
+    expect_equal(length(diff_gr), length(small_test))
+})

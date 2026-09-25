@@ -357,3 +357,97 @@ test_that('Test 6', {
 
     expect_true(is(diff_gr, 'GRanges'))
 })
+
+test_that('Untested loci are dropped', {
+    # Tiles from position 1 onward, most with no coverage, and so untested
+    diff_gr = suppressMessages(diff_methylsig(
+        bs = tile_by_windows(bs = small_test, win_size = 100),
+        group_column = 'Type',
+        comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+        disp_groups = c('case' = TRUE, 'control' = TRUE),
+        local_window_size = 0,
+        t_approx = TRUE,
+        n_cores = 1))
+
+    expect_gt(length(diff_gr), 0)
+    expect_false(anyNA(diff_gr$pvalue))
+    expect_true(all(diff_gr$df > 3))
+})
+
+test_that('One sample in a group', {
+    one_case = small_test[, c(1, 4, 5, 6)]
+    expect_equal(sum(bsseq::pData(one_case)$Type == 'cancer'), 1)
+
+    diff_gr = suppressMessages(diff_methylsig(
+        bs = one_case,
+        group_column = 'Type',
+        comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+        disp_groups = c('case' = FALSE, 'control' = TRUE),
+        local_window_size = 0,
+        t_approx = TRUE,
+        n_cores = 1))
+
+    expect_true(is(diff_gr, 'GRanges'))
+    expect_gt(length(diff_gr), 0)
+})
+
+test_that('Too few samples to estimate dispersion', {
+    expect_error(
+        diff_methylsig(
+            bs = small_test[, c(1, 4, 5, 6)],
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = FALSE),
+            local_window_size = 0,
+            t_approx = TRUE,
+            n_cores = 1),
+        'Too few samples to estimate dispersion: disp_groups has 1 samples, and at least 3 are needed.',
+        fixed = TRUE
+    )
+    expect_error(
+        diff_methylsig(
+            bs = small_test[, c(1, 2, 4)],
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = TRUE),
+            local_window_size = 0,
+            t_approx = TRUE,
+            n_cores = 1),
+        'Too few samples to estimate dispersion: disp_groups has 3 samples, and at least 4 are needed.',
+        fixed = TRUE
+    )
+})
+
+test_that('Local information stays within a chromosome', {
+    # Copy small_test to chr22, starting 10bp after the last chr21 locus, so
+    # the first chr22 loci are within local_window_size of the last chr21
+    # loci by position alone
+    gr21 = GenomicRanges::granges(small_test)
+    shift = max(BiocGenerics::start(gr21)) - min(BiocGenerics::start(gr21)) + 10
+    gr22 = GenomicRanges::GRanges('chr22', IRanges::IRanges(BiocGenerics::start(gr21) + shift, width = 1))
+    two_chrom = bsseq::BSseq(
+        gr = c(gr21, gr22),
+        M = rbind(as.matrix(bsseq::getCoverage(small_test, type = 'M')), as.matrix(bsseq::getCoverage(small_test, type = 'M'))),
+        Cov = rbind(as.matrix(bsseq::getCoverage(small_test, type = 'Cov')), as.matrix(bsseq::getCoverage(small_test, type = 'Cov'))),
+        pData = bsseq::pData(small_test),
+        sampleNames = colnames(small_test))
+
+    run = function(bs) {
+        suppressMessages(diff_methylsig(
+            bs = bs,
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = TRUE),
+            local_window_size = 200,
+            t_approx = TRUE,
+            n_cores = 1))
+    }
+    alone = run(small_test)
+    both = run(two_chrom)
+    both21 = both[GenomicRanges::seqnames(both) == 'chr21']
+
+    # fdr depends on the number of tests, so compare everything else
+    cols = setdiff(names(S4Vectors::mcols(alone)), 'fdr')
+    expect_equal(BiocGenerics::start(both21), BiocGenerics::start(alone))
+    expect_equal(as.data.frame(S4Vectors::mcols(both21)[, cols]), as.data.frame(S4Vectors::mcols(alone)[, cols]))
+})
