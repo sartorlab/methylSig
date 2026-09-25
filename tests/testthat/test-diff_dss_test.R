@@ -313,3 +313,65 @@ test_that('covariate_percentiles that put samples in both groups', {
         fixed = TRUE
     )
 })
+
+test_that('contrast of the wrong size lists the columns of diff_fit$X', {
+    for (contrast in list(c(0, 1, 0), matrix(1, ncol = 1))) {
+        expect_error(
+            diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = contrast),
+            'contrast needs 2 rows (or a vector of length 2), one per column of diff_fit$X, in this order:\n  1: (Intercept)\n  2: Typenormal',
+            fixed = TRUE
+        )
+    }
+})
+
+test_that('contrast type and value checks', {
+    expect_error(
+        diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = c('0', '1')),
+        'contrast must be a numeric vector or matrix.',
+        fixed = TRUE
+    )
+    expect_error(
+        diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = c(0, NA)),
+        'contrast must not have NA values.',
+        fixed = TRUE
+    )
+    expect_error(
+        diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = c(0, 0)),
+        'Each column of contrast must have a nonzero value.',
+        fixed = TRUE
+    )
+    expect_error(
+        diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = cbind(c(0, 1), c(0, 2))),
+        'The columns of contrast must be linearly independent.',
+        fixed = TRUE
+    )
+    expect_error(
+        diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = c('(Intercept)' = 0, 'Typecancer' = 1)),
+        'The names of contrast ((Intercept), Typecancer) are not the columns of diff_fit$X.',
+        fixed = TRUE
+    )
+})
+
+test_that('contrast as a vector, a matrix, or by name gives the same test', {
+    run = function(contrast) {
+        suppressMessages(diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = contrast))
+    }
+    by_matrix = run(matrix(c(0, 1), ncol = 1))
+
+    expect_equal(run(c(0, 1)), by_matrix)
+    expect_equal(run(c('Typenormal' = 1, '(Intercept)' = 0)), by_matrix)
+    expect_equal(run(matrix(c(1, 0), ncol = 1, dimnames = list(c('Typenormal', '(Intercept)'), NULL))), by_matrix)
+})
+
+test_that('contrast message says what is tested', {
+    expect_message(
+        diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = c(0, 1)),
+        'Testing Typenormal = 0',
+        fixed = TRUE
+    )
+    expect_message(
+        diff_dss_test(bs = small_test, diff_fit = diff_fit, contrast = cbind(c(0, 1), c(1, -0.5))),
+        'Testing Typenormal = 0 and (Intercept) - 0.5 * Typenormal = 0',
+        fixed = TRUE
+    )
+})

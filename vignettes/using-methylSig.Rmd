@@ -264,7 +264,7 @@ The result of `diff_dss_fit()` is a `list` with the following structure with ele
 
 #### Building Contrasts
 
-Prior to calling `diff_fit_test()`, it may help to look at the model matrix used for fitting in order to build the contrast.
+Prior to calling `diff_dss_test()`, it may help to look at the model matrix used for fitting in order to build the contrast.
 
 ```{r diff_dss_fit_model}
 diff_fit_simple$X
@@ -274,7 +274,7 @@ diff_fit_paired$X
 diff_fit_num$X
 ```
 
-The contrast passed to `diff_fit_test()` should be a column vector or a matrix whose rows correspond to the columns of the model matrix above. See the [DSS user guide](http://bioconductor.org/packages/release/bioc/vignettes/DSS/inst/doc/DSS.html#34_dmldmr_detection_from_general_experimental_design) for more information.
+The contrast passed to `diff_dss_test()` should be a vector with one value per column of the model matrix above, or a matrix whose rows correspond to those columns. A contrast of the wrong size gives an error that lists the columns of the model matrix, and `diff_dss_test()` gives a message with the hypothesis it tests, e.g. `Typenormal = 0`. Note that `Typenormal` is normal minus cancer, the reference level, so a positive `stat` is higher methylation in normal, while `meth_diff` below is case (cancer) minus control (normal). See the [DSS user guide](http://bioconductor.org/packages/release/bioc/vignettes/DSS/inst/doc/DSS.html#34_dmldmr_detection_from_general_experimental_design) for more information.
 
 ```{r contrast}
 # Test the simplest model for cancer vs normal
@@ -291,7 +291,7 @@ num_contrast = matrix(c(0,1), ncol = 1)
 
 #### Testing
 
-The `diff_fit_test()` function enables the recovery of group methylation rates via the optional `methylation_group_column` and `methylation_groups` parameters.
+The `diff_dss_test()` function enables the recovery of group methylation rates via the optional `methylation_group_column` and `methylation_groups` parameters.
 
 The simple, group versus group, test.
 

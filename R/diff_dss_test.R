@@ -1,17 +1,74 @@
+# Returns contrast as a matrix with one row per column of the design matrix,
+# named by coef_names, or stops with the size and names contrast needs
+.check_contrast = function(contrast, coef_names) {
+    n_coef = length(coef_names)
+    contrast_help = sprintf(
+        'contrast needs %s rows (or a vector of length %s), one per column of diff_fit$X, in this order:\n%s',
+        n_coef, n_coef,
+        paste(sprintf('  %s: %s', seq_len(n_coef), coef_names), collapse = '\n'))
+
+    if (!is.numeric(contrast) || length(dim(contrast)) > 2) {
+        stop(sprintf('contrast must be a numeric vector or matrix. %s', contrast_help))
+    }
+    if (is.null(dim(contrast))) {
+        contrast = matrix(contrast, ncol = 1, dimnames = list(names(contrast), NULL))
+    }
+    if (nrow(contrast) != n_coef) {
+        stop(sprintf('contrast has %s rows, but %s', nrow(contrast), contrast_help))
+    }
+
+    # Named rows are matched to the columns of the design matrix, in any order
+    if (is.null(rownames(contrast))) {
+        rownames(contrast) = coef_names
+    } else if (setequal(rownames(contrast), coef_names) && !anyDuplicated(rownames(contrast))) {
+        contrast = contrast[coef_names, , drop = FALSE]
+    } else {
+        stop(sprintf('The names of contrast (%s) are not the columns of diff_fit$X. %s',
+            paste(rownames(contrast), collapse = ', '), contrast_help))
+    }
+
+    if (anyNA(contrast)) {
+        stop('contrast must not have NA values.')
+    }
+    if (any(colSums(contrast != 0) == 0)) {
+        stop(sprintf('Each column of contrast must have a nonzero value. %s', contrast_help))
+    }
+    if (qr(contrast)$rank < ncol(contrast)) {
+        stop('The columns of contrast must be linearly independent.')
+    }
+
+    contrast
+}
+
+# Describes the hypothesis a contrast tests, e.g. 'Typenormal = 0', in terms of
+# its row names
+.describe_contrast = function(contrast) {
+    hypotheses = vapply(seq_len(ncol(contrast)), function(j) {
+        weights = contrast[, j]
+        coefs = rownames(contrast)[weights != 0]
+        weights = weights[weights != 0]
+        terms = ifelse(abs(weights) == 1, coefs, sprintf('%s * %s', vapply(abs(weights), format, ''), coefs))
+        signs = ifelse(weights < 0, '- ', '+ ')
+        lhs = paste(signs, terms, sep = '', collapse = ' ')
+        sprintf('%s = 0', sub('^\\+ ', '', lhs))
+    }, '')
+    paste(hypotheses, collapse = ' and ')
+}
+
 #' Calculates differential methylation statistics under general experimental design
 #'
 #' This function is a wrapper for \code{DSS::DMLtest.multiFactor} with the added feature of reporting methylation rates alongside the test results via the \code{methylation_group_column} and \code{methylation_groups} parameters. See documentation below.
 #'
 #' @param bs a \code{BSseq}, the same used used to create \code{diff_fit}.
 #' @param diff_fit a \code{list} object output by \code{diff_dss_fit()}.
-#' @param contrast a contrast matrix for hypothesis testing. The number of rows should match the number of columns \code{design}. Consult \code{diff_fit$X} to ensure the contrast correponds to the intended test.
+#' @param contrast a contrast for hypothesis testing: a numeric vector with one value per column of \code{diff_fit$X}, or a matrix with one row per column of \code{diff_fit$X} and one column per hypothesis. Unnamed values are in the order of the columns of \code{diff_fit$X}, and named values (or row names) are matched to them by name. If the contrast is the wrong size, the error lists the columns of \code{diff_fit$X} in order. A message says what the contrast tests, e.g. \code{Typenormal = 0}.
 #' @param methylation_group_column Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the bottom and top percentiles of the covariate given by \code{covariate_percentiles}, and the mean methylation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.
 #' @param methylation_groups Optionally, a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. If specified, must also specify \code{methylation_group_column}.
 #' @param covariate_percentiles A \code{numeric} vector of two percentiles, from 0 to 100, used when \code{methylation_group_column} is \code{numeric}. Samples with covariate values at or below the first percentile are the case group, and samples at or above the second are the control group. Default \code{c(25, 75)}, the bottom and top 25 percent.
 #'
 #' @return A \code{GRanges} object containing the following \code{mcols}:
 #' \describe{
-#'   \item{stat:}{ The test statistic. }
+#'   \item{stat:}{ The test statistic. With a one-column contrast, its sign is the sign of the contrast, e.g. positive when \code{Typenormal > 0}, which need not match the sign of \code{meth_diff}. }
 #'   \item{pvalue:}{ The p-value. }
 #'   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 #' }
@@ -129,6 +186,11 @@ diff_dss_test = function(
         covariate_percentiles[1] < covariate_percentiles[2])) {
         stop('covariate_percentiles must be two increasing numbers from 0 to 100.')
     }
+
+    # Check validity of contrast, and say what it tests, in terms of the
+    # columns of diff_fit$X. DSS only checks the number of rows.
+    contrast = .check_contrast(contrast, colnames(diff_fit$X))
+    message(sprintf('Testing %s', .describe_contrast(contrast)))
 
     #####################################
 

@@ -18,7 +18,7 @@ diff_dss_test(
 
 \item{diff_fit}{a \code{list} object output by \code{diff_dss_fit()}.}
 
-\item{contrast}{a contrast matrix for hypothesis testing. The number of rows should match the number of columns \code{design}. Consult \code{diff_fit$X} to ensure the contrast correponds to the intended test.}
+\item{contrast}{a contrast for hypothesis testing: a numeric vector with one value per column of \code{diff_fit$X}, or a matrix with one row per column of \code{diff_fit$X} and one column per hypothesis. Unnamed values are in the order of the columns of \code{diff_fit$X}, and named values (or row names) are matched to them by name. If the contrast is the wrong size, the error lists the columns of \code{diff_fit$X} in order. A message says what the contrast tests, e.g. \code{Typenormal = 0}.}
 
 \item{methylation_group_column}{Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the bottom and top percentiles of the covariate given by \code{covariate_percentiles}, and the mean methylation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.}
 
@@ -29,7 +29,7 @@ diff_dss_test(
 \value{
 A \code{GRanges} object containing the following \code{mcols}:
 \describe{
-  \item{stat:}{ The test statistic. }
+  \item{stat:}{ The test statistic. With a one-column contrast, its sign is the sign of the contrast, e.g. positive when \code{Typenormal > 0}, which need not match the sign of \code{meth_diff}. }
   \item{pvalue:}{ The p-value. }
   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 }
