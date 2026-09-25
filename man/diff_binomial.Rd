@@ -7,7 +7,7 @@
 diff_binomial(bs, group_column, comparison_groups)
 }
 \arguments{
-\item{bs}{A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.}
+\item{bs}{A \code{BSseq-class} object to calculate differential methylation statistics. See \code{bsseq::read.bismark()} for how to read in methylation data.}
 
 \item{group_column}{a \code{character} string indicating the column of \code{pData(bs)} to use for determining group membership.}
 
@@ -19,8 +19,8 @@ A \code{GRanges} object containing the following \code{mcols}:
   \item{meth_case:}{ Methylation estimate for case. }
   \item{meth_control:}{ Methylation estimate for control. }
   \item{meth_diff:}{ The difference \code{meth_case - meth_control}. }
-  \item{direction:}{ The group for which the lcous is hyper-methylated. Note, this is not subject to significance thresholds. }
-  \item{pvalue:}{ The p-value from the t-test (\code{t_approx = TRUE}) or the Chi-Square test (\code{t_approx = FALSE}). }
+  \item{direction:}{ The group for which the locus is hyper-methylated. Note, this is not subject to significance thresholds. }
+  \item{pvalue:}{ The p-value from the Chi-Square test of the likelihood ratio statistic. }
   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
   \item{log_lik_ratio:}{ The log likelihood ratio. }
 }
@@ -30,6 +30,8 @@ This function calculates differential methylation statistics using a binomial-ba
 }
 \details{
 This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{methylKit::calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust(..., method='BH')} are used to calculate significance levels. It is significantly faster than \code{methylKit::calculateDiffMeth} function.
+
+Only the samples in \code{case} and \code{control} are used, including in the pooled model under the null hypothesis. Loci where \code{case} or \code{control} has no coverage can't be tested, and are dropped with a message.
 }
 \section{Warning}{
  This function does not take into account the variability among samples in each group being compared.
