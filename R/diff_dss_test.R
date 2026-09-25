@@ -5,8 +5,9 @@
 #' @param bs a \code{BSseq}, the same used used to create \code{diff_fit}.
 #' @param diff_fit a \code{list} object output by \code{diff_dss_fit()}.
 #' @param contrast a contrast matrix for hypothesis testing. The number of rows should match the number of columns \code{design}. Consult \code{diff_fit$X} to ensure the contrast correponds to the intended test.
-#' @param methylation_group_column Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the top and bottom 25 percentiles of the covariate, and the mean methlyation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.
+#' @param methylation_group_column Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the bottom and top percentiles of the covariate given by \code{covariate_percentiles}, and the mean methylation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.
 #' @param methylation_groups Optionally, a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. If specified, must also specify \code{methylation_group_column}.
+#' @param covariate_percentiles A \code{numeric} vector of two percentiles, from 0 to 100, used when \code{methylation_group_column} is \code{numeric}. Samples with covariate values at or below the first percentile are the case group, and samples at or above the second are the control group. Default \code{c(25, 75)}, the bottom and top 25 percent.
 #'
 #' @return A \code{GRanges} object containing the following \code{mcols}:
 #' \describe{
@@ -57,7 +58,8 @@ diff_dss_test = function(
     diff_fit,
     contrast,
     methylation_group_column = NA,
-    methylation_groups = NA) {
+    methylation_groups = NA,
+    covariate_percentiles = c(25, 75)) {
 
     #####################################
 
@@ -121,6 +123,13 @@ diff_dss_test = function(
         }
     }
 
+    # Check validity of covariate_percentiles
+    if (!(is(covariate_percentiles, 'numeric') && length(covariate_percentiles) == 2 &&
+        !anyNA(covariate_percentiles) && all(covariate_percentiles >= 0 & covariate_percentiles <= 100) &&
+        covariate_percentiles[1] < covariate_percentiles[2])) {
+        stop('covariate_percentiles must be two increasing numbers from 0 to 100.')
+    }
+
     #####################################
 
     result = DSS::DMLtest.multiFactor(
@@ -150,11 +159,11 @@ diff_dss_test = function(
 
         } else if (is(pdata[, methylation_group_column], 'numeric')) {
 
-            # Order of return is 25%, 75%
+            # Order of return is covariate_percentiles[1], covariate_percentiles[2]
             # So we want <= quantiles[1] and >= quantiles[2]
             quantiles = quantile(
                 x = pdata[, methylation_group_column],
-                probs = c(0.25, 0.75),
+                probs = covariate_percentiles / 100,
                 na.rm = TRUE
             )
 
@@ -163,6 +172,12 @@ diff_dss_test = function(
 
             case_idx = which(pdata[, methylation_group_column] <= quantiles[1])
             control_idx = which(pdata[, methylation_group_column] >= quantiles[2])
+
+            # With tied covariate values, both percentiles can be the same value
+            if (length(intersect(case_idx, control_idx)) > 0) {
+                stop(sprintf('covariate_percentiles %s and %s of methylation_group_column %s put some samples in both groups. Choose percentiles further apart.',
+                    covariate_percentiles[1], covariate_percentiles[2], methylation_group_column))
+            }
 
         }
 

@@ -1,3 +1,12 @@
+CHANGES IN VERSION 1.25.3
+-------------------------
+
+NEW FEATURES
+
+  o diff_dss_test() has a covariate_percentiles parameter, which sets the
+    percentiles used to group samples by a numerical methylation_group_column
+    (issue #44). The default, c(25, 75), is the same grouping as before.
+
 CHANGES IN VERSION 1.25.2
 -------------------------
 
