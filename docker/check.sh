@@ -32,7 +32,7 @@ docker run --rm -v "$work:/work" -v methylsig-cache:/root/.cache -w /work \
     tarball=$(ls methylSig_*.tar.gz)
     status=0
     R CMD check --no-manual "$tarball" || status=$?
-    Rscript -e "BiocCheck::BiocCheck(\"$tarball\")" || status=$?
+    Rscript -e "BiocCheck::BiocCheck(\"$tarball\", \`quit-with-status\` = TRUE)" || status=$?
     exit $status
 '
 
