@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r knitr-options, include = FALSE}
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
@@ -30,7 +30,7 @@ The purpose of this vignette is to show users how to retrofit their `methylSig` 
 
 In versions < 0.99.0 of `methylSig`, the `methylSigReadData()` function read Bismark coverage files, Bismark genome-wide CpG reports, or MethylDackel bedGraphs. Additionally, users could destrand the data, filter by coverage, and filter SNPs.
 
-```{r eval = FALSE}
+```{r old_read, eval = FALSE}
 meth = methylSigReadData(
     fileList = files,
     pData = pData,
@@ -92,7 +92,7 @@ bs = filter_loci_by_location(bs = bs, gr = remove_gr)
 
 In versions < 0.99.0 of `methylSig`, the `methylSigTile()` function combined aggregating CpG data over pre-defined tiles and genomic windows.
 
-```{r eval = FALSE}
+```{r old_tile, eval = FALSE}
 # For genomic windows, tiles = NULL
 windowed_meth = methylSigTile(meth, tiles = NULL, win.size = 10000)
 
@@ -122,7 +122,7 @@ promoters_bs = tile_by_regions(bs = bs, gr = promoters_gr)
 
 In versions < 0.99.0 of `methylSig`, the `methylSigCalc` function had a `min.per.group` parameter to determine how many samples per group had to have coverage in order to be tested.
 
-```{r eval = FALSE}
+```{r old_methylSigCalc, eval = FALSE}
 result = methylSigCalc(
     meth = meth,
     comparison = 'DR_vs_DS',
@@ -170,7 +170,7 @@ diff_gr = diff_methylsig(
 
 In versions < 0.99.0 of `methylSig`, the `methylSigDSS` function also had a `min.per.group` parameter to determine how many samples per group had to have coverage. Users also couldn't specify which methylation groups to recover. The form of `design`, `formula`, and `contrast`, remain the same in versions >= 0.99.0.
 
-```{r eval = FALSE}
+```{r old_methylSigDSS, eval = FALSE}
 contrast = matrix(c(0,1), ncol = 1)
 result_dss = methylSigDSS(
     meth = meth,

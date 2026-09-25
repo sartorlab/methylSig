@@ -1,3 +1,20 @@
+CHANGES IN VERSION 1.25.5
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+  o The example data sets (bsseq_stranded, bsseq_destranded,
+    bsseq_multichrom, promoters_gr) are no longer lazy-loaded, as
+    Bioconductor recommends. Load them with data(), e.g.
+    data(promoters_gr, package = 'methylSig'), as the examples and vignettes
+    already do.
+
+INTERNAL CHANGES
+
+  o Add the URL field and the Sequencing and Coverage biocViews to
+    DESCRIPTION, and label the vignettes' setup chunks.
+  o docker/check.sh exits with an error when BiocCheck finds an error.
+
 CHANGES IN VERSION 1.25.4
 -------------------------
 

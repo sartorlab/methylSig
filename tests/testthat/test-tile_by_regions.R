@@ -1,3 +1,5 @@
+data(bsseq_stranded, bsseq_destranded, package = 'methylSig')
+
 test_that('bs missing check', {
     expect_error(
         tile_by_regions(),
