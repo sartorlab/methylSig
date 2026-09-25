@@ -44,56 +44,64 @@ test_that('correct tiling stranded gr1', {
     # bsseq_destranded_tiled1 will. Consequently, testing at this
     # level is necessary
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_stranded_tiled1, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled1, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_stranded_tiled1, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled1, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
 test_that('correct tiling stranded gr2', {
     test = tile_by_regions(bs = bsseq_stranded, gr = gr_tiles2)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_stranded_tiled2, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled2, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_stranded_tiled2, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled2, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
 test_that('correct tiling stranded gr3', {
     test = tile_by_regions(bs = bsseq_stranded, gr = gr_tiles3)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_stranded_tiled3, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled3, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_stranded_tiled3, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled3, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
 test_that('correct tiling stranded gr4', {
     test = tile_by_regions(bs = bsseq_stranded, gr = gr_tiles4)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_stranded_tiled4, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled4, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_stranded_tiled4, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_tiled4, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
@@ -107,56 +115,64 @@ test_that('error tiling stranded gr5', {
 test_that('correct tiling destranded gr1', {
     test = tile_by_regions(bs = bsseq_destranded, gr = gr_tiles1)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_destranded_tiled1, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled1, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_destranded_tiled1, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled1, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
 test_that('correct tiling destranded gr2', {
     test = tile_by_regions(bs = bsseq_destranded, gr = gr_tiles2)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_destranded_tiled2, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled2, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_destranded_tiled2, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled2, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
 test_that('correct tiling destranded gr3', {
     test = tile_by_regions(bs = bsseq_destranded, gr = gr_tiles3)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_destranded_tiled3, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled3, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_destranded_tiled3, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled3, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 
 test_that('correct tiling destranded gr4', {
     test = tile_by_regions(bs = bsseq_destranded, gr = gr_tiles4)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_destranded_tiled4, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled4, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_destranded_tiled4, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_tiled4, type = 'M')),
+        ignore_attr = TRUE
     )
 })
 

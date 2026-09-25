@@ -114,14 +114,16 @@ test_that('Test cancer 2 normal 2', {
         group_column = 'Type',
         c('cancer' = 2, 'normal' = 2))
 
-    expect_equivalent(
+    expect_equal(
         bsseq::getCoverage(test, type = 'Cov'),
-        expected_cov_cancer2_normal2
+        expected_cov_cancer2_normal2,
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
+    expect_equal(
         bsseq::getCoverage(test, type = 'M'),
-        expected_meth_cancer2_normal2
+        expected_meth_cancer2_normal2,
+        ignore_attr = TRUE
     )
 })
 
@@ -131,14 +133,16 @@ test_that('Test cancer 2 normal 3', {
         group_column = 'Type',
         c('cancer' = 2, 'normal' = 3))
 
-    expect_equivalent(
+    expect_equal(
         bsseq::getCoverage(test, type = 'Cov'),
-        expected_cov_cancer2_normal3
+        expected_cov_cancer2_normal3,
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
+    expect_equal(
         bsseq::getCoverage(test, type = 'M'),
-        expected_meth_cancer2_normal3
+        expected_meth_cancer2_normal3,
+        ignore_attr = TRUE
     )
 })
 
@@ -148,13 +152,15 @@ test_that('Test cancer 3 normal 3', {
         group_column = 'Type',
         c('cancer' = 3, 'normal' = 3))
 
-    expect_equivalent(
+    expect_equal(
         bsseq::getCoverage(test, type = 'Cov'),
-        expected_cov_cancer3_normal3
+        expected_cov_cancer3_normal3,
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
+    expect_equal(
         bsseq::getCoverage(test, type = 'M'),
-        expected_meth_cancer3_normal3
+        expected_meth_cancer3_normal3,
+        ignore_attr = TRUE
     )
 })

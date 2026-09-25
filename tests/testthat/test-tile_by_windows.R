@@ -34,14 +34,16 @@ test_that('correct tiling stranded win25', {
     # bsseq_destranded_tiled1 will. Consequently, testing at this
     # level is necessary
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_stranded_win25, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_win25, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_stranded_win25, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_stranded_win25, type = 'M')),
+        ignore_attr = TRUE
     )
 
     expect_true(
@@ -52,14 +54,16 @@ test_that('correct tiling stranded win25', {
 test_that('correct tiling destranded win25', {
     test = tile_by_windows(bs = bsseq_destranded, win_size = 25)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_destranded_win25, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_win25, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_destranded_win25, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_destranded_win25, type = 'M')),
+        ignore_attr = TRUE
     )
 
     expect_true(
@@ -70,14 +74,16 @@ test_that('correct tiling destranded win25', {
 test_that('correct tiling multichrom multichrom25', {
     test = tile_by_windows(bs = bsseq_multichrom, win_size = 25)
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'Cov'),
-        bsseq::getCoverage(bsseq_multichrom_win25, type = 'Cov')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'Cov')),
+        as.matrix(bsseq::getCoverage(bsseq_multichrom_win25, type = 'Cov')),
+        ignore_attr = TRUE
     )
 
-    expect_equivalent(
-        bsseq::getCoverage(test, type = 'M'),
-        bsseq::getCoverage(bsseq_multichrom_win25, type = 'M')
+    expect_equal(
+        as.matrix(bsseq::getCoverage(test, type = 'M')),
+        as.matrix(bsseq::getCoverage(bsseq_multichrom_win25, type = 'M')),
+        ignore_attr = TRUE
     )
 
     expect_true(
