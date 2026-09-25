@@ -1,3 +1,25 @@
+CHANGES IN VERSION 1.25.8
+-------------------------
+
+NEW FEATURES
+
+  o diff_dss_test() checks the contrast before testing. A contrast of the
+    wrong size gives an error with the number of values it needs and the
+    columns of diff_fit$X they correspond to, in order, e.g.
+    "1: (Intercept)" and "2: Typenormal". A message says what the contrast
+    tests, e.g. "Testing Typenormal = 0", so a contrast that is the right
+    size but tests the wrong coefficient is easier to catch.
+  o The contrast can be a vector as well as a matrix, and named values (or
+    row names) are matched to the columns of diff_fit$X by name. Contrasts
+    with NA values, a column of zeros, or linearly dependent columns give
+    an error.
+
+DOCUMENTATION
+
+  o The vignette refers to diff_dss_test(), not diff_fit_test(), and notes
+    that the sign of stat follows the contrast (normal minus cancer for
+    Typenormal), while meth_diff is case minus control.
+
 CHANGES IN VERSION 1.25.7
 -------------------------
 
