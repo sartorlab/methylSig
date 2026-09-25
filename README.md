@@ -307,7 +307,7 @@ diff_paired_gr = diff_dss_test(
 diff_paired_gr
 ```
 
-The numerical covariate test. Note, here the `methylation_groups` parameter is omitted because there are no groups. By giving the numerical covariate column, we will group samples by the top/bottom 25 percentile over the covariate, and compute mean methylation within those groups of samples.
+The numerical covariate test. Note, here the `methylation_groups` parameter is omitted because there are no groups. By giving the numerical covariate column, we will group samples by the bottom/top 25 percentile over the covariate, and compute mean methylation within those groups of samples. The `covariate_percentiles` parameter sets other percentiles, e.g. `c(10, 90)`.
 
 ```{r diff_dss_test_num}
 diff_num_gr = diff_dss_test(

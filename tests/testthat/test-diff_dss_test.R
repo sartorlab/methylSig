@@ -237,3 +237,79 @@ test_that('Valid return, simple model tiled, methylation check', {
     expect_true(is(diff_gr, 'GRanges'))
 
 })
+
+test_that('covariate_percentiles check', {
+    diff_fit = diff_dss_fit(
+        bs = small_test,
+        design = pData(small_test),
+        formula = '~ num_cov')
+
+    for (bad in list(c(75, 25), 25, c(-1, 75), c(25, 101), c(25, NA), c('25', '75'))) {
+        expect_error(
+            diff_dss_test(
+                bs = small_test,
+                diff_fit = diff_fit,
+                contrast = matrix(c(0,1), ncol = 1),
+                methylation_group_column = 'num_cov',
+                covariate_percentiles = bad),
+            'covariate_percentiles must be two increasing numbers from 0 to 100.',
+            fixed = TRUE
+        )
+    }
+})
+
+test_that('covariate_percentiles groups samples', {
+    diff_fit = diff_dss_fit(
+        bs = small_test,
+        design = pData(small_test),
+        formula = '~ num_cov')
+
+    meth_mat = as.matrix(bsseq::getCoverage(small_test, type = 'M'))
+    cov_mat = as.matrix(bsseq::getCoverage(small_test, type = 'Cov'))
+    group_meth = function(idx) {
+        round(rowSums(meth_mat[, idx, drop = FALSE]) / rowSums(cov_mat[, idx, drop = FALSE]) * 100, 2)
+    }
+
+    # num_cov is c(9, 8, 10, 1, 3, 2)
+    # Default 25 and 75: case is num_cov <= 2.25 (1, 2), control is >= 8.75 (9, 10)
+    default_gr = diff_dss_test(
+        bs = small_test,
+        diff_fit = diff_fit,
+        contrast = matrix(c(0,1), ncol = 1),
+        methylation_group_column = 'num_cov')
+    expect_equal(unname(default_gr$meth_case), unname(group_meth(c(4, 6))))
+    expect_equal(unname(default_gr$meth_control), unname(group_meth(c(1, 3))))
+
+    # 50 and 50: case is num_cov <= 5.5 (1, 2, 3), control is >= 5.5 (8, 9, 10)
+    median_gr = diff_dss_test(
+        bs = small_test,
+        diff_fit = diff_fit,
+        contrast = matrix(c(0,1), ncol = 1),
+        methylation_group_column = 'num_cov',
+        covariate_percentiles = c(49.9, 50))
+    expect_equal(unname(median_gr$meth_case), unname(group_meth(c(4, 5, 6))))
+    expect_equal(unname(median_gr$meth_control), unname(group_meth(c(1, 2, 3))))
+
+    # The test statistics don't depend on the grouping
+    expect_equal(median_gr$stat, default_gr$stat)
+})
+
+test_that('covariate_percentiles that put samples in both groups', {
+    diff_fit = diff_dss_fit(
+        bs = small_test,
+        design = pData(small_test),
+        formula = '~ num_cov')
+    # The 10 and 50 percentiles are both 1
+    diff_fit$design$num_cov = c(1, 1, 1, 1, 1, 2)
+
+    expect_error(
+        diff_dss_test(
+            bs = small_test,
+            diff_fit = diff_fit,
+            contrast = matrix(c(0,1), ncol = 1),
+            methylation_group_column = 'num_cov',
+            covariate_percentiles = c(10, 50)),
+        'covariate_percentiles 10 and 50 of methylation_group_column num_cov put some samples in both groups.',
+        fixed = TRUE
+    )
+})

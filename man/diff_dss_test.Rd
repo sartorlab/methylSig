@@ -9,7 +9,8 @@ diff_dss_test(
   diff_fit,
   contrast,
   methylation_group_column = NA,
-  methylation_groups = NA
+  methylation_groups = NA,
+  covariate_percentiles = c(25, 75)
 )
 }
 \arguments{
@@ -19,9 +20,11 @@ diff_dss_test(
 
 \item{contrast}{a contrast matrix for hypothesis testing. The number of rows should match the number of columns \code{design}. Consult \code{diff_fit$X} to ensure the contrast correponds to the intended test.}
 
-\item{methylation_group_column}{Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the top and bottom 25 percentiles of the covariate, and the mean methlyation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.}
+\item{methylation_group_column}{Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the bottom and top percentiles of the covariate given by \code{covariate_percentiles}, and the mean methylation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.}
 
 \item{methylation_groups}{Optionally, a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. If specified, must also specify \code{methylation_group_column}.}
+
+\item{covariate_percentiles}{A \code{numeric} vector of two percentiles, from 0 to 100, used when \code{methylation_group_column} is \code{numeric}. Samples with covariate values at or below the first percentile are the case group, and samples at or above the second are the control group. Default \code{c(25, 75)}, the bottom and top 25 percent.}
 }
 \value{
 A \code{GRanges} object containing the following \code{mcols}:
