@@ -506,6 +506,30 @@ test_that('local_disp and local_meth use local information separately', {
     expect_false(isTRUE(all.equal(meth_only$log_lik_ratio, none$log_lik_ratio)))
 })
 
+test_that('Local log likelihood is the weighted sum over loci', {
+    local_c = matrix(c(3, 0, 7, 5, 2, 9), nrow = 3)
+    local_t = matrix(c(4, 6, 0, 1, 8, 2), nrow = 3)
+    weights = c(0.5, 1, 0.25)
+    mu = 0.4
+    phi = 12
+
+    per_locus = vapply(seq(nrow(local_c)), function(i) {
+        .log_likelihood(
+            mu = mu,
+            phi = phi,
+            local_c = local_c[i, , drop = FALSE],
+            local_t = local_t[i, , drop = FALSE],
+            weight = 1)
+    }, 1)
+
+    expect_equal(
+        .log_likelihood(mu, phi, local_c, local_t, weight = rep(1, 3)),
+        sum(per_locus))
+    expect_equal(
+        .log_likelihood(mu, phi, local_c, local_t, weight = weights),
+        sum(weights * per_locus))
+})
+
 test_that('Too few samples to estimate dispersion without local dispersion', {
     three = small_test[, c(1, 2, 4)]
     args = list(
