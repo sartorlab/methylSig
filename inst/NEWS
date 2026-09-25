@@ -9,6 +9,9 @@ NEW FEATURES
     estimates and likelihood ratio, or both (issue #47). Both are TRUE by
     default, which gives the same results as before. These were the
     local.disp and local.meth options of methylSigCalc() before 0.5.0.
+  o diff_dss_test() has a covariate_percentiles parameter, which sets the
+    percentiles used to group samples by a numerical methylation_group_column
+    (issue #44). The default, c(25, 75), is the same grouping as before.
 
 CHANGES IN VERSION 1.25.2
 -------------------------
