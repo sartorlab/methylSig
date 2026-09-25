@@ -1,3 +1,19 @@
+CHANGES IN VERSION 1.25.7
+-------------------------
+
+BUG FIXES
+
+  o diff_methylsig() used the wrong log likelihood for the unmethylated reads
+    when local information was used for the methylation estimates
+    (local_window_size > 0 and local_meth = TRUE): the term for the
+    unmethylated reads was missing the dispersion, lgamma((1 - mu) + 1e-100)
+    instead of lgamma((1 - mu) * phi + 1e-100). This inflated the likelihood
+    ratio statistic and gave many false positives. For example, on 2,374
+    CpGs of bsseqData's BS.cancer.ex with a 200 bp window and group labels
+    that mix cancer and normal samples, 22.3% of loci had FDR < 0.05 before
+    the fix and none after. Results without local information, or with
+    local_meth = FALSE, are unchanged.
+
 CHANGES IN VERSION 1.25.6
 -------------------------
 
