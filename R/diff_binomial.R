@@ -4,7 +4,9 @@
 #'
 #' This function uses a binomial-based model to calculate differential methylation statistics. It is nearly identical to the \code{methylKit::calculateDiffMeth} function in the \code{methylKit} R package except that only the likelihood ratio test and \code{p.adjust(..., method='BH')} are used to calculate significance levels. It is significantly faster than \code{methylKit::calculateDiffMeth} function.
 #'
-#' @param bs A \code{BSseq-class} object to calculate differential methylation statistics. See \code{methylSigReadData} for how to read in methylation data.
+#' Only the samples in \code{case} and \code{control} are used, including in the pooled model under the null hypothesis. Loci where \code{case} or \code{control} has no coverage can't be tested, and are dropped with a message.
+#'
+#' @param bs A \code{BSseq-class} object to calculate differential methylation statistics. See \code{bsseq::read.bismark()} for how to read in methylation data.
 #' @param group_column a \code{character} string indicating the column of \code{pData(bs)} to use for determining group membership.
 #' @param comparison_groups a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{group_column} for the comparison.
 #'
@@ -13,8 +15,8 @@
 #'   \item{meth_case:}{ Methylation estimate for case. }
 #'   \item{meth_control:}{ Methylation estimate for control. }
 #'   \item{meth_diff:}{ The difference \code{meth_case - meth_control}. }
-#'   \item{direction:}{ The group for which the lcous is hyper-methylated. Note, this is not subject to significance thresholds. }
-#'   \item{pvalue:}{ The p-value from the t-test (\code{t_approx = TRUE}) or the Chi-Square test (\code{t_approx = FALSE}). }
+#'   \item{direction:}{ The group for which the locus is hyper-methylated. Note, this is not subject to significance thresholds. }
+#'   \item{pvalue:}{ The p-value from the Chi-Square test of the likelihood ratio statistic. }
 #'   \item{fdr:}{ The Benjamini-Hochberg adjusted p-values using \code{p.adjust(method = 'BH')}. }
 #'   \item{log_lik_ratio:}{ The log likelihood ratio. }
 #' }
@@ -99,27 +101,25 @@ diff_binomial = function(
 
     #####################################
 
-    gr = granges(bs)
-
-    cov_mat = as.matrix(bsseq::getCoverage(bs, type = 'Cov'))
-    meth_mat = as.matrix(bsseq::getCoverage(bs, type = 'M'))
-
-    # Determine which sites are valid to test according to min.per.group
-    cov_mat = as.matrix(bsseq::getCoverage(bs, type = 'Cov'))
-    meth_mat = as.matrix(bsseq::getCoverage(bs, type = 'M'))
+    # Only the samples in case and control are used, in the pooled (null)
+    # model too
+    cov_mat = as.matrix(bsseq::getCoverage(bs, type = 'Cov'))[, c(case_idx, control_idx), drop = FALSE]
+    meth_mat = as.matrix(bsseq::getCoverage(bs, type = 'M'))[, c(case_idx, control_idx), drop = FALSE]
+    case_cols = seq_along(case_idx)
+    control_cols = length(case_idx) + seq_along(control_idx)
 
     # Setup required quantities for the log_lik_ratio calculation
     unmeth_reads = rowSums(cov_mat - meth_mat, na.rm = TRUE)
-    unmeth_reads_control = rowSums(cov_mat[, control_idx, drop = FALSE] - meth_mat[, control_idx, drop = FALSE], na.rm = TRUE)
-    unmeth_reads_case = rowSums(cov_mat[, case_idx, drop = FALSE] - meth_mat[, case_idx, drop = FALSE], na.rm = TRUE)
+    unmeth_reads_control = rowSums(cov_mat[, control_cols, drop = FALSE] - meth_mat[, control_cols, drop = FALSE], na.rm = TRUE)
+    unmeth_reads_case = rowSums(cov_mat[, case_cols, drop = FALSE] - meth_mat[, case_cols, drop = FALSE], na.rm = TRUE)
 
     meth_reads = rowSums(meth_mat, na.rm = TRUE)
-    meth_reads_control = rowSums(meth_mat[, control_idx, drop = FALSE], na.rm = TRUE)
-    meth_reads_case = rowSums(meth_mat[, case_idx, drop = FALSE], na.rm = TRUE)
+    meth_reads_control = rowSums(meth_mat[, control_cols, drop = FALSE], na.rm = TRUE)
+    meth_reads_case = rowSums(meth_mat[, case_cols, drop = FALSE], na.rm = TRUE)
 
     cov = rowSums(cov_mat, na.rm = TRUE)
-    cov_control = rowSums(cov_mat[, control_idx, drop = FALSE], na.rm=TRUE)
-    cov_case = rowSums(cov_mat[, case_idx, drop = FALSE], na.rm=TRUE)
+    cov_control = rowSums(cov_mat[, control_cols, drop = FALSE], na.rm=TRUE)
+    cov_case = rowSums(cov_mat[, case_cols, drop = FALSE], na.rm=TRUE)
 
     log_lik_ratio = 2 * (meth_reads_control * log(meth_reads_control / cov_control + 1e-100)
                       + unmeth_reads_control * log(unmeth_reads_control / cov_control + 1e-100)
@@ -129,14 +129,17 @@ diff_binomial = function(
                       - unmeth_reads * log(unmeth_reads / cov + 1e-100)
                      )
 
-    meth_control = round((meth_reads_control / cov_control) * 100, 2)
-    meth_case = round((meth_reads_case / cov_case) * 100, 2)
+    # Round the methylation estimates and their difference separately, so the
+    # difference isn't computed from rounded values
+    meth_control = (meth_reads_control / cov_control) * 100
+    meth_case = (meth_reads_case / cov_case) * 100
     meth_diff = round(meth_case - meth_control, 2)
+    meth_control = round(meth_control, 2)
+    meth_case = round(meth_case, 2)
 
     direction = ifelse(meth_diff >= 0, case, control)
 
     pvalue = stats::pchisq(log_lik_ratio, 1, lower.tail=FALSE)
-    fdr = stats::p.adjust(pvalue, method = 'BH')
 
     results = data.frame(
         'meth_case' = meth_case,
@@ -144,13 +147,24 @@ diff_binomial = function(
         'meth_diff' = meth_diff,
         'direction' = direction,
         'pvalue' = pvalue,
-        'fdr' = fdr,
+        'fdr' = NA_real_,
         'log_lik_ratio' = log_lik_ratio,
         stringsAsFactors = FALSE
     )
 
     result_gr = granges(bs)
     mcols(result_gr) = results
+
+    # Drop loci that can't be tested because case or control has no coverage,
+    # as diff_methylsig() does, and indicate how many
+    no_coverage = cov_case == 0 | cov_control == 0
+    if (any(no_coverage)) {
+        result_gr = result_gr[!no_coverage]
+        message(sprintf('%s loci were dropped because case or control has no coverage.', sum(no_coverage)))
+    }
+
+    # Correct for multiple testing over the tested loci
+    result_gr$fdr = stats::p.adjust(result_gr$pvalue, method = 'BH')
 
     return(result_gr)
 }

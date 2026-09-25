@@ -1,3 +1,26 @@
+CHANGES IN VERSION 1.25.9
+-------------------------
+
+BUG FIXES
+
+  o diff_binomial() used every sample in the pooled model under the null
+    hypothesis, not only the samples in case and control. With other groups
+    in group_column, the likelihood ratio statistic was wrong: on 2,374 CpGs
+    of bsseqData's BS.cancer.ex, with one cancer and one normal sample
+    relabeled as a third group, 2,301 loci had FDR < 0.05 instead of 156.
+    Results with only the case and control samples are unchanged.
+  o diff_binomial() drops loci where case or control has no coverage, with
+    a message, as diff_methylsig() does for loci it can't test. Before, they
+    were returned with NaN results. The FDR is computed over the tested loci.
+  o diff_binomial() computes meth_diff before rounding meth_case and
+    meth_control, instead of from the rounded values.
+
+DOCUMENTATION
+
+  o The diff_binomial() docs no longer mention t_approx, which it doesn't
+    have, or methylSigReadData(), which was replaced by
+    bsseq::read.bismark().
+
 CHANGES IN VERSION 1.25.8
 -------------------------
 
