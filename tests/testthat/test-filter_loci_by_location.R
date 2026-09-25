@@ -1,3 +1,5 @@
+data(bsseq_stranded, package = 'methylSig')
+
 test_that('bs missing check', {
     expect_error(
         filter_loci_by_location(),
