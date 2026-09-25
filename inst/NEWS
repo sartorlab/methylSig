@@ -1,0 +1,79 @@
+CHANGES IN VERSION 1.25.1
+-------------------------
+
+INTERNAL CHANGES
+
+  o Check the package with R CMD check and BiocCheck in the Bioconductor
+    devel container, locally (docker/check.sh) and in GitHub Actions on every
+    push and pull request, and weekly. This replaces Travis CI.
+  o Depend on R (>= 4.6.0), and drop the Date field from DESCRIPTION.
+  o Move NEWS to inst/NEWS.
+
+CHANGES IN VERSION 1.21.2
+-------------------------
+
+INTERNAL CHANGES
+
+  o Reserialize the example data, which became invalid because of the
+    Seqinfo/GenomeInfoDb split (Hervé Pagès).
+
+CHANGES IN VERSION 1.21.1
+-------------------------
+
+INTERNAL CHANGES
+
+  o Import Seqinfo instead of GenomeInfoDb (Hervé Pagès).
+
+CHANGES IN VERSION 0.99.4
+-------------------------
+
+DOCUMENTATION
+
+  o Documentation updates for filter_loci_by_group_coverage(),
+    diff_methylsig(), and the example data.
+
+CHANGES IN VERSION 0.99.3
+-------------------------
+
+NEW FEATURES
+
+  o diff_dss_test() output has a direction column, like the other diff
+    functions. For a numerical covariate, it is 'Hyper' or 'Hypo'.
+
+CHANGES IN VERSION 0.99.2
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+  o diff_dss_test() output columns case_meth and control_meth are renamed
+    meth_case and meth_control, like the other diff functions.
+
+CHANGES IN VERSION 0.99.1
+-------------------------
+
+BUG FIXES
+
+  o filter_loci_by_group_coverage() selects each group's samples with a
+    logical vector in DelayedMatrixStats::rowSums2(), instead of column
+    names, which failed on some data.
+
+CHANGES IN VERSION 0.99.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+  + Refactor functions and workflow from pre-0.99.0 releases
+    o methylSigReadData() replaced with the functions:
+      o bsseq::read.bismark()
+      o filter_loci_by_coverage()
+      o filter_loci_by_location()
+    o methylSigTile() replaced with the functions:
+      o tile_by_regions()
+      o tile_by_windows()
+    o Differential testing should be preceded with:
+      o filter_loci_by_group_coverage()
+    o binomialDiffCalc() is replaced by diff_binomial()
+    o methylSigCalc() is replaced by diff_methylSig()
+    o methylSigDSS() is replaced by diff_dss_fit() and diff_dss_test()
+  + See "Using methylSig" vignette for full example.
+  + See "Updating methylSig Code" vignette for how to retrofit pre-0.99.0 code.

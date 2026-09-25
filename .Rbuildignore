@@ -1,7 +1,9 @@
 ^README\.md$
-^\.travis\.yml$
 ^\.git$
 ^\.gitignore$
 ^data-raw$
 ^doc$
 ^Meta$
+^docker$
+^\.github$
+^CLAUDE\.md$
