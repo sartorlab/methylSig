@@ -12,7 +12,9 @@ diff_methylsig(
   local_window_size = 0,
   local_weight_function,
   t_approx = TRUE,
-  n_cores = 1
+  n_cores = 1,
+  local_disp = TRUE,
+  local_meth = TRUE
 )
 }
 \arguments{
@@ -24,13 +26,17 @@ diff_methylsig(
 
 \item{disp_groups}{a named \code{logical} vector indicating the whether to use \code{case}, \code{control}, or both to estimate the dispersion.}
 
-\item{local_window_size}{an \code{integer} indicating the size of the window for use in determining local information to improve mean and dispersion parameter estimations. In addition to a the distance constraint, a maximum of 5 loci upstream and downstream of the locus are used. The default is \code{0}, indicating no local information is used.}
+\item{local_window_size}{an \code{integer} indicating the size of the window for use in determining local information to improve mean and dispersion parameter estimations. In addition to a the distance constraint, a maximum of 5 loci upstream and downstream of the locus, on the same chromosome, are used. The default is \code{0}, indicating no local information is used. Which estimates use local information is set by \code{local_disp} and \code{local_meth}.}
 
 \item{local_weight_function}{a weight kernel function. The default is the tri-weight kernel function defined as \code{function(u) = (1-u^2)^3}. The domain of any given weight function should be [-1,1], and the range should be [0,1].}
 
 \item{t_approx}{a \code{logical} value indicating whether to use squared t approximation for the likelihood ratio statistics. Chi-square approximation (\code{t_approx = FALSE}) is recommended when the sample size is large.  Default is \code{TRUE}.}
 
 \item{n_cores}{an \code{integer} denoting how many cores should be used for differential methylation calculations.}
+
+\item{local_disp}{a \code{logical} value indicating whether to use local information for the dispersion estimate and the degrees of freedom, when \code{local_window_size > 0}. Default \code{TRUE}.}
+
+\item{local_meth}{a \code{logical} value indicating whether to use local information for the group methylation estimates and the likelihood ratio statistic, when \code{local_window_size > 0}. Default \code{TRUE}.}
 }
 \value{
 A \code{GRanges} object containing the following \code{mcols}:

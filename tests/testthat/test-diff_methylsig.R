@@ -451,3 +451,79 @@ test_that('Local information stays within a chromosome', {
     expect_equal(BiocGenerics::start(both21), BiocGenerics::start(alone))
     expect_equal(as.data.frame(S4Vectors::mcols(both21)[, cols]), as.data.frame(S4Vectors::mcols(alone)[, cols]))
 })
+
+test_that('local_disp and local_meth type checks', {
+    for (arg in c('local_disp', 'local_meth')) {
+        args = list(
+            bs = small_test,
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = TRUE),
+            local_window_size = 50)
+        args[[arg]] = NA
+        expect_error(do.call(diff_methylsig, args), sprintf('%s must be TRUE/FALSE.', arg), fixed = TRUE)
+    }
+    expect_error(
+        diff_methylsig(
+            bs = small_test,
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = TRUE),
+            local_window_size = 50,
+            local_disp = FALSE,
+            local_meth = FALSE),
+        'local_window_size > 0 uses local information, so local_disp or local_meth must be TRUE.',
+        fixed = TRUE
+    )
+})
+
+test_that('local_disp and local_meth use local information separately', {
+    run = function(local_window_size, local_disp = TRUE, local_meth = TRUE) {
+        suppressMessages(diff_methylsig(
+            bs = small_test,
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = TRUE),
+            local_window_size = local_window_size,
+            t_approx = TRUE,
+            n_cores = 1,
+            local_disp = local_disp,
+            local_meth = local_meth))
+    }
+    none = run(0)
+    both = run(50)
+    disp_only = run(50, local_meth = FALSE)
+    meth_only = run(50, local_disp = FALSE)
+
+    # Dispersion and degrees of freedom come from the dispersion data
+    expect_equal(disp_only$disp_est, both$disp_est)
+    expect_equal(disp_only$df, both$df)
+    expect_equal(meth_only$disp_est, none$disp_est)
+    expect_equal(meth_only$df, none$df)
+
+    # Group methylation and the statistic come from the methylation data
+    expect_false(isTRUE(all.equal(disp_only$log_lik_ratio, both$log_lik_ratio)))
+    expect_false(isTRUE(all.equal(meth_only$log_lik_ratio, none$log_lik_ratio)))
+})
+
+test_that('Too few samples to estimate dispersion without local dispersion', {
+    three = small_test[, c(1, 2, 4)]
+    args = list(
+        bs = three,
+        group_column = 'Type',
+        comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+        disp_groups = c('case' = TRUE, 'control' = TRUE),
+        local_window_size = 50,
+        t_approx = TRUE,
+        n_cores = 1)
+
+    # Local dispersion can add degrees of freedom, so 3 samples are enough
+    expect_true(is(suppressMessages(do.call(diff_methylsig, args)), 'GRanges'))
+
+    args$local_disp = FALSE
+    expect_error(
+        do.call(diff_methylsig, args),
+        'Too few samples to estimate dispersion: disp_groups has 3 samples, and at least 4 are needed.',
+        fixed = TRUE
+    )
+})

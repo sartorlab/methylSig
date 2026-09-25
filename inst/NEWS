@@ -1,3 +1,15 @@
+CHANGES IN VERSION 1.25.4
+-------------------------
+
+NEW FEATURES
+
+  o diff_methylsig() has local_disp and local_meth parameters, which choose
+    whether local information (local_window_size > 0) is used for the
+    dispersion estimate and degrees of freedom, the group methylation
+    estimates and likelihood ratio, or both (issue #47). Both are TRUE by
+    default, which gives the same results as before. These were the
+    local.disp and local.meth options of methylSigCalc() before 0.5.0.
+
 CHANGES IN VERSION 1.25.2
 -------------------------
 
