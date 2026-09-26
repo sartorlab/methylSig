@@ -375,3 +375,79 @@ test_that('contrast message says what is tested', {
         fixed = TRUE
     )
 })
+
+test_that('A character methylation_group_column needs methylation_groups', {
+    expect_error(
+        diff_dss_test(
+            bs = small_test,
+            diff_fit = diff_fit,
+            contrast = c(0, 1),
+            methylation_group_column = 'Type'),
+        'methylation_group_column Type is a character column, so methylation_groups must give its case and control values',
+        fixed = TRUE
+    )
+})
+
+test_that('methylation_group_column must be character, factor, or numeric', {
+    logical_fit = diff_fit
+    logical_fit$design$is_cancer = logical_fit$design$Type == 'cancer'
+
+    expect_error(
+        diff_dss_test(
+            bs = small_test,
+            diff_fit = logical_fit,
+            contrast = c(0, 1),
+            methylation_group_column = 'is_cancer'),
+        'methylation_group_column is_cancer must be a character, factor, or numeric column of diff_fit$design, not logical.',
+        fixed = TRUE
+    )
+})
+
+test_that('methylation_groups is ignored for a numeric methylation_group_column', {
+    num_fit = suppressMessages(diff_dss_fit(
+        bs = small_test,
+        design = pData(small_test),
+        formula = '~ num_cov'))
+    run = function(...) {
+        suppressMessages(diff_dss_test(
+            bs = small_test,
+            diff_fit = num_fit,
+            contrast = c(0, 1),
+            methylation_group_column = 'num_cov',
+            ...))
+    }
+
+    expect_warning(
+        with_groups <- run(methylation_groups = c('case' = 'cancer', 'control' = 'normal')),
+        'methylation_groups is ignored because methylation_group_column num_cov is numeric.',
+        fixed = TRUE
+    )
+    expect_equal(with_groups, run())
+})
+
+test_that('Methylation rates come from the fit loci of bs, in order', {
+    run = function(bs) {
+        suppressMessages(diff_dss_test(
+            bs = bs,
+            diff_fit = diff_fit,
+            contrast = c(0, 1),
+            methylation_group_column = 'Type',
+            methylation_groups = c('case' = 'cancer', 'control' = 'normal')))
+    }
+    expected = run(small_test)
+
+    # More loci than were fit, and the fit loci in another order
+    expect_equal(run(bs[1:100]), expected)
+    expect_equal(run(small_test[rev(seq_along(small_test))]), expected)
+
+    expect_error(
+        run(small_test[1:40]),
+        '10 of the 50 loci in diff_fit$gr are not in bs. Use the bs given to diff_dss_fit().',
+        fixed = TRUE
+    )
+    expect_error(
+        run(small_test[, 1:4]),
+        'bs has 4 samples, but diff_fit$design has 6 rows. Use the bs given to diff_dss_fit().',
+        fixed = TRUE
+    )
+})
