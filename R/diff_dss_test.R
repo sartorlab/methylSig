@@ -64,7 +64,7 @@
 #' @param contrast a contrast for hypothesis testing: a numeric vector with one value per column of \code{diff_fit$X}, or a matrix with one row per column of \code{diff_fit$X} and one column per hypothesis. Unnamed values are in the order of the columns of \code{diff_fit$X}, and named values (or row names) are matched to them by name. If the contrast is the wrong size, the error lists the columns of \code{diff_fit$X} in order. A message says what the contrast tests, e.g. \code{Typenormal = 0}.
 #' @param methylation_group_column Optionally, a column from \code{diff_fit$design} by which to group samples and capture methylation rates. This column can be a \code{character}, \code{factor}, or \code{numeric}. In the case of \code{numeric} the samples are grouped according to the bottom and top percentiles of the covariate given by \code{covariate_percentiles}, and the mean methylation for each group is calculated. If not a \code{numeric}, use the \code{methylation_groups} parameter to specify case and control.
 #' @param methylation_groups a named \code{character} vector indicating the \code{case} and \code{control} factors of \code{methylation_group_column} by which to group samples and capture methylation rates. Required when \code{methylation_group_column} is a \code{character} or \code{factor} column, and ignored, with a warning, when it is \code{numeric}. If specified, must also specify \code{methylation_group_column}.
-#' @param covariate_percentiles A \code{numeric} vector of two percentiles, from 0 to 100, used when \code{methylation_group_column} is \code{numeric}. Samples with covariate values at or below the first percentile are the case group, and samples at or above the second are the control group. Default \code{c(25, 75)}, the bottom and top 25 percent.
+#' @param covariate_percentiles A \code{numeric} vector of two percentiles, from 0 to 100, used when \code{methylation_group_column} is \code{numeric}. Samples with covariate values at or above the second percentile are the case group, and samples at or below the first are the control group, so \code{meth_diff} is the methylation of the high group minus the low group, and \code{direction} is \code{Hyper} when methylation increases with the covariate. Default \code{c(25, 75)}, the top and bottom 25 percent. Before methylSig 1.25.12 the groups were the reverse: the low group was the case group, so \code{meth_diff} and \code{direction} had the opposite sign.
 #'
 #' @return A \code{GRanges} object containing the following \code{mcols}:
 #' \describe{
@@ -77,7 +77,7 @@
 #'   \item{meth_case:}{ Methylation estimate for case. }
 #'   \item{meth_control:}{ Methylation estimate for control. }
 #'   \item{meth_diff:}{ The difference \code{meth_case - meth_control}. }
-#'   \item{direction:}{ The group for which the locus is hyper-methylated. Note, this is not subject to significance thresholds. }
+#'   \item{direction:}{ The group for which the locus is hyper-methylated. For a \code{numeric} \code{methylation_group_column}, \code{Hyper} when methylation increases with the covariate, and \code{Hypo} when it decreases. Note, this is not subject to significance thresholds. }
 #' }
 #'
 #' @examples
@@ -257,7 +257,10 @@ diff_dss_test = function(
         } else {
 
             # Order of return is covariate_percentiles[1], covariate_percentiles[2]
-            # So we want <= quantiles[1] and >= quantiles[2]
+            # The case group is the high group (>= quantiles[2]) and the control
+            # group the low group (<= quantiles[1]), so meth_diff is high minus
+            # low and direction is Hyper when methylation increases with the
+            # covariate, the same sign as stat for a contrast on the covariate
             quantiles = quantile(
                 x = pdata[, methylation_group_column],
                 probs = covariate_percentiles / 100,
@@ -267,8 +270,8 @@ diff_dss_test = function(
             case = 'Hyper'
             control = 'Hypo'
 
-            case_idx = which(pdata[, methylation_group_column] <= quantiles[1])
-            control_idx = which(pdata[, methylation_group_column] >= quantiles[2])
+            case_idx = which(pdata[, methylation_group_column] >= quantiles[2])
+            control_idx = which(pdata[, methylation_group_column] <= quantiles[1])
 
             # With tied covariate values, both percentiles can be the same value
             if (length(intersect(case_idx, control_idx)) > 0) {

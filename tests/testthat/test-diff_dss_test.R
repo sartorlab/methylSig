@@ -271,24 +271,24 @@ test_that('covariate_percentiles groups samples', {
     }
 
     # num_cov is c(9, 8, 10, 1, 3, 2)
-    # Default 25 and 75: case is num_cov <= 2.25 (1, 2), control is >= 8.75 (9, 10)
+    # Default 25 and 75: case is num_cov >= 8.75 (9, 10), control is <= 2.25 (1, 2)
     default_gr = diff_dss_test(
         bs = small_test,
         diff_fit = diff_fit,
         contrast = matrix(c(0,1), ncol = 1),
         methylation_group_column = 'num_cov')
-    expect_equal(unname(default_gr$meth_case), unname(group_meth(c(4, 6))))
-    expect_equal(unname(default_gr$meth_control), unname(group_meth(c(1, 3))))
+    expect_equal(unname(default_gr$meth_case), unname(group_meth(c(1, 3))))
+    expect_equal(unname(default_gr$meth_control), unname(group_meth(c(4, 6))))
 
-    # 50 and 50: case is num_cov <= 5.5 (1, 2, 3), control is >= 5.5 (8, 9, 10)
+    # 49.9 and 50: case is num_cov >= 5.5 (8, 9, 10), control is <= 5.5 (1, 2, 3)
     median_gr = diff_dss_test(
         bs = small_test,
         diff_fit = diff_fit,
         contrast = matrix(c(0,1), ncol = 1),
         methylation_group_column = 'num_cov',
         covariate_percentiles = c(49.9, 50))
-    expect_equal(unname(median_gr$meth_case), unname(group_meth(c(4, 5, 6))))
-    expect_equal(unname(median_gr$meth_control), unname(group_meth(c(1, 2, 3))))
+    expect_equal(unname(median_gr$meth_case), unname(group_meth(c(1, 2, 3))))
+    expect_equal(unname(median_gr$meth_control), unname(group_meth(c(4, 5, 6))))
 
     # The test statistics don't depend on the grouping
     expect_equal(median_gr$stat, default_gr$stat)
@@ -450,4 +450,23 @@ test_that('Methylation rates come from the fit loci of bs, in order', {
         'bs has 4 samples, but diff_fit$design has 6 rows. Use the bs given to diff_dss_fit().',
         fixed = TRUE
     )
+})
+
+test_that('direction follows the covariate for a numeric methylation_group_column', {
+    num_fit = suppressMessages(diff_dss_fit(
+        bs = bs[1:2000],
+        design = pData(bs),
+        formula = '~ num_cov'))
+    diff_gr = suppressMessages(diff_dss_test(
+        bs = bs[1:2000],
+        diff_fit = num_fit,
+        contrast = c(0, 1),
+        methylation_group_column = 'num_cov'))
+
+    # With a contrast on the covariate, stat > 0 means methylation increases
+    # with it, so significant loci are Hyper, with meth_diff > 0 (high minus low)
+    significant = diff_gr[diff_gr$pvalue < 0.01 & diff_gr$meth_diff != 0]
+    expect_gt(length(significant), 10)
+    expect_equal(significant$direction, ifelse(significant$stat > 0, 'Hyper', 'Hypo'))
+    expect_equal(sign(significant$meth_diff), sign(significant$stat))
 })
