@@ -1,3 +1,18 @@
+CHANGES IN VERSION 1.25.11
+--------------------------
+
+BUG FIXES
+
+  o filter_loci_by_group_coverage() names only the groups whose thresholds
+    no locus satisfies, instead of every group. When each group alone has
+    loci that pass but no locus passes for all groups at once, it says so.
+  o diff_methylsig() warns when local information is used
+    (local_window_size > 0) and bs isn't sorted by position. Neighbors are
+    found among the 5 loci on either side, so unsorted loci miss some.
+  o diff_methylsig() with n_cores > 1 stops with the error from a parallel
+    worker. Before, mclapply() returned the error as a value, and the
+    results failed later with an unrelated error.
+
 CHANGES IN VERSION 1.25.10
 --------------------------
 

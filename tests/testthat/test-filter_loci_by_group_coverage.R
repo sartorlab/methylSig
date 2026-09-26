@@ -164,3 +164,34 @@ test_that('Test cancer 3 normal 3', {
         ignore_attr = TRUE
     )
 })
+
+test_that('Only the groups that are too strict are named', {
+    expect_error(
+        filter_loci_by_group_coverage(
+            bs = small_test,
+            group_column = 'Type',
+            c('cancer' = 1, 'normal' = 4)),
+        'Thresholds for the following groups were too strict: normal.',
+        fixed = TRUE
+    )
+})
+
+test_that('No locus satisfies all groups at once', {
+    # Locus 1 is covered only in group a, and locus 2 only in group b
+    disjoint = bsseq::BSseq(
+        chr = c('chr1', 'chr1'),
+        pos = c(10, 20),
+        M = matrix(c(1, 0, 1, 0, 0, 1, 0, 1), nrow = 2),
+        Cov = matrix(c(2, 0, 2, 0, 0, 2, 0, 2), nrow = 2),
+        pData = data.frame(group = c('a', 'a', 'b', 'b'), row.names = paste0('s', 1:4)),
+        sampleNames = paste0('s', 1:4))
+
+    expect_error(
+        filter_loci_by_group_coverage(
+            bs = disjoint,
+            group_column = 'group',
+            c('a' = 1, 'b' = 1)),
+        'No locus satisfies the thresholds for all groups at once, although each group alone has loci that do.',
+        fixed = TRUE
+    )
+})

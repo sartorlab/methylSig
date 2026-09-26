@@ -225,6 +225,12 @@ diff_methylsig = function(
         stop('Cannot use local information on region-resolution data. Detected local_window_size > 0 and median width of loci > 2')
     }
 
+    # Local information looks for neighbors among the 5 loci on either side, so
+    # it misses neighbors when loci aren't sorted by position
+    if (local_window_size > 0 && is.unsorted(granges(bs), ignore.strand = TRUE)) {
+        warning('bs is not sorted by position, so local information will miss some neighboring loci. Sort it first with bs = sort(bs, ignore.strand = TRUE).')
+    }
+
     #####################################
 
     case = comparison_groups['case']
@@ -317,7 +323,7 @@ diff_methylsig = function(
             weights = local_weights))
     }
 
-    result = do.call(rbind, parallel::mclapply(seq_along(gr), function(locus_idx){
+    locus_results = parallel::mclapply(seq_along(gr), function(locus_idx){
 
         ### Deal with local information (or not)
         # Dispersion and degrees of freedom use disp_data, and group methylation
@@ -437,7 +443,16 @@ diff_methylsig = function(
         }
 
         return(locus_data)
-    }, mc.cores = n_cores))
+    }, mc.cores = n_cores)
+
+    # With n_cores > 1, mclapply() returns a worker's error as a try-error for
+    # every locus that worker had, instead of stopping, so stop with its message
+    failed = vapply(locus_results, inherits, TRUE, 'try-error')
+    if (any(failed)) {
+        stop(sprintf('diff_methylsig() failed in a parallel worker: %s',
+            conditionMessage(attr(locus_results[[which(failed)[1]]], 'condition'))))
+    }
+    result = do.call(rbind, locus_results)
 
     #####################################
 

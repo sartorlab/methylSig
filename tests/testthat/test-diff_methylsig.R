@@ -551,3 +551,42 @@ test_that('Too few samples to estimate dispersion without local dispersion', {
         fixed = TRUE
     )
 })
+
+test_that('Local information on unsorted loci gives a warning', {
+    run = function(bs, local_window_size = 50) {
+        suppressMessages(diff_methylsig(
+            bs = bs,
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = TRUE),
+            local_window_size = local_window_size,
+            n_cores = 1))
+    }
+    unsorted = small_test[rev(seq_along(small_test))]
+
+    expect_warning(
+        run(unsorted),
+        'bs is not sorted by position, so local information will miss some neighboring loci.',
+        fixed = TRUE
+    )
+    expect_no_warning(run(small_test))
+    expect_no_warning(run(unsorted, local_window_size = 0))
+})
+
+test_that('An error in a parallel worker stops with its message', {
+    skip_on_os('windows')
+
+    # mclapply() also warns that the scheduled cores encountered errors
+    suppressWarnings(expect_error(
+        diff_methylsig(
+            bs = small_test,
+            group_column = 'Type',
+            comparison_groups = c('case' = 'cancer', 'control' = 'normal'),
+            disp_groups = c('case' = TRUE, 'control' = TRUE),
+            local_window_size = 50,
+            local_weight_function = function(u) stop('bad weights'),
+            n_cores = 2),
+        'diff_methylsig() failed in a parallel worker: bad weights',
+        fixed = TRUE
+    ))
+})
