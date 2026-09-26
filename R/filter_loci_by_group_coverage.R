@@ -94,9 +94,16 @@ filter_loci_by_group_coverage = function(bs, group_column, min_samples_per_group
     if(!any(keep_loci)) {
         zero_groups = vapply(keep_group_loci, sum, 1, USE.NAMES = TRUE) == 0
 
-        stop(sprintf('Thresholds for the following groups were too strict: %s.
+        # Each group can have loci that pass while no locus passes for all
+        # groups at once
+        if (any(zero_groups)) {
+            stop(sprintf('Thresholds for the following groups were too strict: %s.
             Relax thresholds for these groups and try filtering again.',
-            paste(names(zero_groups), collapse = ', ')))
+                paste(names(zero_groups)[zero_groups], collapse = ', ')))
+        } else {
+            stop('No locus satisfies the thresholds for all groups at once, although each group alone has loci that do.
+            Relax the thresholds and try filtering again.')
+        }
     }
 
     return(bs[keep_loci])
