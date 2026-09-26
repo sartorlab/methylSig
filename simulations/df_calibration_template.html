@@ -1,0 +1,778 @@
+<title>methylSig df Calibration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<style>
+:root {
+  --page: #f6f7f5;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #4b4d49;
+  --muted: #7d7f79;
+  --grid: #e1e2dc;
+  --axis: #c3c4bc;
+  --rule: rgba(11, 13, 11, 0.12);
+  --link: #1c5cab;
+  --code-bg: #eceee9;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --focus: #2a78d6;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #121312;
+    --surface: #1a1b1a;
+    --ink: #f4f5f2;
+    --ink-2: #c3c4bb;
+    --muted: #8d8f88;
+    --grid: #2c2d2b;
+    --axis: #3d3e3b;
+    --rule: rgba(255, 255, 255, 0.12);
+    --link: #86b6ef;
+    --code-bg: #232422;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --focus: #86b6ef;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #121312;
+  --surface: #1a1b1a;
+  --ink: #f4f5f2;
+  --ink-2: #c3c4bb;
+  --muted: #8d8f88;
+  --grid: #2c2d2b;
+  --axis: #3d3e3b;
+  --rule: rgba(255, 255, 255, 0.12);
+  --link: #86b6ef;
+  --code-bg: #232422;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --focus: #86b6ef;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 40px 72px;
+}
+.page { max-width: 1080px; margin-inline: auto; display: grid; gap: 56px; }
+.prose { max-width: 68ch; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 42px); letter-spacing: -0.01em; }
+h2 { font-size: 26px; }
+h3 { font-size: 19px; font-weight: 500; }
+p { margin: 0; }
+a { color: var(--link); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible + span, [tabindex]:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+code, .mono { font-family: var(--mono); font-size: 0.9em; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+section { display: grid; gap: 18px; }
+.eyebrow {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+
+header { display: grid; gap: 16px; border-bottom: 1px solid var(--rule); padding-bottom: 32px; }
+.lede { font-size: 19px; line-height: 1.55; color: var(--ink-2); max-width: 62ch; }
+.byline { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px; color: var(--muted); }
+
+.verdict { display: grid; gap: 14px; }
+.verdict ul { margin: 0; padding-left: 1.2em; display: grid; gap: 10px; }
+.verdict li::marker { color: var(--muted); }
+.recommend {
+  border-left: 3px solid var(--s1); padding: 4px 0 4px 16px; font-weight: 500;
+}
+
+.formula {
+  font-family: var(--serif); font-size: 18px; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 6px; padding: 14px 18px; overflow-x: auto;
+  white-space: nowrap;
+}
+.formula .note { font-family: var(--sans); font-size: 13px; color: var(--muted); margin-left: 12px; }
+
+dl.design { display: grid; grid-template-columns: minmax(150px, 190px) 1fr; gap: 12px 24px; margin: 0; max-width: 88ch; }
+dl.design dt { font-weight: 600; font-size: 15px; }
+dl.design dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 620px) {
+  dl.design { grid-template-columns: 1fr; gap: 2px; }
+  dl.design dd { margin-bottom: 12px; }
+}
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-end; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
+legend { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 0; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); padding: 2px; gap: 2px; }
+.seg label { position: relative; cursor: pointer; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg span { display: block; padding: 5px 12px; border-radius: 4px; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.seg label:hover span { background: var(--code-bg); }
+.seg input:checked + span { background: var(--ink); color: var(--page); }
+
+.key { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--ink-2); }
+.key span { display: inline-flex; align-items: center; gap: 8px; }
+.key i { display: inline-block; width: 18px; height: 2px; border-radius: 1px; }
+.key .ref { width: 18px; height: 0; border-top: 1px dashed var(--muted); background: none; }
+
+.panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .panels { grid-template-columns: 1fr; } }
+.chart {
+  position: relative; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px;
+  padding: 14px 14px 8px; display: grid; gap: 4px;
+}
+.chart h3 { font-family: var(--sans); font-size: 14px; font-weight: 600; }
+.chart .sub { font-size: 13px; color: var(--muted); }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; touch-action: pan-y; }
+.chart svg:focus { outline: none; }
+.chart svg:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+svg text { font-family: var(--sans); fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+svg .grid { stroke: var(--grid); stroke-width: 1; }
+svg .axis { stroke: var(--axis); stroke-width: 1; }
+svg .refline { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 4 3; }
+svg .reflabel { fill: var(--ink-2); font-size: 11px; }
+svg .cross { stroke: var(--ink-2); stroke-width: 1; }
+svg .series { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+svg .dot { stroke: var(--surface); stroke-width: 2; }
+svg .axtitle { fill: var(--ink-2); font-size: 12px; }
+
+.tip {
+  position: absolute; pointer-events: none; z-index: 2; min-width: 190px;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); padding: 8px 10px; font-size: 13px; display: grid; gap: 3px;
+}
+.tip .head { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+.tip .row { display: grid; grid-template-columns: 14px auto 1fr; align-items: center; gap: 8px; }
+.tip .row i { width: 14px; height: 2px; border-radius: 1px; display: block; }
+.tip .row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tip .row em { font-style: normal; color: var(--muted); }
+
+.qq-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 24px; align-items: start; }
+@media (max-width: 860px) { .qq-wrap { grid-template-columns: 1fr; } }
+.qq-wrap .chart { max-width: 640px; }
+.qq-notes { display: grid; gap: 12px; font-size: 15px; color: var(--ink-2); }
+
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 12px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+th { font-weight: 600; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule); }
+th:first-child, td:first-child { text-align: left; }
+tbody tr + tr td { border-top: 1px solid var(--grid); }
+tbody tr.group td { border-top: 1px solid var(--rule); font-weight: 600; color: var(--ink); padding-top: 14px; text-align: left; }
+td.over { font-weight: 600; color: var(--ink); }
+td.over::after { content: " \25B2"; font-size: 9px; color: var(--ink-2); vertical-align: 1px; }
+td.dim { color: var(--muted); }
+.caption { font-size: 13px; color: var(--muted); max-width: 88ch; }
+
+ol.caveats { margin: 0; padding-left: 1.3em; display: grid; gap: 12px; max-width: 72ch; }
+pre {
+  margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.55;
+}
+.files { display: grid; grid-template-columns: max-content 1fr; gap: 6px 20px; font-size: 15px; margin: 0; }
+.files dt { font-family: var(--mono); font-size: 13.5px; }
+.files dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 620px) { .files { grid-template-columns: 1fr; gap: 0; } .files dd { margin-bottom: 10px; } }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 18px; }
+@media (prefers-reduced-motion: no-preference) { .seg span { transition: background-color 120ms; } }
+</style>
+
+<main class="page">
+  <header>
+    <div class="eyebrow">methylSig &middot; simulation report</div>
+    <h1>Degrees of freedom for the t approximation in diff_methylsig()</h1>
+    <p class="lede">
+      diff_methylsig() compares its likelihood ratio statistic to a squared t distribution.
+      The paper sets the degrees of freedom to the number of samples minus 2, and since 2015
+      the package has added 2 to that. This report measures the false-positive rate of both
+      choices, and of the &chi;<sup>2</sup> approximation, on simulated data with no difference
+      between groups.
+    </p>
+    <div class="byline">
+      <span>Raymond Cavalcante</span>
+      <span>26 September 2026</span>
+      <span>methylSig 1.25.10 (Bioconductor devel)</span>
+    </div>
+  </header>
+
+  <section class="verdict prose" aria-labelledby="summary">
+    <h2 id="summary">Summary</h2>
+    <p>
+      Site by site (<code>local_window_size = 0</code>, the default), with overdispersed loci as the case
+      that matters most:
+    </p>
+    <ul>
+      <li>
+        <b>The paper&rsquo;s df is conservative at small samples and close to nominal from about 6 per group.</b>
+        At p &lt; 0.05, 0.28% of overdispersed loci are false positives at 2 per group, 2.3% at 3, 4.1% at 4,
+        and 4.8% to 5.2% from 6 to 10.
+      </li>
+      <li>
+        <b>Adding 2 fixes the small samples and overshoots a little from 4 per group.</b>
+        The same rates are 3.3% at 2 per group and 4.6% at 3, then 5.2% to 5.6% from 4 to 10.
+        At p &lt; 0.001, both choices stay at or below the nominal 0.1%.
+      </li>
+      <li>
+        <b>Over all loci, both are conservative</b>, because 64% of loci have binomial variation:
+        0.11% (paper) and 1.6% (+ 2) at 2 per group, 3.7% and 3.9% at 10.
+      </li>
+      <li>
+        <b>&chi;<sup>2</sup> is anti-conservative everywhere</b>: 7.2% to 11.6% on overdispersed loci at
+        p &lt; 0.05, and 4 to 15 times the nominal rate at p &lt; 0.001. This supports keeping
+        <code>t_approx = TRUE</code> as the default.
+      </li>
+      <li>
+        <b>Local dispersion alone is anti-conservative here on overdispersed loci</b>, with either df: 6.1% to
+        8.1% from 3 per group. The true dispersion in this simulation isn&rsquo;t smooth along the genome
+        (see <a href="#caveats">Caveats</a>), which works against local dispersion. With local dispersion and
+        methylation together, the rates are 3.7% to 5.2% from 3 per group.
+      </li>
+    </ul>
+    <p class="recommend">
+      For discussion: the + 2 does what it was added for at 2 to 3 samples per group. From about 4 per
+      group, the paper&rsquo;s df is better calibrated on overdispersed loci. A correction that shrinks
+      with sample size would keep both, and would be simple to test with this simulation.
+    </p>
+  </section>
+
+  <section class="prose" aria-labelledby="background">
+    <h2 id="background">Background</h2>
+    <p>
+      For each locus <i>i</i>, diff_methylsig() estimates the dispersion &theta;&#770;<sub><i>i</i></sub>,
+      fits a methylation level for each group and one common level, and computes the likelihood ratio
+      statistic D&nbsp;=&nbsp;2{&#8467;(&mu;&#770;<sub><i>ig</i></sub>,&nbsp;&theta;&#770;<sub><i>i</i></sub>)&nbsp;&minus;&nbsp;&#8467;(&mu;&#770;<sub><i>i</i></sub>,&nbsp;&theta;&#770;<sub><i>i</i></sub>)}.
+      Park et al. (2014, section 2.3) approximate its distribution by D&nbsp;~&nbsp;t<sub><i>p</i></sub><sup>2</sup> with
+    </p>
+    <div class="formula" role="math" aria-label="p equals the sum over loci k in the window S of H of k minus i, times J k 1 plus J k 2 minus 2">
+      <i>p</i> = &Sigma;<sub><i>k</i>&isin;<i>S</i></sub> <i>H</i>(<i>k</i> &minus; <i>i</i>) (<i>J</i><sub><i>k</i>1</sub> + <i>J</i><sub><i>k</i>2</sub> &minus; 2)
+      <span class="note">J<sub>kg</sub>: samples in group g with coverage at locus k</span>
+    </div>
+    <p>
+      where <i>S</i> is the local window and <i>H</i> the weight kernel. Without local information,
+      <i>S</i> is the locus alone and <i>p</i> = <i>J</i><sub>1</sub> + <i>J</i><sub>2</sub> &minus; 2.
+      In September 2015 (commit <code>5896c23</code>), after discussion with Maureen Sartor, methylSig
+      began using <i>p</i> + 2, because the t approximation was too conservative with small samples.
+      In the paper&rsquo;s permutation study (Fig. 2, 21 AML ERRBS samples), <i>p</i> degrees of freedom
+      are conservative at 4 to 5 covered samples and slightly anti-conservative from about 7.
+    </p>
+    <p>
+      methylSig 1.25.7 fixed a typo in the log likelihood used with local information for methylation
+      (<code>local_meth = TRUE</code>): the term for unmethylated reads lacked &theta;, which inflated D.
+      With mixed cancer and normal labels on real data, 22.3% of loci had FDR &lt; 0.05 before the fix
+      and none after. All results here use 1.25.10, which includes the fix.
+    </p>
+  </section>
+
+  <section aria-labelledby="design">
+    <h2 id="design">Simulation design</h2>
+    <p class="prose">
+      The null data are resampled from real data, so methylation levels, dispersion, coverage,
+      missingness and CpG spacing are realistic, and the two groups have the same true methylation
+      at every locus.
+    </p>
+    <dl class="design">
+      <dt>Loci</dt>
+      <dd>The first 250,000 CpGs of bsseqData&rsquo;s <code>BS.cancer.ex</code> (chr21, 3 colon cancer and 3 normal samples), kept if they have coverage between 5 and 500 in at least 2 samples per group and could be tested on the real data: 79,735 loci.</dd>
+      <dt>True methylation</dt>
+      <dd>For each locus, the methylation of all 6 real samples pooled, the same in both simulated groups. 7% of loci are at 0 or 1, and 73% are between 0.1 and 0.9.</dd>
+      <dt>True dispersion</dt>
+      <dd>diff_methylsig()&rsquo;s estimate &theta;&#770; on the real data (cancer against normal, no local information), which is the dispersion around the group means. 64% of loci are at the upper bound &theta; = 10<sup>6</sup>, which is effectively binomial. The other 36%, the overdispersed loci, have median &theta; = 10 (&rho; = 1/(1 + &theta;) &asymp; 0.09), with 10th to 90th percentiles of 2.4 and 76.</dd>
+      <dt>Samples</dt>
+      <dd>2, 3, 4, 5, 6, 8 and 10 per group, in two equal groups. Each simulated sample copies the coverage of a randomly chosen real sample at every locus, which keeps real coverage and missingness.</dd>
+      <dt>Reads</dt>
+      <dd>Methylated reads are beta-binomial: M ~ Binomial(coverage, P), with P ~ Beta(&mu;&theta;, (1 &minus; &mu;)&theta;), the model diff_methylsig() assumes.</dd>
+      <dt>Filtering</dt>
+      <dd>As a user would, loci need at least 2 covered samples per group (filter_loci_by_group_coverage()). diff_methylsig() drops loci with <i>p</i> &le; 1.</dd>
+      <dt>Local information</dt>
+      <dd>None; local dispersion only (<code>local_window_size = 200</code>, <code>local_meth = FALSE</code>); or local dispersion and methylation (both TRUE, the defaults once a window is set). The default tri-weight kernel <i>H</i>(<i>u</i>) = (1 &minus; <i>u</i><sup>2</sup>)<sup>3</sup>, with up to 5 neighbors on either side.</dd>
+      <dt>Tests</dt>
+      <dd>From the same D at each locus: t<sub><i>p</i></sub><sup>2</sup> (the paper), t<sub><i>p</i>+2</sub><sup>2</sup> (methylSig since 2015), and &chi;<sup>2</sup> with 1 df (<code>t_approx = FALSE</code>).</dd>
+      <dt>Replication</dt>
+      <dd>One simulated data set per sample size, tested with all three local settings. Seed 20260926.</dd>
+    </dl>
+  </section>
+
+  <section aria-labelledby="results">
+    <h2 id="results">False-positive rates</h2>
+    <p class="prose">
+      Each panel shows the fraction of tested loci with p below the chosen level. Every test at a
+      given sample size uses the same statistic D; only its reference distribution differs. The
+      dashed line is the nominal level. Hover or focus a panel and use the arrow keys for values.
+    </p>
+    <div class="controls">
+      <fieldset>
+        <legend>Significance level</legend>
+        <div class="seg" role="radiogroup">
+          <label><input type="radio" name="alpha" id="alpha-05" value="0.05" checked><span>0.05</span></label>
+          <label><input type="radio" name="alpha" id="alpha-01" value="0.01"><span>0.01</span></label>
+          <label><input type="radio" name="alpha" id="alpha-001" value="0.001"><span>0.001</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Loci</legend>
+        <div class="seg" role="radiogroup">
+          <label><input type="radio" name="loci" id="loci-all" value="all" checked><span>All tested</span></label>
+          <label><input type="radio" name="loci" id="loci-mid" value="meth_10_90"><span>Methylation 10&ndash;90%</span></label>
+          <label><input type="radio" name="loci" id="loci-od" value="overdispersed"><span>Overdispersed</span></label>
+        </div>
+      </fieldset>
+    </div>
+    <div class="key" id="key"></div>
+    <div class="panels" id="panels"></div>
+    <p class="caption" id="rates-caption"></p>
+
+    <h3 style="margin-top: 20px;">Rates by setting</h3>
+    <div class="table-wrap">
+      <table id="rates-table">
+        <thead>
+          <tr>
+            <th scope="col">Samples per group</th>
+            <th scope="col">Tested loci</th>
+            <th scope="col">Median df (paper)</th>
+            <th scope="col">t, paper df</th>
+            <th scope="col">t, df + 2</th>
+            <th scope="col">&chi;<sup>2</sup>, 1 df</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="caption">Rates are percentages of tested loci. &#9650; marks a rate above the nominal level.</p>
+  </section>
+
+  <section aria-labelledby="qq">
+    <h2 id="qq">QQ-plots</h2>
+    <div class="controls">
+      <fieldset>
+        <legend>Local information</legend>
+        <div class="seg" role="radiogroup">
+          <label><input type="radio" name="qqlocal" id="qq-none" value="none" checked><span>None</span></label>
+          <label><input type="radio" name="qqlocal" id="qq-disp" value="disp"><span>Dispersion</span></label>
+          <label><input type="radio" name="qqlocal" id="qq-both" value="disp_meth"><span>Dispersion and methylation</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Samples per group</legend>
+        <div class="seg" role="radiogroup" id="qq-n"></div>
+      </fieldset>
+    </div>
+    <div class="qq-wrap">
+      <div class="chart" id="qq-chart"></div>
+      <div class="qq-notes">
+        <p>
+          Observed against expected &minus;log<sub>10</sub> p for all tested loci. Points below the
+          diagonal are conservative, and points above it are anti-conservative.
+        </p>
+        <p id="qq-clip"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="prose" aria-labelledby="caveats">
+    <h2 id="caveats">Caveats</h2>
+    <ol class="caveats">
+      <li>
+        <b>The null follows the model.</b> Reads are drawn from the beta-binomial distribution that
+        diff_methylsig() fits, so this tests the t approximation, not model misspecification. The
+        paper&rsquo;s permutations of real samples include variation the model doesn&rsquo;t, which may be
+        why it found slight anti-conservatism from about 7 samples.
+      </li>
+      <li>
+        <b>The true dispersion is noisy and not spatially smooth.</b> It comes from per-locus estimates on
+        3 against 3 samples: 64% are at the binomial bound, the Spearman correlation of log &theta; between
+        adjacent loci is 0.09, and 59% of the neighbors of an overdispersed locus are binomial. Real
+        dispersion is correlated over 200 to 300 bp (the paper&rsquo;s Supplementary Figure S2), so the
+        local-dispersion results here are a stress test, and are probably worse than on real data.
+      </li>
+      <li>
+        <b>Loci aren&rsquo;t independent.</b> Local windows share reads and simulated samples share coverage
+        patterns, so rates vary more than the binomial standard error suggests (about 0.09 percentage points
+        at 5% with 60,000 loci, 0.13 with 28,000). Differences below about 0.3 points aren&rsquo;t meaningful.
+      </li>
+      <li>
+        <b>One data set.</b> One region of one tissue (chr21, colon), balanced groups, and one simulated data
+        set per sample size.
+      </li>
+      <li>
+        <b>Only false positives.</b> Power isn&rsquo;t measured. The + 2 raises power most at small samples,
+        where the paper&rsquo;s df is most conservative.
+      </li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="repro">
+    <h2 id="repro">Reproducing</h2>
+    <p class="prose">
+      From the repository root, in the methylSig devel Docker image (<code>docker/Dockerfile</code>)
+      with methylSig installed. The simulation takes about 15 minutes with 4 cores. Keep
+      <code>N_CORES</code> at 4 or less in an 8 GB Docker VM: each mclapply() worker can end up
+      copying the parent&rsquo;s memory.
+    </p>
+    <pre>Rscript simulations/df_calibration.R simulations
+Rscript simulations/df_calibration_report.R</pre>
+    <dl class="files">
+      <dt>df_calibration.R</dt><dd>The simulation. Seeded, so reruns give the same data.</dd>
+      <dt>df_calibration_results.csv</dt><dd>Every rate in this report, for each sample size, setting, test, locus subset and level.</dd>
+      <dt>df_calibration_session.txt</dt><dd>R and package versions of the run.</dd>
+      <dt>null_pvalues/</dt><dd>D, df, true methylation and true dispersion of every tested locus. Regenerated by the simulation, and not in git.</dd>
+      <dt>df_calibration_report.R</dt><dd>Builds this page from the results and df_calibration_template.html.</dd>
+    </dl>
+  </section>
+
+  <footer>
+    Park Y, Figueroa ME, Rozek LS, Sartor MA. MethylSig: a whole genome DNA methylation analysis pipeline.
+    <i>Bioinformatics</i> 2014;30(17):2414&ndash;22.
+    <a href="https://doi.org/10.1093/bioinformatics/btu339">doi:10.1093/bioinformatics/btu339</a>
+  </footer>
+</main>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const TESTS = [
+  { id: 't_df_paper', name: 't, paper df (n − 2)', short: 'paper df', color: '--s1' },
+  { id: 't_df_code', name: 't, df + 2 (methylSig)', short: 'df + 2', color: '--s2' },
+  { id: 'chisq', name: 'χ², 1 df', short: 'χ²', color: '--s3' }
+];
+const LOCAL = [
+  { id: 'none', name: 'No local information', sub: 'Site by site' },
+  { id: 'disp', name: 'Local dispersion', sub: '200 bp window, local_meth = FALSE' },
+  { id: 'disp_meth', name: 'Local dispersion and methylation', sub: '200 bp window, both TRUE' }
+];
+const NS = [2, 3, 4, 5, 6, 8, 10];
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+function el(tag, attrs, parent) {
+  const node = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) node.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(node);
+  return node;
+}
+function niceStep(max, count) {
+  const raw = max / count, pow = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / pow;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * pow;
+}
+function decimalsFor(alpha) { return alpha >= 0.01 ? 2 : 3; }
+function fmtPct(v, alpha) { return (100 * v).toFixed(decimalsFor(alpha)) + '%'; }
+function fmtTick(v) {
+  const s = v.toFixed(3).replace(/\.?0+$/, '');
+  return s + '%';
+}
+function selected(name) { return document.querySelector('input[name="' + name + '"]:checked').value; }
+
+function rowsFor(alpha, loci) {
+  const out = {};
+  for (const r of DATA.results) {
+    if (Math.abs(r.alpha - alpha) > 1e-12 || r.loci !== loci) continue;
+    out[r.local + '|' + r.samples_per_group + '|' + r.test] = r;
+  }
+  return out;
+}
+
+function renderKey() {
+  const key = document.getElementById('key');
+  key.textContent = '';
+  for (const t of TESTS) {
+    const s = document.createElement('span');
+    const i = document.createElement('i');
+    i.style.background = 'var(' + t.color + ')';
+    s.appendChild(i);
+    s.appendChild(document.createTextNode(t.name));
+    key.appendChild(s);
+  }
+  const s = document.createElement('span');
+  const i = document.createElement('i');
+  i.className = 'ref';
+  s.appendChild(i);
+  s.appendChild(document.createTextNode('Nominal level'));
+  key.appendChild(s);
+}
+
+function makeTip(parent) {
+  const tip = document.createElement('div');
+  tip.className = 'tip';
+  tip.hidden = true;
+  parent.appendChild(tip);
+  return tip;
+}
+function fillTip(tip, head, rows) {
+  tip.textContent = '';
+  const h = document.createElement('div');
+  h.className = 'head';
+  h.textContent = head;
+  tip.appendChild(h);
+  for (const r of rows) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const i = document.createElement('i');
+    i.style.background = 'var(' + r.color + ')';
+    const b = document.createElement('b');
+    b.textContent = r.value;
+    const em = document.createElement('em');
+    em.textContent = r.label;
+    row.append(i, b, em);
+    tip.appendChild(row);
+  }
+}
+function placeTip(tip, wrap, svg, xView, yView, viewW) {
+  const svgBox = svg.getBoundingClientRect(), wrapBox = wrap.getBoundingClientRect();
+  const scale = svgBox.width / viewW;
+  const px = svgBox.left - wrapBox.left + xView * scale;
+  const py = svgBox.top - wrapBox.top + yView * scale;
+  tip.hidden = false;
+  const w = tip.offsetWidth;
+  let left = px + 12;
+  if (left + w > wrapBox.width - 4) left = px - w - 12;
+  tip.style.left = Math.max(4, left) + 'px';
+  tip.style.top = Math.max(4, py - tip.offsetHeight / 2) + 'px';
+}
+
+function renderPanels() {
+  const alpha = Number(selected('alpha')), loci = selected('loci');
+  const rows = rowsFor(alpha, loci);
+  let ymax = alpha;
+  for (const k in rows) ymax = Math.max(ymax, rows[k].rate);
+  const step = niceStep(ymax * 100 * 1.08, 4) / 100;
+  ymax = Math.ceil(ymax * 1.08 / step) * step;
+
+  const W = 320, H = 230, m = { l: 44, r: 14, t: 12, b: 38 };
+  const x = n => m.l + (n - 2) / 8 * (W - m.l - m.r);
+  const y = v => H - m.b - v / ymax * (H - m.t - m.b);
+
+  const panels = document.getElementById('panels');
+  panels.textContent = '';
+  for (const loc of LOCAL) {
+    const wrap = document.createElement('div');
+    wrap.className = 'chart';
+    const h = document.createElement('h3');
+    h.textContent = loc.name;
+    const sub = document.createElement('div');
+    sub.className = 'sub';
+    sub.textContent = loc.sub;
+    wrap.append(h, sub);
+    const svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', tabindex: '0',
+      'aria-label': loc.name + ': false-positive rate by samples per group. Values are in the table below.' });
+    wrap.appendChild(svg);
+    panels.appendChild(wrap);
+
+    for (let v = 0; v <= ymax + 1e-12; v += step) {
+      el('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v === 0 ? 'axis' : 'grid' }, svg);
+      const t = el('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end' }, svg);
+      t.textContent = fmtTick(v * 100);
+    }
+    for (const n of NS) {
+      const t = el('text', { x: x(n), y: H - m.b + 16, 'text-anchor': 'middle' }, svg);
+      t.textContent = n;
+    }
+    const xt = el('text', { x: (m.l + W - m.r) / 2, y: H - 4, 'text-anchor': 'middle', class: 'axtitle' }, svg);
+    xt.textContent = 'Samples per group';
+
+    el('line', { x1: m.l, x2: W - m.r, y1: y(alpha), y2: y(alpha), class: 'refline' }, svg);
+
+    const cross = el('line', { y1: m.t, y2: H - m.b, class: 'cross', visibility: 'hidden' }, svg);
+    for (const t of TESTS) {
+      const pts = NS.map(n => rows[loc.id + '|' + n + '|' + t.id]).filter(Boolean);
+      el('polyline', { class: 'series', stroke: 'var(' + t.color + ')',
+        points: pts.map(r => x(r.samples_per_group) + ',' + y(r.rate)).join(' ') }, svg);
+      for (const r of pts) el('circle', { class: 'dot', cx: x(r.samples_per_group), cy: y(r.rate), r: 4, fill: 'var(' + t.color + ')' }, svg);
+    }
+
+    const tip = makeTip(wrap);
+    let idx = -1;
+    const show = i => {
+      idx = Math.max(0, Math.min(NS.length - 1, i));
+      const n = NS[idx];
+      cross.setAttribute('x1', x(n));
+      cross.setAttribute('x2', x(n));
+      cross.setAttribute('visibility', 'visible');
+      const r0 = rows[loc.id + '|' + n + '|t_df_paper'];
+      fillTip(tip, n + ' per group · ' + r0.n_loci.toLocaleString('en-US') + ' loci', TESTS.map(t => ({
+        color: t.color, label: t.short, value: fmtPct(rows[loc.id + '|' + n + '|' + t.id].rate, alpha)
+      })));
+      const top = Math.min(...TESTS.map(t => y(rows[loc.id + '|' + n + '|' + t.id].rate)));
+      placeTip(tip, wrap, svg, x(n), Math.max(m.t + 30, top), W);
+    };
+    const hide = () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); };
+    svg.addEventListener('pointermove', e => {
+      const box = svg.getBoundingClientRect();
+      const xv = (e.clientX - box.left) / box.width * W;
+      let best = 0;
+      NS.forEach((n, i) => { if (Math.abs(x(n) - xv) < Math.abs(x(NS[best]) - xv)) best = i; });
+      show(best);
+    });
+    svg.addEventListener('pointerleave', () => { if (document.activeElement !== svg) hide(); });
+    svg.addEventListener('focus', () => show(idx < 0 ? 0 : idx));
+    svg.addEventListener('blur', hide);
+    svg.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') { show(idx + 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { show(idx - 1); e.preventDefault(); }
+      if (e.key === 'Escape') hide();
+    });
+  }
+
+  const lociName = { all: 'all tested loci', meth_10_90: 'loci with true methylation between 10% and 90%', overdispersed: 'overdispersed loci (true θ below the binomial bound)' }[loci];
+  document.getElementById('rates-caption').textContent =
+    'Fraction of ' + lociName + ' with p < ' + alpha + '. All three panels share the y-axis.';
+  renderTable(rows, alpha);
+}
+
+function renderTable(rows, alpha) {
+  const tbody = document.querySelector('#rates-table tbody');
+  tbody.textContent = '';
+  for (const loc of LOCAL) {
+    const g = document.createElement('tr');
+    g.className = 'group';
+    const gtd = document.createElement('td');
+    gtd.colSpan = 6;
+    gtd.textContent = loc.name;
+    g.appendChild(gtd);
+    tbody.appendChild(g);
+    for (const n of NS) {
+      const r0 = rows[loc.id + '|' + n + '|t_df_paper'];
+      if (!r0) continue;
+      const tr = document.createElement('tr');
+      const cells = [String(n), r0.n_loci.toLocaleString('en-US'), r0.median_df_paper.toFixed(1)];
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c;
+        if (c !== cells[0]) td.className = 'dim';
+        tr.appendChild(td);
+      }
+      for (const t of TESTS) {
+        const r = rows[loc.id + '|' + n + '|' + t.id];
+        const td = document.createElement('td');
+        td.textContent = fmtPct(r.rate, alpha);
+        if (r.rate > alpha) td.className = 'over';
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+  }
+}
+
+function renderQQ() {
+  const loc = selected('qqlocal'), n = Number(selected('qqn'));
+  const series = TESTS.map(t => ({ t, pts: DATA.qq.filter(q => q.local === loc && q.n === n && q.test === t.id)
+    .sort((a, b) => a.exp - b.exp) }));
+  const xmax = Math.ceil(Math.max(...series.flatMap(s => s.pts.map(p => p.exp))) * 2) / 2;
+  const tmax = Math.max(...series.filter(s => s.t.id !== 'chisq').flatMap(s => s.pts.map(p => p.obs)));
+  const allmax = Math.max(...series.flatMap(s => s.pts.map(p => p.obs)));
+  const ymax = Math.ceil(Math.max(xmax, tmax) * 1.35);
+
+  const W = 560, H = 420, m = { l: 48, r: 18, t: 14, b: 46 };
+  const x = v => m.l + v / xmax * (W - m.l - m.r);
+  // Not clamped: the clip path cuts off values above ymax
+  const y = v => H - m.b - v / ymax * (H - m.t - m.b);
+
+  const wrap = document.getElementById('qq-chart');
+  wrap.textContent = '';
+  const h = document.createElement('h3');
+  h.textContent = LOCAL.find(l => l.id === loc).name + ', ' + n + ' samples per group';
+  wrap.appendChild(h);
+  const svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', tabindex: '0',
+    'aria-label': 'QQ-plot of observed against expected minus log10 p-values' }, wrap);
+
+  const ystep = niceStep(ymax, 5), xstep = niceStep(xmax, 5);
+  for (let v = 0; v <= ymax + 1e-9; v += ystep) {
+    el('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: v === 0 ? 'axis' : 'grid' }, svg);
+    el('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end' }, svg).textContent = String(+v.toFixed(2));
+  }
+  for (let v = 0; v <= xmax + 1e-9; v += xstep) {
+    if (v > 0) el('line', { x1: x(v), x2: x(v), y1: m.t, y2: H - m.b, class: 'grid' }, svg);
+    el('text', { x: x(v), y: H - m.b + 16, 'text-anchor': 'middle' }, svg).textContent = String(+v.toFixed(2));
+  }
+  el('text', { x: (m.l + W - m.r) / 2, y: H - 8, 'text-anchor': 'middle', class: 'axtitle' }, svg)
+    .textContent = 'Expected −log10 p';
+  el('text', { x: 14, y: (m.t + H - m.b) / 2, 'text-anchor': 'middle', class: 'axtitle',
+    transform: 'rotate(-90 14 ' + ((m.t + H - m.b) / 2) + ')' }, svg).textContent = 'Observed −log10 p';
+
+  el('line', { x1: x(0), y1: y(0), x2: x(xmax), y2: y(xmax), class: 'refline' }, svg);
+
+  const clip = el('clipPath', { id: 'qq-clip-rect' }, el('defs', {}, svg));
+  el('rect', { x: m.l, y: m.t - 2, width: W - m.l - m.r, height: H - m.t - m.b + 2 }, clip);
+  const g = el('g', { 'clip-path': 'url(#qq-clip-rect)' }, svg);
+  const cross = el('line', { y1: m.t, y2: H - m.b, class: 'cross', visibility: 'hidden' }, svg);
+  for (const s of series) {
+    el('polyline', { class: 'series', stroke: 'var(' + s.t.color + ')',
+      points: s.pts.map(p => x(p.exp) + ',' + y(p.obs)).join(' ') }, g);
+  }
+  const dots = series.map(s => el('circle', { class: 'dot', r: 4, fill: 'var(' + s.t.color + ')', visibility: 'hidden' }, svg));
+
+  const tip = makeTip(wrap);
+  const exps = series[0].pts.map(p => p.exp);
+  let idx = -1;
+  const fmtP = e => { const p = Math.pow(10, -e); return p >= 0.001 ? p.toPrecision(2) : p.toExponential(1); };
+  const show = i => {
+    idx = Math.max(0, Math.min(exps.length - 1, i));
+    const e = exps[idx];
+    cross.setAttribute('x1', x(e));
+    cross.setAttribute('x2', x(e));
+    cross.setAttribute('visibility', 'visible');
+    series.forEach((s, k) => {
+      const p = s.pts[idx];
+      dots[k].setAttribute('cx', x(p.exp));
+      dots[k].setAttribute('cy', y(p.obs));
+      dots[k].setAttribute('visibility', p.obs <= ymax ? 'visible' : 'hidden');
+    });
+    fillTip(tip, 'Expected p ' + fmtP(e), series.map(s => ({ color: s.t.color, label: s.t.short, value: 'p ' + fmtP(s.pts[idx].obs) })));
+    placeTip(tip, wrap, svg, x(e), y(Math.min(series[0].pts[idx].obs, ymax)), W);
+  };
+  const hide = () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); dots.forEach(d => d.setAttribute('visibility', 'hidden')); };
+  svg.addEventListener('pointermove', ev => {
+    const box = svg.getBoundingClientRect();
+    const ev_x = (ev.clientX - box.left) / box.width * W;
+    let best = 0;
+    exps.forEach((e, i) => { if (Math.abs(x(e) - ev_x) < Math.abs(x(exps[best]) - ev_x)) best = i; });
+    show(best);
+  });
+  svg.addEventListener('pointerleave', () => { if (document.activeElement !== svg) hide(); });
+  svg.addEventListener('focus', () => show(idx < 0 ? exps.length - 1 : idx));
+  svg.addEventListener('blur', hide);
+  svg.addEventListener('keydown', ev => {
+    if (ev.key === 'ArrowRight') { show(idx + 1); ev.preventDefault(); }
+    if (ev.key === 'ArrowLeft') { show(idx - 1); ev.preventDefault(); }
+    if (ev.key === 'Escape') hide();
+  });
+
+  document.getElementById('qq-clip').textContent = allmax > ymax
+    ? 'The plot is clipped at −log10 p = ' + ymax + '. The χ² curve reaches ' + allmax.toFixed(1) + ' at the smallest p-value.'
+    : '';
+}
+
+function init() {
+  const qqn = document.getElementById('qq-n');
+  NS.forEach((n, i) => {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'qqn';
+    input.id = 'qqn-' + n;
+    input.value = String(n);
+    if (i === 0) input.checked = true;
+    const span = document.createElement('span');
+    span.textContent = n;
+    label.append(input, span);
+    qqn.appendChild(label);
+  });
+  renderKey();
+  renderPanels();
+  renderQQ();
+  document.querySelectorAll('input[name="alpha"], input[name="loci"]').forEach(i => i.addEventListener('change', renderPanels));
+  document.querySelectorAll('input[name="qqlocal"], input[name="qqn"]').forEach(i => i.addEventListener('change', renderQQ));
+}
+init();
+</script>

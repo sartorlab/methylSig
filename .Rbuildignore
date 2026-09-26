@@ -7,3 +7,4 @@
 ^docker$
 ^\.github$
 ^CLAUDE\.md$
+^simulations$
