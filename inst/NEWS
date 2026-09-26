@@ -1,3 +1,20 @@
+CHANGES IN VERSION 1.25.12
+--------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+  o diff_dss_test() with a numeric methylation_group_column reports
+    methylation rates the other way around, so they agree with the
+    covariate. The case group (meth_case) is now the samples at or above the
+    upper covariate percentile, and the control group (meth_control) the
+    samples at or below the lower one. meth_diff is high minus low, and
+    direction is Hyper when methylation increases with the covariate, which
+    is the sign of stat for a contrast on the covariate. Before, the low
+    group was the case group, so a locus gaining methylation with the
+    covariate was labeled Hypo with a negative meth_diff. Results with
+    character or factor columns, and the test statistics and p-values, are
+    unchanged.
+
 CHANGES IN VERSION 1.25.11
 --------------------------
 
