@@ -1,5 +1,27 @@
-CHANGES IN VERSION 1.25.12
---------------------------
+CHANGES IN VERSION 1.26.0
+-------------------------
+
+NEW FEATURES
+
+  o diff_methylsig() has local_disp and local_meth parameters, which choose
+    whether local information (local_window_size > 0) is used for the
+    dispersion estimate and degrees of freedom, the group methylation
+    estimates and likelihood ratio, or both (issue #47). Both are TRUE by
+    default, which gives the same results as before. These were the
+    local.disp and local.meth options of methylSigCalc() before 0.5.0.
+  o diff_dss_test() has a covariate_percentiles parameter, which sets the
+    percentiles used to group samples by a numerical methylation_group_column
+    (issue #44). The default, c(25, 75), is the same grouping as before.
+  o diff_dss_test() checks the contrast before testing. A contrast of the
+    wrong size gives an error with the number of values it needs and the
+    columns of diff_fit$X they correspond to, in order, e.g.
+    "1: (Intercept)" and "2: Typenormal". A message says what the contrast
+    tests, e.g. "Testing Typenormal = 0", so a contrast that is the right
+    size but tests the wrong coefficient is easier to catch.
+  o The contrast can be a vector as well as a matrix, and named values (or
+    row names) are matched to the columns of diff_fit$X by name. Contrasts
+    with NA values, a column of zeros, or linearly dependent columns give
+    an error.
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
@@ -14,88 +36,11 @@ SIGNIFICANT USER-VISIBLE CHANGES
     covariate was labeled Hypo with a negative meth_diff. Results with
     character or factor columns, and the test statistics and p-values, are
     unchanged.
-
-CHANGES IN VERSION 1.25.11
---------------------------
-
-BUG FIXES
-
-  o filter_loci_by_group_coverage() names only the groups whose thresholds
-    no locus satisfies, instead of every group. When each group alone has
-    loci that pass but no locus passes for all groups at once, it says so.
-  o diff_methylsig() warns when local information is used
-    (local_window_size > 0) and bs isn't sorted by position. Neighbors are
-    found among the 5 loci on either side, so unsorted loci miss some.
-  o diff_methylsig() with n_cores > 1 stops with the error from a parallel
-    worker. Before, mclapply() returned the error as a value, and the
-    results failed later with an unrelated error.
-
-CHANGES IN VERSION 1.25.10
---------------------------
-
-BUG FIXES
-
-  o diff_dss_test() takes the methylation rates from the loci of bs that
-    match diff_fit$gr, in that order. Before, it used every locus of bs, so a
-    bs with more loci than the fit gave an error, and a bs with the same
-    number of loci in another order gave rates for the wrong loci. It errors
-    if bs is missing fit loci or has a different number of samples than
-    diff_fit$design.
-  o diff_dss_test() errors when methylation_group_column is a character or
-    factor column and methylation_groups is missing. Before, meth_case,
-    meth_control, and meth_diff were all NaN, and direction was NA. A column
-    that isn't character, factor, or numeric (e.g. logical) gives a clear
-    error, instead of "object 'case_idx' not found", and methylation_groups
-    with a numeric column gives a warning that it is ignored.
-  o These checks happen before the test, instead of after it.
-
-CHANGES IN VERSION 1.25.9
--------------------------
-
-BUG FIXES
-
-  o diff_binomial() used every sample in the pooled model under the null
-    hypothesis, not only the samples in case and control. With other groups
-    in group_column, the likelihood ratio statistic was wrong: on 2,374 CpGs
-    of bsseqData's BS.cancer.ex, with one cancer and one normal sample
-    relabeled as a third group, 2,301 loci had FDR < 0.05 instead of 156.
-    Results with only the case and control samples are unchanged.
-  o diff_binomial() drops loci where case or control has no coverage, with
-    a message, as diff_methylsig() does for loci it can't test. Before, they
-    were returned with NaN results. The FDR is computed over the tested loci.
-  o diff_binomial() computes meth_diff before rounding meth_case and
-    meth_control, instead of from the rounded values.
-
-DOCUMENTATION
-
-  o The diff_binomial() docs no longer mention t_approx, which it doesn't
-    have, or methylSigReadData(), which was replaced by
-    bsseq::read.bismark().
-
-CHANGES IN VERSION 1.25.8
--------------------------
-
-NEW FEATURES
-
-  o diff_dss_test() checks the contrast before testing. A contrast of the
-    wrong size gives an error with the number of values it needs and the
-    columns of diff_fit$X they correspond to, in order, e.g.
-    "1: (Intercept)" and "2: Typenormal". A message says what the contrast
-    tests, e.g. "Testing Typenormal = 0", so a contrast that is the right
-    size but tests the wrong coefficient is easier to catch.
-  o The contrast can be a vector as well as a matrix, and named values (or
-    row names) are matched to the columns of diff_fit$X by name. Contrasts
-    with NA values, a column of zeros, or linearly dependent columns give
-    an error.
-
-DOCUMENTATION
-
-  o The vignette refers to diff_dss_test(), not diff_fit_test(), and notes
-    that the sign of stat follows the contrast (normal minus cancer for
-    Typenormal), while meth_diff is case minus control.
-
-CHANGES IN VERSION 1.25.7
--------------------------
+  o The example data sets (bsseq_stranded, bsseq_destranded,
+    bsseq_multichrom, promoters_gr) are no longer lazy-loaded, as
+    Bioconductor recommends. Load them with data(), e.g.
+    data(promoters_gr, package = 'methylSig'), as the examples and vignettes
+    already do.
 
 BUG FIXES
 
@@ -108,58 +53,11 @@ BUG FIXES
     CpGs of bsseqData's BS.cancer.ex with a 200 bp window and group labels
     that mix cancer and normal samples, 22.3% of loci had FDR < 0.05 before
     the fix and none after. Results without local information, or with
-    local_meth = FALSE, are unchanged.
-
-CHANGES IN VERSION 1.25.6
--------------------------
-
-INTERNAL CHANGES
-
-  o Move the tests to testthat 3rd edition. expect_equivalent() is replaced
-    with expect_equal(ignore_attr = TRUE), and the tiling tests compare the
-    Cov and M values as matrices, instead of the DelayedMatrix objects.
-
-CHANGES IN VERSION 1.25.5
--------------------------
-
-SIGNIFICANT USER-VISIBLE CHANGES
-
-  o The example data sets (bsseq_stranded, bsseq_destranded,
-    bsseq_multichrom, promoters_gr) are no longer lazy-loaded, as
-    Bioconductor recommends. Load them with data(), e.g.
-    data(promoters_gr, package = 'methylSig'), as the examples and vignettes
-    already do.
-
-INTERNAL CHANGES
-
-  o Add the URL field and the Sequencing and Coverage biocViews to
-    DESCRIPTION, and label the vignettes' setup chunks.
-  o docker/check.sh exits with an error when BiocCheck finds an error.
-
-CHANGES IN VERSION 1.25.4
--------------------------
-
-NEW FEATURES
-
-  o diff_methylsig() has local_disp and local_meth parameters, which choose
-    whether local information (local_window_size > 0) is used for the
-    dispersion estimate and degrees of freedom, the group methylation
-    estimates and likelihood ratio, or both (issue #47). Both are TRUE by
-    default, which gives the same results as before. These were the
-    local.disp and local.meth options of methylSigCalc() before 0.5.0.
-  o diff_dss_test() has a covariate_percentiles parameter, which sets the
-    percentiles used to group samples by a numerical methylation_group_column
-    (issue #44). The default, c(25, 75), is the same grouping as before.
-
-CHANGES IN VERSION 1.25.2
--------------------------
-
-BUG FIXES
-
+    local_meth = FALSE, are unchanged. Also in 1.24.2.
   o diff_methylsig() drops every locus it can't test because of too few
     degrees of freedom. Before, only loci with df = 1 were dropped, and loci
     with df = 0, e.g. tiles with no coverage, were returned with NA results
-    (issues #47 and #56).
+    (issues #47 and #56). Also in 1.24.1.
   o diff_methylsig() and diff_binomial() work with one sample in a group,
     instead of failing with "'x' must be an array of at least two
     dimensions" (issue #51). diff_methylsig() still needs enough samples in
@@ -169,17 +67,108 @@ BUG FIXES
     with every other locus, which made large data sets take hours or days
     (issues #42 and #43). Results are the same, except that local information
     no longer comes from loci on a different chromosome.
+  o diff_methylsig() warns when local information is used
+    (local_window_size > 0) and bs isn't sorted by position. Neighbors are
+    found among the 5 loci on either side, so unsorted loci miss some.
+  o diff_methylsig() with n_cores > 1 stops with the error from a parallel
+    worker. Before, mclapply() returned the error as a value, and the
+    results failed later with an unrelated error.
+  o diff_binomial() used every sample in the pooled model under the null
+    hypothesis, not only the samples in case and control. With other groups
+    in group_column, the likelihood ratio statistic was wrong: on 2,374 CpGs
+    of bsseqData's BS.cancer.ex, with one cancer and one normal sample
+    relabeled as a third group, 2,301 loci had FDR < 0.05 instead of 156.
+    Results with only the case and control samples are unchanged. Also in
+    1.24.3.
+  o diff_binomial() drops loci where case or control has no coverage, with
+    a message, as diff_methylsig() does for loci it can't test. Before, they
+    were returned with NaN results. The FDR is computed over the tested loci.
+  o diff_binomial() computes meth_diff before rounding meth_case and
+    meth_control, instead of from the rounded values.
+  o diff_dss_test() takes the methylation rates from the loci of bs that
+    match diff_fit$gr, in that order. Before, it used every locus of bs, so a
+    bs with more loci than the fit gave an error, and a bs with the same
+    number of loci in another order gave rates for the wrong loci. It errors
+    if bs is missing fit loci or has a different number of samples than
+    diff_fit$design. Also in 1.24.4.
+  o diff_dss_test() errors when methylation_group_column is a character or
+    factor column and methylation_groups is missing. Before, meth_case,
+    meth_control, and meth_diff were all NaN, and direction was NA. A column
+    that isn't character, factor, or numeric (e.g. logical) gives a clear
+    error, instead of "object 'case_idx' not found", and methylation_groups
+    with a numeric column gives a warning that it is ignored.
+  o These diff_dss_test() checks happen before the test, instead of after it.
+  o filter_loci_by_group_coverage() names only the groups whose thresholds
+    no locus satisfies, instead of every group. When each group alone has
+    loci that pass but no locus passes for all groups at once, it says so.
 
-CHANGES IN VERSION 1.25.1
--------------------------
+DOCUMENTATION
+
+  o The vignette refers to diff_dss_test(), not diff_fit_test(), and notes
+    that the sign of stat follows the contrast (normal minus cancer for
+    Typenormal), while meth_diff is case minus control.
+  o The diff_binomial() docs no longer mention t_approx, which it doesn't
+    have, or methylSigReadData(), which was replaced by
+    bsseq::read.bismark().
 
 INTERNAL CHANGES
 
   o Check the package with R CMD check and BiocCheck in the Bioconductor
     devel container, locally (docker/check.sh) and in GitHub Actions on every
     push and pull request, and weekly. This replaces Travis CI.
+    docker/check.sh exits with an error when BiocCheck finds an error.
   o Depend on R (>= 4.6.0), and drop the Date field from DESCRIPTION.
+  o Add the URL field and the Sequencing and Coverage biocViews to
+    DESCRIPTION, and label the vignettes' setup chunks.
   o Move NEWS to inst/NEWS.
+  o Move the tests to testthat 3rd edition. expect_equivalent() is replaced
+    with expect_equal(ignore_attr = TRUE), and the tiling tests compare the
+    Cov and M values as matrices, instead of the DelayedMatrix objects.
+
+CHANGES IN VERSION 1.24.4
+-------------------------
+
+BUG FIXES
+
+  o diff_dss_test() takes the methylation rates from the loci of bs that
+    match diff_fit$gr, in that order. Before, it used every locus of bs, so a
+    bs with more loci than the fit gave an error, and a bs with the same
+    number of loci in another order gave rates for the wrong loci. It errors
+    if bs is missing fit loci or has a different number of samples than
+    diff_fit$design. Backported from 1.25.10.
+
+CHANGES IN VERSION 1.24.3
+-------------------------
+
+BUG FIXES
+
+  o diff_binomial() used every sample in the pooled model under the null
+    hypothesis, not only the samples in case and control. With other groups
+    in group_column, the likelihood ratio statistic was wrong. Results with
+    only the case and control samples are unchanged. Backported from 1.25.9.
+
+CHANGES IN VERSION 1.24.2
+-------------------------
+
+BUG FIXES
+
+  o diff_methylsig() used the wrong log likelihood for the unmethylated reads
+    when local information was used (local_window_size > 0): the term for
+    the unmethylated reads was missing the dispersion,
+    lgamma((1 - mu) + 1e-100) instead of lgamma((1 - mu) * phi + 1e-100).
+    This inflated the likelihood ratio statistic and gave many false
+    positives. Results without local information are unchanged. Backported
+    from 1.25.7.
+
+CHANGES IN VERSION 1.24.1
+-------------------------
+
+BUG FIXES
+
+  o diff_methylsig() drops every locus it can't test because of too few
+    degrees of freedom. Before, only loci with df = 1 were dropped, and loci
+    with df = 0, e.g. tiles with no coverage, were returned with NA results
+    (issues #47 and #56). Backported from 1.25.2.
 
 CHANGES IN VERSION 1.21.2
 -------------------------
